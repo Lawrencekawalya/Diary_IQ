@@ -24,8 +24,8 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', '3e59e99addb9052eb7da6ab9935
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
-cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
-# cred = credentials.Certificate("firebase_key.json")
+# cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
+cred = credentials.Certificate("firebase_key.json")
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
