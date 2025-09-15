@@ -1,0 +1,107 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #f7f9fc;
+    color: #2c3e50;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* Prediction Card */
+.prediction-card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.prediction-card h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.prediction-label {
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Color themes for prediction */
+.prediction-card.low .prediction-label {
+    color: #e74c3c;
+    /* Red */
+}
+
+.prediction-card.moderate .prediction-label {
+    color: #e67e22;
+    /* Orange */
+}
+
+.prediction-card.high .prediction-label {
+    color: #27ae60;
+    /* Green */
+}
+
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.feature-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-card h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.feature-card .value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.feature-card .status {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.feature-card .status.normal {
+    color: #27ae60;
+    /* Green */
+}
+
+.feature-card .status.abnormal {
+    color: #e67e22;
+    /* Orange */
+}

@@ -1,0 +1,2 @@
+# Ignore Firebase credentials
+firebase/*.json

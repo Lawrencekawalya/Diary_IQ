@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DairyIQ - Prediction Result</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/result.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Top Prediction Card -->
+      <div class="prediction-card {{ prediction|lower }}">
+        <h1>Milk Quality Prediction</h1>
+        <p class="prediction-label">{{ prediction }}</p>
+      </div>
+
+      <!-- Features Grid -->
+      <!-- <div class="features-grid">
+        {% for i in range(feature_names|length) %}
+        <div
+          class="feature-card"
+          style="border-left: 6px solid {{ colors[i] }}"
+        >
+          <h3>{{ feature_names[i] }}</h3>
+          <p class="value">{{ raw_values[i] }}</p>
+        </div>
+        {% endfor %}
+      </div> -->
+      <div class="features-grid">
+        {% for i in range(feature_names|length) %}
+        <div
+          class="feature-card"
+          style="border-left: 6px solid {{ colors[i] }}"
+        >
+          <h3>{{ feature_names[i] }}</h3>
+          <p class="value">{{ raw_values[i] }}</p>
+          {% if colors[i] == '#2ecc71' %}
+          <p class="status normal">✅ Normal</p>
+          {% else %}
+          <p class="status abnormal">⚠️ Out of Range</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>
