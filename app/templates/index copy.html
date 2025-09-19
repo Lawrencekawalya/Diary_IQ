@@ -1,0 +1,729 @@
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+    <title>DairyIQ – Milk Quality Predictor</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 40px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            margin: auto;
+        }
+
+        input,
+        button {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>DairyIQ – Milk Quality Predictor</h1>
+    <form method="POST" action="/predict">
+        <input type="text" name="ph" placeholder="pH" required>
+        <input type="text" name="temperature" placeholder="Temperature (°C)" required>
+        <input type="text" name="fat" placeholder="Fat Content (%)" required>
+        <input type="text" name="conductivity" placeholder="Conductivity" required>
+        <input type="text" name="density" placeholder="Density" required>
+        <button type="submit">Predict Quality</button>
+    </form>
+
+    {% if prediction %}
+    <div class="result">
+        <strong>Predicted Milk Quality:</strong> {{ prediction }}
+    </div>
+    {% endif %}
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='favicon.png') }}"
+    />
+    <title>DairyIQ – Milk Quality Predictor</title>
+    <style>
+      /* Reset and base styles */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        padding-top: 30px;
+        overflow-y: scroll; /* enable vertical scroll */
+        overflow-x: hidden; /* prevent horizontal scroll */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge Legacy */
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge, Opera */
+      }
+      /* body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        overflow-x: hidden;
+
+        width: 100%;
+      } */
+
+      /* Navigation */
+      nav {
+        /* position: sticky; */
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: #2c3e50;
+        padding: 15px 30px;
+        font-size: 18px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-brand {
+        font-size: 22px;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+      }
+
+      .logout-form {
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .logout-btn {
+        padding: 8px 20px;
+        background-color: #e74c3c;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        white-space: nowrap;
+      }
+
+      /* Main content */
+      .container {
+        max-width: 100%;
+        width: 100%;
+        padding: 40px 20px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 15px;
+        padding: 0 15px;
+        word-wrap: break-word;
+      }
+
+      /* div heading */
+      .div_heading {
+        /* background-color: #f5f5f5; light gray background */
+        padding: 1px 0px; /* space inside */
+        border-radius: 6px; /* rounded corners */
+        /* border: 1px solid #ddd; subtle border */
+        margin-bottom: 15px; /* space below */
+      }
+
+      .div_heading h3 {
+        margin: 0; /* remove default h3 margin */
+        font-size: 18px; /* adjust size */
+        font-weight: 600; /* bold but not too heavy */
+        color: #333; /* dark gray text */
+      }
+
+      /* Form styling */
+      .predictor-form {
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 550px;
+        margin: 0 auto;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: grid;
+        gap: 2px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+        width: 100%;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 12px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      /* Result and footer */
+      /* .result {
+        text-align: center;
+        margin: 30px auto;
+        font-size: 18px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 5px;
+        max-width: 400px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      } */
+
+      footer {
+        text-align: center;
+        margin-top: 0px;
+        padding: 20px;
+        color: #7f8c8d;
+        width: 100%;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        nav {
+          padding: 15px;
+        }
+
+        .container {
+          padding: 30px 15px;
+        }
+
+        .predictor-form {
+          padding: 20px;
+        }
+      }
+      .nav-btn {
+        padding: 8px 20px;
+        /* background-color: #3498db;  */
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        text-decoration: none; /* remove underline */
+        margin-left: 10px;
+        display: inline-block;
+      }
+      .nav-btn.logout {
+        background-color: #e74c3c; /* red for logout */
+      }
+      .nav-btn:hover {
+        /* opacity: 0.9; */
+        color: #3498db;
+      }
+      .nav-link {
+        text-decoration: none;
+        color: inherit; /* make it use the parent text color */
+      }
+
+      .nav-link:visited,
+      .nav-link:hover,
+      .nav-link:active {
+        text-decoration: none;
+        color: inherit; /* prevent browser from applying purple/blue */
+      }
+      /* ############################################### */
+      /* Loading overlay */
+      #loadingOverlay {
+        display: none; /* hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        z-index: 2000;
+
+        /* remove this line 👇 */
+        /* display: flex; */
+
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .spinner {
+        border: 6px solid #f3f3f3; /* light gray */
+        border-top: 6px solid #3498db; /* blue */
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      #loadingOverlay p {
+        font-size: 18px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+      /* ####################################################################### */
+      /* Gear loader */
+      .gears {
+        display: flex;
+        gap: 15px;
+      }
+
+      .gear {
+        width: 50px;
+        height: 50px;
+        border: 8px solid #3498db;
+        border-radius: 50%;
+        position: relative;
+        animation: spin 2s linear infinite;
+      }
+
+      .gear::before,
+      .gear::after {
+        content: "";
+        position: absolute;
+        width: 8px;
+        height: 20px;
+        background: #3498db;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .gear::after {
+        top: auto;
+        bottom: -10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .loader-logo {
+        width: 100px; /* adjust as needed */
+        height: auto; /* keeps aspect ratio */
+      }
+      /* ####################################################################### */
+
+      .dashboard {
+        max-width: 1400px;
+        margin: auto;
+        /* background: #fff; */
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .dasboard-header {
+        display: flex;
+        justify-content: center; /* centers horizontally */
+        align-items: center; /* centers vertically */
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation Bar -->
+    <!-- <nav>
+      <div class="nav-brand">DairyIQ</div>
+      <div>Historical Data</div>
+      <form action="/logout" method="get">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </nav> -->
+    <!-- Navigation Bar -->
+    <nav>
+      <!-- <div class="nav-brand">DairyIQ</div> -->
+      <a href="{{ url_for('index') }}" class="nav-link">
+        <div class="nav-brand">DairyIQ</div>
+      </a>
+
+      <div class="nav-actions">
+        <!-- <a href="{{ url_for('index') }}" class="nav-btn">Historical Data</a> -->
+        <a href="{{ url_for('history') }}" class="nav-btn">Historical Data</a>
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">Logout</a>
+      </div>
+    </nav>
+
+    <div class="dashboard">
+      <header class="dasboard-header">
+        <h2>DairyIQ – Milk Quality Predictor</h2>
+      </header>
+      <!-- <h1>DairyIQ – Milk Quality Predictor</h1> -->
+
+      <form
+        class="predictor-form"
+        id="milkForm"
+        method="POST"
+        action="/predict"
+      >
+        <!-- Batch Info Section -->
+        <!-- <div id="batchInfo">
+          <div class="div_heading">
+            <h3>Enter Batch information</h3>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="farmer"
+                placeholder="Farmer’s full name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="contact"
+                placeholder="Contact details"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="location"
+                placeholder="Farm location"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="batch_number"
+                placeholder="Batch number"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="time_of_collection"
+                placeholder="Time of collection"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="transport_details"
+                placeholder="Transport details"
+                required
+              />
+            </div>
+          </div>
+          <button type="button" id="nextBtn" class="submit-btn">Next</button>
+        </div> -->
+        <!-- Batch Info Section -->
+        <div id="batchInfo">
+          <div class="div_heading">
+            <h3>Enter Batch information</h3>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="farmer"
+                placeholder="Farmer’s full name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="contact"
+                placeholder="Contact details"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="location"
+                placeholder="Farm location"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="transport_details"
+                placeholder="Transport details"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <!-- Auto-generated timestamp (hidden from user) -->
+              <input
+                type="date"
+                name="time_of_collection"
+                id="time_of_collection"
+                readonly
+              />
+            </div>
+            <div class="form-group">
+              <!-- Auto-generated batch number (hidden from user) -->
+              <input
+                type="text"
+                name="batch_number"
+                id="batch_number"
+                readonly
+              />
+            </div>
+          </div>
+          <!-- <div class="form-row"> -->
+          <button type="button" id="nextBtn" class="submit-btn">Next</button>
+          <!-- <button type="button" id="nextBtn" class="submit-btn">Next</button> -->
+          <!-- </div> -->
+        </div>
+
+        <!-- Predictor Section (hidden initially) -->
+        <div id="predictorForm" style="display: none">
+          <div class="div_heading">
+            <h3>Enter Testing Parameters</h3>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <input type="text" name="ph" placeholder="pH" required />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="temperature"
+                placeholder="Temperature (°C)"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="fat"
+                placeholder="Fat Content (%)"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="snf"
+                placeholder="SNF (Solids-not-fat)"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="acidity"
+                placeholder="Titratable Acidity"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="protein"
+                placeholder="Protein Content (%)"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <input
+                type="text"
+                name="lactose"
+                placeholder="Lactose Content (%)"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                name="tpc"
+                placeholder="Total Plate Count (TPC)"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <input
+              type="text"
+              name="scc"
+              placeholder="Somatic Cell Count (SCC in 1000)"
+              required
+            />
+          </div>
+          <div class="form-row">
+            <button type="button" id="backBtn" class="submit-btn">Back</button>
+            <button type="submit" class="submit-btn">Predict Quality</button>
+          </div>
+        </div>
+      </form>
+
+      {% if prediction %}
+      <div class="result">
+        <strong>Predicted Milk Quality:</strong> {{ prediction }}
+      </div>
+      {% endif %}
+    </div>
+    <!-- Loading overlay -->
+    <!-- <div id="loadingOverlay">
+      <div class="spinner"></div>
+      <p>Processing prediction...</p>
+    </div> -->
+    <!-- Loading overlay -->
+    <div id="loadingOverlay">
+      <div class="gears">
+        <div class="gear"></div>
+        <!-- <div class="gear"></div> -->
+        <img
+          src="{{ url_for('static', filename='favicon.png') }}"
+          alt="DairyIQ Logo"
+          class="loader-logo"
+        />
+        <div class="gear"></div>
+      </div>
+      <p>Machine Learning in Progress...</p>
+    </div>
+
+    <footer>&copy; 2023 DairyIQ. All rights reserved.</footer>
+    <script>
+      const nextBtn = document.getElementById("nextBtn");
+      const batchInfo = document.getElementById("batchInfo");
+      const predictorForm = document.getElementById("predictorForm");
+
+      nextBtn.addEventListener("click", () => {
+        // Hide batch info and show predictor form
+        batchInfo.style.display = "none";
+        predictorForm.style.display = "block";
+      });
+      const backBtn = document.getElementById("backBtn");
+
+      backBtn.addEventListener("click", () => {
+        predictorForm.style.display = "none"; // hide predictor form
+        batchInfo.style.display = "block"; // show batch info again
+      });
+      const milkForm = document.getElementById("milkForm");
+
+      milkForm.addEventListener("submit", function () {
+        document.getElementById("loadingOverlay").style.display = "flex";
+      });
+    </script>
+    <!-- <script>
+      // Generate unique batch number when form loads
+      document.getElementById("batch_number").value = "BATCH-" + Date.now(); // Example: BATCH-1694523456789
+
+      // Capture collection time
+      document.getElementById("time_of_collection").value =
+        new Date().toISOString(); // e.g., 2025-09-12T10:30:45.123Z
+    </script> -->
+    <script>
+      // Generate unique batch number when form loads
+      document.getElementById("batch_number").value = "BATCH-" + Date.now(); // Example: BATCH-1694523456789
+    </script>
+    <script>
+      const now = new Date();
+      document.getElementById("time_of_collection").value = now
+        .toISOString()
+        .split("T")[0]; // YYYY-MM-DD
+    </script>
+  </body>
+</html>

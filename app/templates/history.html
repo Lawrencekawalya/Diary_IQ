@@ -48,7 +48,8 @@
     <style>
       /* ===== GLOBAL STYLES ===== */
       :root {
-        --primary: #2c3e50;
+        /* --primary: #2c3e50; */
+        --primary: #1f3a93;
         --secondary: #3498db;
         --success: #2ecc71;
         --warning: #f39c12;
@@ -111,6 +112,14 @@
         font-size: 22px;
         font-weight: bold;
         white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 10px; /* spacing between logo and text */
+      }
+
+      .nav-logo {
+        height: 45px; /* adjust size */
+        width: auto;
       }
 
       .nav-actions {
@@ -459,7 +468,7 @@
   </head>
   <body>
     <!-- Navigation Bar -->
-    <nav>
+    <!-- <nav>
       <a href="{{ url_for('index') }}" class="nav-link">
         <div class="nav-brand">DairyIQ Analytics</div>
       </a>
@@ -467,6 +476,29 @@
       <div class="nav-actions">
         <a href="{{ url_for('index') }}" class="nav-btn">
           <i class="fas fa-plus-circle"></i> New Sample
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </nav> -->
+
+    <!-- Navigation Bar -->
+    <nav>
+      <a href="{{ url_for('index') }}" class="nav-link">
+        <div class="nav-brand">
+          <img
+            src="{{ url_for('static', filename='favicon_white.png') }}"
+            alt="DairyIQ Logo"
+            class="nav-logo"
+          />
+          <span>DairyIQ Analytics</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="{{ url_for('history') }}" class="nav-btn">
+          <i class="fas fa-history"></i> Historical Data
         </a>
         <a href="{{ url_for('logout') }}" class="nav-btn logout">
           <i class="fas fa-sign-out-alt"></i> Logout

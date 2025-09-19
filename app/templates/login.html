@@ -4,21 +4,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
       rel="icon"
       type="image/png"
       href="{{ url_for('static', filename='favicon.png') }}"
     />
     <title>DairyIQ Login</title>
     <style>
+      /* ===== GLOBAL STYLES ===== */
+      :root {
+        /* --primary: #2c3e50; */
+        --primary: #1f3a93;
+        --secondary: #3498db;
+        --success: #2ecc71;
+        --warning: #f39c12;
+        --danger: #e74c3c;
+        --light: #ecf0f1;
+        --dark: #2c3e50;
+        --gray: #95a5a6;
+        --white: #ffffff;
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+      }
       html,
       body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
         height: 100%;
         overflow: hidden;
-        /* Disables scrolling for entire page */
-        font-family: Arial;
-        background-color: #f4f4f4;
         margin: 0;
         padding: 0;
+        /* padding-top: 35px; */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge Legacy */
+        background: url("{{ url_for('static', filename='login-bg.webp') }}")
+          no-repeat center center fixed;
+        background-size: cover; /* make it cover the full screen */
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge, Opera */
+      }
+
+      .h2 {
+        margin-bottom: 20px;
+        color: var(--primary);
       }
 
       .page-wrapper {
@@ -34,7 +69,7 @@
       }
 
       .login-container {
-        background: #fff;
+        background: rgba(255, 255, 255, 0.397); /* translucent white */
         width: 100%;
         max-width: 320px;
         padding: 30px;
@@ -42,6 +77,7 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         text-align: center;
         position: relative;
+        backdrop-filter: blur(8px);
       }
 
       .logo {
@@ -70,7 +106,7 @@
       }
 
       button {
-        background-color: #3498db;
+        background-color: #1f3a93;
         color: white;
         border: none;
         font-weight: bold;
@@ -112,29 +148,40 @@
         <!-- Logo with fallback -->
         <picture>
           <img
-            src="{{ url_for('static', filename='favicon.png') }}"
+            src="{{ url_for('static', filename='favicon_white.png') }}"
             alt="DairyIQ Logo"
             class="logo"
             width="150"
             height="100"
           />
-
-          <!-- <source srcset="{{ url_for('static', filename='logo.webp') }}" type="image/webp">
-                <source srcset="{{ url_for('static', filename='logo.png') }}" type="image/png">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="DairyIQ Logo" class="logo"
-                    onerror="this.style.display='none'; document.querySelector('.logo-fallback').style.display='flex';"> -->
         </picture>
         <div class="logo-fallback" style="display: none">DQ</div>
 
-        <h2>DairyIQ Login</h2>
+        <h2 style="color: #1f3a93">DairyIQ Login</h2>
         <form method="POST" action="/login">
           <input type="email" name="username" placeholder="Email" required />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-          />
+          <div style="position: relative; width: 100%">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+              style="padding-right: 40px; width: 100%"
+              id="passwordInput"
+            />
+            <i
+              class="fas fa-eye"
+              style="
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                cursor: pointer;
+                color: #666;
+              "
+              id="togglePassword"
+            ></i>
+          </div>
           <button type="submit">Login</button>
         </form>
 
@@ -143,5 +190,21 @@
         {% endif %}
       </div>
     </div>
+    <script>
+      document
+        .getElementById("togglePassword")
+        .addEventListener("click", function () {
+          const passwordInput = document.getElementById("passwordInput");
+          const type =
+            passwordInput.getAttribute("type") === "password"
+              ? "text"
+              : "password";
+          passwordInput.setAttribute("type", type);
+
+          // Toggle eye icon
+          this.classList.toggle("fa-eye");
+          this.classList.toggle("fa-eye-slash");
+        });
+    </script>
   </body>
 </html>

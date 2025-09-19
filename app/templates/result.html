@@ -19,7 +19,8 @@
     <style>
       /* ===== GLOBAL STYLES ===== */
       :root {
-        --primary: #2c3e50;
+        /* --primary: #2c3e50; */
+        --primary: #1f3a93;
         --secondary: #3498db;
         --success: #2ecc71;
         --warning: #f39c12;
@@ -36,15 +37,32 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        /* font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; */
       }
 
-      body {
+      /* body {
         background-color: #f8f9fa;
         color: #333;
         line-height: 1.6;
         overflow-x: hidden;
         padding-top: 80px;
+      } */
+
+      html,
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        padding-top: 35px;
+        overflow-y: scroll; /* enable vertical scroll */
+        overflow-x: hidden; /* prevent horizontal scroll */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge Legacy */
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge, Opera */
       }
 
       /* ===== NAVIGATION ===== */
@@ -67,6 +85,14 @@
         font-size: 22px;
         font-weight: bold;
         white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 10px; /* spacing between logo and text */
+      }
+
+      .nav-logo {
+        height: 45px; /* adjust size */
+        width: auto;
       }
 
       .nav-actions {
@@ -120,13 +146,14 @@
       }
 
       .dashboard-header {
-        padding: 25px 30px;
-        border-bottom: 1px solid #eee;
+        padding: 10px 30px;
+        /* border-bottom: 1px solid #eee; */
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: var(--primary);
-        color: var(--white);
+        /* background: var(--primary); */
+        /* color: var(--white); */
+        color: var(--primary);
       }
 
       .dashboard-header h2 {
@@ -136,12 +163,13 @@
 
       .export-btn {
         padding: 10px 20px;
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(185, 177, 177, 0.822);
+        border: 1px solid rgba(247, 215, 215, 0.726);
         border-radius: 6px;
         cursor: pointer;
         font-weight: 500;
-        color: white;
+        /* color: white; */
+        color: var(--primary);
         transition: var(--transition);
       }
 
@@ -154,7 +182,7 @@
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 25px;
-        padding: 30px;
+        padding: 0px 30px;
       }
 
       /* ===== CARD STYLES ===== */
@@ -419,13 +447,48 @@
           min-height: 200px;
         }
       }
+      /* Add to your CSS */
+      .export-loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        z-index: 2000;
+      }
     </style>
   </head>
   <body>
     <!-- Navigation Bar -->
-    <nav>
+    <!-- <nav>
       <a href="{{ url_for('index') }}" class="nav-link">
         <div class="nav-brand">DairyIQ Analytics</div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="{{ url_for('history') }}" class="nav-btn">
+          <i class="fas fa-history"></i> Historical Data
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </nav> -->
+
+    <!-- Navigation Bar -->
+    <nav>
+      <a href="{{ url_for('index') }}" class="nav-link">
+        <div class="nav-brand">
+          <img
+            src="{{ url_for('static', filename='favicon_white.png') }}"
+            alt="DairyIQ Logo"
+            class="nav-logo"
+          />
+          <span>DairyIQ Analytics</span>
+        </div>
       </a>
 
       <div class="nav-actions">
@@ -442,75 +505,77 @@
     <!-- <div class="dashboard"> -->
     <header class="dashboard-header">
       <h2><i class="fas fa-flask"></i> Milk Quality Prediction</h2>
-      <button class="export-btn">
+      <button class="export-btn" id="exportBtn">
         <i class="fas fa-download"></i> EXPORT REPORT
       </button>
     </header>
 
-    <div class="grid-layout">
-      <!-- Prediction Result -->
-      <div class="card prediction-card">
-        <div class="prediction-result">
-          <div class="status">
-            <i class="fas fa-check-circle"></i> Prediction Result
-          </div>
-          <h2 class="quality {{ prediction|lower|replace(' ', '-') }}">
-            {{ prediction }}
-          </h2>
-          <div class="features-snapshot">
-            <p>
-              <strong
-                ><i class="fas fa-list-alt"></i> Feature Snapshot (Raw
-                Values)</strong
-              >
-            </p>
-            <ul>
-              {% for i in range(feature_names|length) %}
-              <li>
-                {{ feature_names[i] }}
-                <span>{{ raw_values[i] }}</span>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="chart-container">
-          <div class="card">
-            <h4><i class="fas fa-chart-bar"></i> Feature Snapshot</h4>
-            <div class="chart-box">
-              <canvas id="featureChart"></canvas>
+    <div id="reportArea">
+      <div class="grid-layout">
+        <!-- Prediction Result -->
+        <div class="card prediction-card">
+          <div class="prediction-result">
+            <div class="status">
+              <i class="fas fa-check-circle"></i> Prediction Result
+            </div>
+            <h2 class="quality {{ prediction|lower|replace(' ', '-') }}">
+              {{ prediction }}
+            </h2>
+            <div class="features-snapshot">
+              <p>
+                <strong
+                  ><i class="fas fa-list-alt"></i> Feature Snapshot (Raw
+                  Values)</strong
+                >
+              </p>
+              <ul>
+                {% for i in range(feature_names|length) %}
+                <li>
+                  {{ feature_names[i] }}
+                  <span>{{ raw_values[i] }}</span>
+                </li>
+                {% endfor %}
+              </ul>
             </div>
           </div>
 
-          <div class="card">
-            <h4><i class="fas fa-chart-pie"></i> Prediction Result</h4>
-            <div class="chart-box">
-              <canvas id="predictionChart"></canvas>
+          <!-- Charts -->
+          <div class="chart-container">
+            <div class="card">
+              <h4><i class="fas fa-chart-bar"></i> Feature Snapshot</h4>
+              <div class="chart-box">
+                <canvas id="featureChart"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <h4><i class="fas fa-chart-pie"></i> Prediction Result</h4>
+              <div class="chart-box">
+                <canvas id="predictionChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Suggestions -->
-      <div class="card suggestions">
-        <h4><i class="fas fa-lightbulb"></i> Suggestions</h4>
-        <ul>
-          {% for item in suggestions %}
-          <li>{{ item }}</li>
-          {% endfor %}
-        </ul>
-      </div>
+        <!-- Suggestions -->
+        <div class="card suggestions">
+          <h4><i class="fas fa-lightbulb"></i> Suggestions</h4>
+          <ul>
+            {% for item in suggestions %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
 
-      <!-- Current Batch Info -->
-      <div class="card batch-info">
-        <h4><i class="fas fa-info-circle"></i> Current Batch Info</h4>
-        <ul>
-          {% for key, value in batch_info.items() %}
-          <li>{{ key }}: <span>{{ value }}</span></li>
-          {% endfor %}
-        </ul>
+        <!-- Current Batch Info -->
+        <div class="card batch-info">
+          <h4><i class="fas fa-info-circle"></i> Current Batch Info</h4>
+          <ul>
+            {% for key, value in batch_info.items() %}
+            <li>{{ key }}: <span>{{ value }}</span></li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -636,5 +701,587 @@
         }
       });
     </script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- <script>
+      document
+        .getElementById("exportBtn")
+        .addEventListener("click", async () => {
+          // Show loading indicator
+          const loading = document.createElement("div");
+          loading.className = "export-loading";
+          loading.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+          document.body.appendChild(loading);
+
+          try {
+            // Convert all canvas elements to images first
+            const canvases = document.querySelectorAll("canvas");
+            const canvasImages = [];
+
+            // Convert each canvas to a data URL
+            for (const canvas of canvases) {
+              canvasImages.push(canvas.toDataURL("image/png"));
+            }
+
+            // Now clone the element
+            const element = document.getElementById("reportArea");
+            const clone = element.cloneNode(true);
+
+            // Replace canvas elements with their image equivalents in the clone
+            const cloneCanvases = clone.querySelectorAll("canvas");
+            cloneCanvases.forEach((canvas, index) => {
+              const image = document.createElement("img");
+              image.src = canvasImages[index];
+              image.style.width = "100%";
+              image.style.height = "auto";
+              canvas.parentNode.replaceChild(image, canvas);
+            });
+
+            // Create a container for the PDF content
+            const pdfContainer = document.createElement("div");
+            pdfContainer.style.fontFamily = "Arial, sans-serif";
+
+            // Add DairyIQ logo at the top
+            const logoHeader = document.createElement("div");
+            logoHeader.style.textAlign = "center";
+            logoHeader.style.marginBottom = "20px";
+
+            const logoImg = document.createElement("img");
+            // Try to get the logo from the nav
+            const navLogo = document.querySelector(".nav-logo");
+            if (navLogo) {
+              logoImg.src = navLogo.src;
+            } else {
+              // Fallback if we can't get the nav logo
+              logoImg.src =
+                "{{ url_for('static', filename='favicon_white.png') }}";
+            }
+            logoImg.style.height = "60px";
+            logoImg.style.marginBottom = "10px";
+
+            const headerText = document.createElement("h1");
+            headerText.textContent = "DairyIQ Analytics Report";
+            headerText.style.color = "#1f3a93";
+            headerText.style.margin = "10px 0 5px 0";
+
+            const subHeader = document.createElement("p");
+            subHeader.textContent = "Milk Quality Prediction Analysis";
+            subHeader.style.color = "#666";
+            subHeader.style.margin = "0 0 20px 0";
+
+            logoHeader.appendChild(logoImg);
+            logoHeader.appendChild(headerText);
+            logoHeader.appendChild(subHeader);
+            pdfContainer.appendChild(logoHeader);
+
+            // Get all cards from the clone
+            const cards = clone.querySelectorAll(".card");
+
+            // Create first page container
+            const firstPage = document.createElement("div");
+            firstPage.style.pageBreakAfter = "always"; // Force page break after
+
+            // Add prediction card (first card) to first page
+            if (cards.length > 0) {
+              firstPage.appendChild(cards[0]);
+            }
+
+            // Create second page container
+            const secondPage = document.createElement("div");
+
+            // Add the rest of the cards to second page
+            for (let i = 1; i < cards.length; i++) {
+              secondPage.appendChild(cards[i]);
+            }
+
+            // Add pages to PDF container
+            pdfContainer.appendChild(firstPage);
+            pdfContainer.appendChild(secondPage);
+
+            // Date/time for footer
+            const now = new Date();
+            const dateStr = now.toLocaleDateString();
+            const timeStr = now.toLocaleTimeString();
+
+            // Footer with export date/time
+            const footer = document.createElement("div");
+            footer.style.textAlign = "center";
+            footer.style.fontSize = "12px";
+            footer.style.marginTop = "15px";
+            footer.style.padding = "10px";
+            footer.style.borderTop = "1px solid #eee";
+            footer.innerHTML = `Exported on: ${dateStr} ${timeStr} &copy; ${now.getFullYear()} DairyIQ Analytics. All rights reserved.`;
+            pdfContainer.appendChild(footer);
+
+            const opt = {
+              margin: 0.5,
+              filename: `DairyIQ_Report_${dateStr.replace(
+                /\//g,
+                "-"
+              )}_${timeStr.replace(/:/g, "-")}.pdf`,
+              image: { type: "jpeg", quality: 0.98 },
+              html2canvas: {
+                scale: 3,
+                useCORS: true,
+                logging: false,
+              },
+              jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+              pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+            };
+
+            // Generate and download the PDF
+            await html2pdf().set(opt).from(pdfContainer).save();
+
+            // Remove loading indicator when done
+            document.body.removeChild(loading);
+          } catch (error) {
+            console.error("Export error:", error);
+            document.body.removeChild(loading);
+            alert("Error generating PDF. Please try again.");
+          }
+        });
+    </script> -->
+    <script>
+      document
+        .getElementById("exportBtn")
+        .addEventListener("click", async () => {
+          // Show loading indicator
+          const loading = document.createElement("div");
+          loading.className = "export-loading";
+          loading.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+          document.body.appendChild(loading);
+
+          try {
+            // Convert all canvas elements to images first
+            const canvases = document.querySelectorAll("canvas");
+            const canvasImages = [];
+
+            // Convert each canvas to a data URL
+            for (const canvas of canvases) {
+              canvasImages.push(canvas.toDataURL("image/png"));
+            }
+
+            // Now clone the element
+            const element = document.getElementById("reportArea");
+            const clone = element.cloneNode(true);
+
+            // Replace canvas elements with their image equivalents in the clone
+            const cloneCanvases = clone.querySelectorAll("canvas");
+            cloneCanvases.forEach((canvas, index) => {
+              const image = document.createElement("img");
+              image.src = canvasImages[index];
+              image.style.width = "100%";
+              image.style.height = "auto";
+              canvas.parentNode.replaceChild(image, canvas);
+            });
+
+            // Create a container for the PDF content
+            const pdfContainer = document.createElement("div");
+            pdfContainer.style.fontFamily = "Arial, sans-serif";
+
+            // Get date/time for footer (do this once at the beginning)
+            const now = new Date();
+            const dateStr = now.toLocaleDateString();
+            const timeStr = now.toLocaleTimeString();
+            const year = now.getFullYear();
+
+            // Add DairyIQ logo at the top
+            const logoHeader = document.createElement("div");
+            logoHeader.style.textAlign = "center";
+            logoHeader.style.marginBottom = "20px";
+
+            // Create text-based logo to avoid CORS issues
+            const textLogo = document.createElement("div");
+            textLogo.innerHTML =
+              "<h1 style='color: #1f3a93; margin: 0; font-size: 28px;'>Dairy<span style='color: #2ecc71;'>IQ</span></h1>";
+            textLogo.style.marginBottom = "10px";
+
+            const headerText = document.createElement("h1");
+            headerText.textContent = "Milk Quality Analysis Report";
+            headerText.style.color = "#1f3a93";
+            headerText.style.margin = "10px 0 5px 0";
+            headerText.style.fontSize = "20px";
+
+            const subHeader = document.createElement("p");
+            subHeader.textContent = "Comprehensive Quality Assessment";
+            subHeader.style.color = "#666";
+            subHeader.style.margin = "0 0 20px 0";
+            subHeader.style.fontSize = "14px";
+
+            // Add export timestamp to header
+            const exportTime = document.createElement("p");
+            exportTime.textContent = `Generated: ${dateStr} ${timeStr}`;
+            exportTime.style.color = "#999";
+            exportTime.style.fontSize = "12px";
+            exportTime.style.margin = "5px 0 0 0";
+
+            logoHeader.appendChild(textLogo);
+            logoHeader.appendChild(headerText);
+            logoHeader.appendChild(subHeader);
+            logoHeader.appendChild(exportTime);
+            pdfContainer.appendChild(logoHeader);
+
+            // Get all cards from the clone
+            const cards = clone.querySelectorAll(".card");
+
+            // Create first page container with footer
+            const firstPage = document.createElement("div");
+            firstPage.style.position = "relative";
+            firstPage.style.minHeight = "95vh"; // Ensure enough space for content
+
+            const firstPageContent = document.createElement("div");
+
+            // Add prediction card (first card) to first page
+            if (cards.length > 0) {
+              firstPageContent.appendChild(cards[0]);
+            }
+
+            // Add footer to first page
+            const firstPageFooter = document.createElement("div");
+            firstPageFooter.style.position = "absolute";
+            firstPageFooter.style.bottom = "0";
+            firstPageFooter.style.left = "0";
+            firstPageFooter.style.right = "0";
+            firstPageFooter.style.textAlign = "center";
+            firstPageFooter.style.fontSize = "10px";
+            firstPageFooter.style.padding = "10px";
+            firstPageFooter.style.borderTop = "1px solid #eee";
+            firstPageFooter.innerHTML = `Page 1 of 2 | Exported: ${dateStr} ${timeStr} | &copy; ${year} DairyIQ Analytics`;
+
+            firstPage.appendChild(firstPageContent);
+            firstPage.appendChild(firstPageFooter);
+
+            // Force page break after first page
+            firstPage.style.pageBreakAfter = "always";
+
+            // Create second page container with footer
+            const secondPage = document.createElement("div");
+            secondPage.style.position = "relative";
+            secondPage.style.minHeight = "95vh"; // Ensure enough space for content
+
+            const secondPageContent = document.createElement("div");
+
+            // Add the rest of the cards to second page
+            for (let i = 1; i < cards.length; i++) {
+              secondPageContent.appendChild(cards[i]);
+            }
+
+            // Add footer to second page
+            const secondPageFooter = document.createElement("div");
+            secondPageFooter.style.position = "absolute";
+            secondPageFooter.style.bottom = "0";
+            secondPageFooter.style.left = "0";
+            secondPageFooter.style.right = "0";
+            secondPageFooter.style.textAlign = "center";
+            secondPageFooter.style.fontSize = "10px";
+            secondPageFooter.style.padding = "10px";
+            secondPageFooter.style.borderTop = "1px solid #eee";
+            secondPageFooter.innerHTML = `Page 2 of 2 | Exported: ${dateStr} ${timeStr} | &copy; ${year} DairyIQ Analytics`;
+
+            secondPage.appendChild(secondPageContent);
+            secondPage.appendChild(secondPageFooter);
+
+            // Add pages to PDF container
+            pdfContainer.appendChild(firstPage);
+            pdfContainer.appendChild(secondPage);
+
+            const opt = {
+              margin: 0.5,
+              filename: `DairyIQ_Report_${dateStr.replace(
+                /\//g,
+                "-"
+              )}_${timeStr.replace(/:/g, "-")}.pdf`,
+              image: { type: "jpeg", quality: 0.98 },
+              html2canvas: {
+                scale: 3,
+                useCORS: true,
+                logging: false,
+              },
+              jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+              pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+            };
+
+            // Generate and download the PDF
+            await html2pdf().set(opt).from(pdfContainer).save();
+
+            // Remove loading indicator when done
+            document.body.removeChild(loading);
+          } catch (error) {
+            console.error("Export error:", error);
+            document.body.removeChild(loading);
+            alert("Error generating PDF. Please try again.");
+          }
+        });
+    </script>
+    <!-- <script>
+      document
+        .getElementById("exportBtn")
+        .addEventListener("click", async () => {
+          // Show loading indicator
+          const loading = document.createElement("div");
+          loading.className = "export-loading";
+          loading.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+          document.body.appendChild(loading);
+
+          try {
+            // Convert all canvas elements to images first
+            const canvases = document.querySelectorAll("canvas");
+            const canvasImages = [];
+            for (const canvas of canvases) {
+              canvasImages.push(canvas.toDataURL("image/png"));
+            }
+
+            // Clone the report area
+            const element = document.getElementById("reportArea");
+            const clone = element.cloneNode(true);
+
+            // Replace canvases with images
+            const cloneCanvases = clone.querySelectorAll("canvas");
+            cloneCanvases.forEach((canvas, index) => {
+              const image = document.createElement("img");
+              image.src = canvasImages[index];
+              image.style.width = "100%";
+              image.style.height = "auto";
+              canvas.parentNode.replaceChild(image, canvas);
+            });
+
+            // Create PDF container
+            const pdfContainer = document.createElement("div");
+            pdfContainer.style.fontFamily = "Arial, sans-serif";
+
+            // ===== Header with Logo & Titles =====
+            const logoHeader = document.createElement("div");
+            logoHeader.style.textAlign = "center";
+            logoHeader.style.marginBottom = "20px";
+
+            // Logo image
+            const logoImg = document.createElement("img");
+            logoImg.src =
+              "{{ url_for('static', filename='favicon_white.png') }}";
+            logoImg.style.height = "50px";
+            logoImg.style.marginBottom = "10px";
+            logoHeader.appendChild(logoImg);
+
+            // Report Title
+            const headerText = document.createElement("h1");
+            headerText.textContent = "Milk Quality Analysis Report";
+            headerText.style.color = "#1f3a93";
+            headerText.style.margin = "10px 0 5px 0";
+            headerText.style.fontSize = "20px";
+
+            // Subtitle
+            const subHeader = document.createElement("p");
+            subHeader.textContent = "Comprehensive Quality Assessment";
+            subHeader.style.color = "#666";
+            subHeader.style.margin = "0 0 20px 0";
+            subHeader.style.fontSize = "14px";
+
+            logoHeader.appendChild(headerText);
+            logoHeader.appendChild(subHeader);
+            pdfContainer.appendChild(logoHeader);
+
+            // ===== Cards =====
+            const cards = clone.querySelectorAll(".card");
+
+            // First page (Prediction card only)
+            const firstPage = document.createElement("div");
+            firstPage.style.pageBreakAfter = "always";
+            if (cards.length > 0) {
+              firstPage.appendChild(cards[0]);
+            }
+
+            // Second page (Rest of the cards)
+            const secondPage = document.createElement("div");
+            for (let i = 1; i < cards.length; i++) {
+              secondPage.appendChild(cards[i]);
+            }
+
+            pdfContainer.appendChild(firstPage);
+            pdfContainer.appendChild(secondPage);
+
+            // ===== Footer with Date/Time =====
+            const now = new Date();
+            const dateStr = now.toLocaleDateString();
+            const timeStr = now.toLocaleTimeString();
+
+            const footer = document.createElement("div");
+            footer.style.textAlign = "center";
+            footer.style.fontSize = "12px";
+            footer.style.marginTop = "15px";
+            footer.style.padding = "10px";
+            footer.style.borderTop = "1px solid #eee";
+            footer.innerHTML = `Exported on: ${dateStr} ${timeStr} &copy; ${now.getFullYear()} DairyIQ Analytics. All rights reserved.`;
+            pdfContainer.appendChild(footer);
+
+            // ===== PDF Options =====
+            const opt = {
+              margin: 0.5,
+              filename: `DairyIQ_Report_${dateStr.replace(
+                /\//g,
+                "-"
+              )}_${timeStr.replace(/:/g, "-")}.pdf`,
+              image: { type: "jpeg", quality: 0.98 },
+              html2canvas: {
+                scale: 3,
+                useCORS: true,
+                logging: false,
+              },
+              jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+              pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+            };
+
+            // Generate and download the PDF
+            await html2pdf().set(opt).from(pdfContainer).save();
+
+            // Remove loading indicator
+            document.body.removeChild(loading);
+          } catch (error) {
+            console.error("Export error:", error);
+            document.body.removeChild(loading);
+            alert("Error generating PDF. Please try again.");
+          }
+        });
+    </script> -->
+    <!-- <script>
+      document
+        .getElementById("exportBtn")
+        .addEventListener("click", async () => {
+          // Show loading indicator
+          const loading = document.createElement("div");
+          loading.className = "export-loading";
+          loading.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+          document.body.appendChild(loading);
+
+          try {
+            // Convert all canvas elements to images first
+            const canvases = document.querySelectorAll("canvas");
+            const canvasImages = [];
+            for (const canvas of canvases) {
+              canvasImages.push(canvas.toDataURL("image/png"));
+            }
+
+            // Clone the report area
+            const element = document.getElementById("reportArea");
+            const clone = element.cloneNode(true);
+
+            // Replace canvases with images
+            const cloneCanvases = clone.querySelectorAll("canvas");
+            cloneCanvases.forEach((canvas, index) => {
+              const image = document.createElement("img");
+              image.src = canvasImages[index];
+              image.style.width = "100%";
+              image.style.height = "auto";
+              canvas.parentNode.replaceChild(image, canvas);
+            });
+
+            // Create PDF container
+            const pdfContainer = document.createElement("div");
+            pdfContainer.style.fontFamily = "Arial, sans-serif";
+
+            // ===== Header with Logo & Titles =====
+            const logoHeader = document.createElement("div");
+            logoHeader.style.textAlign = "center";
+            logoHeader.style.marginBottom = "20px";
+
+            // Logo image - Use direct path instead of Flask template
+            const logoImg = document.createElement("img");
+            logoImg.src = "\static\favicon_white.png"; // Direct path
+            logoImg.style.height = "50px";
+            logoImg.style.marginBottom = "10px";
+            logoImg.onerror = function () {
+              // Fallback to text logo if image fails to load
+              this.style.display = "none";
+              const textLogo = document.createElement("div");
+              textLogo.innerHTML =
+                "<h1 style='color: #1f3a93; margin: 0;'>Dairy<span style='color: #2ecc71;'>IQ</span></h1>";
+              logoHeader.insertBefore(textLogo, logoHeader.firstChild);
+            };
+            logoHeader.appendChild(logoImg);
+
+            // Report Title
+            const headerText = document.createElement("h1");
+            headerText.textContent = "Milk Quality Analysis Report";
+            headerText.style.color = "#1f3a93";
+            headerText.style.margin = "10px 0 5px 0";
+            headerText.style.fontSize = "20px";
+
+            // Subtitle
+            const subHeader = document.createElement("p");
+            subHeader.textContent = "Comprehensive Quality Assessment";
+            subHeader.style.color = "#666";
+            subHeader.style.margin = "0 0 20px 0";
+            subHeader.style.fontSize = "14px";
+
+            logoHeader.appendChild(headerText);
+            logoHeader.appendChild(subHeader);
+            pdfContainer.appendChild(logoHeader);
+
+            // ===== Cards =====
+            const cards = clone.querySelectorAll(".card");
+
+            // First page (Prediction card only)
+            const firstPage = document.createElement("div");
+            firstPage.style.pageBreakAfter = "always";
+            if (cards.length > 0) {
+              firstPage.appendChild(cards[0]);
+            }
+
+            // Second page (Rest of the cards)
+            const secondPage = document.createElement("div");
+            for (let i = 1; i < cards.length; i++) {
+              secondPage.appendChild(cards[i]);
+            }
+
+            pdfContainer.appendChild(firstPage);
+            pdfContainer.appendChild(secondPage);
+
+            // ===== Footer with Date/Time =====
+            const now = new Date();
+            const dateStr = now.toLocaleDateString();
+            const timeStr = now.toLocaleTimeString();
+
+            const footer = document.createElement("div");
+            footer.style.textAlign = "center";
+            footer.style.fontSize = "12px";
+            footer.style.marginTop = "15px";
+            footer.style.padding = "10px";
+            footer.style.borderTop = "1px solid #eee";
+            footer.innerHTML = `Exported on: ${dateStr} ${timeStr} &copy; ${now.getFullYear()} DairyIQ Analytics. All rights reserved.`;
+            pdfContainer.appendChild(footer);
+
+            // ===== PDF Options =====
+            const opt = {
+              margin: 0.5,
+              filename: `DairyIQ_Report_${dateStr.replace(
+                /\//g,
+                "-"
+              )}_${timeStr.replace(/:/g, "-")}.pdf`,
+              image: { type: "jpeg", quality: 0.98 },
+              html2canvas: {
+                scale: 3,
+                useCORS: true,
+                logging: false,
+              },
+              jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+              pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+            };
+
+            // Generate and download the PDF
+            await html2pdf().set(opt).from(pdfContainer).save();
+
+            // Remove loading indicator
+            document.body.removeChild(loading);
+          } catch (error) {
+            console.error("Export error:", error);
+            document.body.removeChild(loading);
+            alert("Error generating PDF. Please try again.");
+          }
+        });
+    </script> -->
   </body>
 </html>
