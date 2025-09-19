@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Milk Quality Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        padding: 20px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .row-layout {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .col {
+        padding: 25px;
+      }
+
+      .chart-box {
+        width: 100%;
+        position: relative;
+        height: 400px;
+      }
+
+      .insights {
+        background: #f8f9fa;
+        border-left: 1px solid #eaeaea;
+      }
+
+      h4 {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      li {
+        padding: 12px 15px;
+        margin-bottom: 12px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: transform 0.3s ease;
+      }
+
+      li:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .insight-value {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .quality-high {
+        border-left: 4px solid #2ecc71;
+      }
+
+      .quality-moderate {
+        border-left: 4px solid #f39c12;
+      }
+
+      .quality-low {
+        border-left: 4px solid #e74c3c;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+
+      .title {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        font-weight: 600;
+      }
+
+      .date-filter {
+        padding: 8px 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: white;
+        color: #2c3e50;
+      }
+
+      @media (min-width: 992px) {
+        .col:nth-child(1) {
+          width: 75%;
+        }
+
+        .col:nth-child(2) {
+          width: 25%;
+        }
+      }
+
+      @media (max-width: 991px) {
+        .col {
+          width: 100%;
+        }
+
+        .insights {
+          border-left: none;
+          border-top: 1px solid #eaeaea;
+        }
+      }
+
+      .stats-highlight {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 25px;
+      }
+
+      .stat-box {
+        flex: 1;
+        text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        margin: 0 10px;
+      }
+
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 10px 0;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+      }
+
+      .high-quality {
+        color: #2ecc71;
+      }
+
+      .moderate-quality {
+        color: #f39c12;
+      }
+
+      .low-quality {
+        color: #e74c3c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1 class="title">Milk Quality Analytics Dashboard</h1>
+        <select class="date-filter">
+          <option>Last 7 Days</option>
+          <option>Last 30 Days</option>
+          <option>Last 90 Days</option>
+          <option>Year to Date</option>
+        </select>
+      </div>
+
+      <div class="stats-highlight">
+        <div class="stat-box">
+          <div class="stat-label">Total Samples</div>
+          <div class="stat-value">142</div>
+          <div class="stat-trend">
+            <i class="fas fa-arrow-up"></i> 12% from last month
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">High Quality</div>
+          <div class="stat-value high-quality">87</div>
+          <div class="stat-trend">
+            <i class="fas fa-arrow-up"></i> 8% from last month
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Avg. pH Level</div>
+          <div class="stat-value">6.72</div>
+          <div class="stat-trend">
+            <i class="fas fa-arrow-down"></i> 0.03 from last month
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Card -->
+      <div class="card chart row-layout">
+        <!-- First column: the chart (3/4 width) -->
+        <div class="col">
+          <h4>Milk Quality Over Time</h4>
+          <div class="chart-box">
+            <canvas id="milkChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Second column: insights (1/4 width) -->
+        <div class="col insights">
+          <h4>Quick Insights</h4>
+          <ul>
+            <li class="quality-high">
+              <span>Total Samples:</span>
+              <span class="insight-value">142</span>
+            </li>
+            <li class="quality-high">
+              <span>High Quality:</span>
+              <span class="insight-value">87</span>
+            </li>
+            <li class="quality-moderate">
+              <span>Moderate Quality:</span>
+              <span class="insight-value">42</span>
+            </li>
+            <li class="quality-low">
+              <span>Low Quality:</span>
+              <span class="insight-value">13</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById("milkChart").getContext("2d");
+
+        // Sample data for the chart
+        const data = {
+          labels: [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ],
+          datasets: [
+            {
+              label: "High Quality",
+              data: [12, 19, 7, 15, 14, 13, 15, 18, 12, 16, 14, 17],
+              backgroundColor: "rgba(46, 204, 113, 0.2)",
+              borderColor: "rgba(46, 204, 113, 1)",
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+            },
+            {
+              label: "Moderate Quality",
+              data: [5, 6, 3, 7, 8, 5, 6, 7, 4, 5, 6, 5],
+              backgroundColor: "rgba(243, 156, 18, 0.2)",
+              borderColor: "rgba(243, 156, 18, 1)",
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+            },
+            {
+              label: "Low Quality",
+              data: [2, 3, 1, 2, 1, 2, 3, 1, 2, 1, 2, 1],
+              backgroundColor: "rgba(231, 76, 60, 0.2)",
+              borderColor: "rgba(231, 76, 60, 1)",
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+            },
+          ],
+        };
+
+        // Chart configuration
+        const config = {
+          type: "line",
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Monthly Milk Quality Distribution",
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: "Number of Samples",
+                },
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: "Months",
+                },
+              },
+            },
+          },
+        };
+
+        // Create the chart
+        const milkChart = new Chart(ctx, config);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='favicon.png') }}"
+    />
+    <title>Milk Quality Prediction</title>
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --danger-color: #e74c3c;
+        --success-color: #2ecc71;
+        --warning-color: #f39c12;
+        --light-color: #ecf0f1;
+        --dark-color: #34495e;
+        --text-color: #333;
+        --background-color: #f5f5f5;
+        --card-background: #fff;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      /* body {
+        background: #f8fafc;
+        padding: 20px;
+        color: #1a1a1a;
+      } */
+      /* body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        overflow-x: hidden;
+        width: 100%;
+      } */
+      /* Hide vertical scrollbar but keep scrolling */
+      html,
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        padding-top: 30px;
+        overflow-y: scroll; /* enable vertical scroll */
+        overflow-x: hidden; /* prevent horizontal scroll */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge Legacy */
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge, Opera */
+      }
+
+      /* Navigation */
+      nav {
+        /* position: sticky; */
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: #2c3e50;
+        padding: 15px 30px;
+        font-size: 18px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-brand {
+        font-size: 22px;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+      }
+
+      .logout-form {
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .logout-btn {
+        padding: 8px 20px;
+        background-color: #e74c3c;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        white-space: nowrap;
+      }
+
+      .dashboard {
+        max-width: 1400px;
+        margin: auto;
+        /* background: #fff; */
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .export-btn {
+        padding: 6px 14px;
+        background: #f0f4f8;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 15px;
+      }
+
+      .status {
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      .status.success {
+        color: #1a7f37;
+      }
+
+      .quality {
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-bottom: 12px;
+      }
+
+      .features ul,
+      .batch ul,
+      .suggestions ul {
+        list-style: none;
+      }
+
+      .features li,
+      .batch li {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.95rem;
+      }
+
+      .batch li span {
+        font-weight: bold;
+      }
+
+      .suggestions li {
+        padding: 5px 0;
+        font-size: 0.95rem;
+        color: #b45309;
+      }
+
+      .chart-box {
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      .normal {
+        color: #27ae60;
+        font-weight: bold;
+      }
+
+      .abnormal {
+        color: #e67e22;
+        font-weight: bold;
+      }
+
+      .btn {
+        display: inline-block;
+        margin: 30px auto 0;
+        padding: 10px 24px;
+        background: var(--secondary-color);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+        text-align: center;
+      }
+
+      .btn:hover {
+        background-color: #2980b9;
+      }
+
+      .btn-container {
+        text-align: center;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 0px;
+        padding: 20px;
+        color: #7f8c8d;
+        width: 100%;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        nav {
+          padding: 15px;
+        }
+
+        .container {
+          padding: 30px 15px;
+        }
+
+        .predictor-form {
+          padding: 20px;
+        }
+      }
+
+      .nav-btn {
+        padding: 8px 20px;
+        /* background-color: #3498db; blue for normal buttons */
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        text-decoration: none; /* remove underline */
+        margin-left: 10px;
+        display: inline-block;
+      }
+      .nav-btn.logout {
+        background-color: #e74c3c; /* red for logout */
+      }
+      .nav-btn:hover {
+        /* opacity: 0.9; */
+        color: #3498db;
+      }
+      .nav-link {
+        text-decoration: none;
+        color: inherit; /* make it use the parent text color */
+      }
+
+      .nav-link:visited,
+      .nav-link:hover,
+      .nav-link:active {
+        text-decoration: none;
+        color: inherit; /* prevent browser from applying purple/blue */
+      }
+      /* force chart boxes to have a fixed height */
+      .chart-box {
+        width: 100%;
+        height: 300px; /* controls the visible chart height */
+        position: relative; /* required for Chart.js responsive mode */
+      }
+
+      #featureChart,
+      #predictionChart {
+        width: 100% !important;
+        height: 100% !important;
+      }
+      .grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 equal columns */
+        grid-template-rows: auto auto; /* 2 rows */
+        gap: 20px;
+      }
+
+      .grid-layout .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 15px;
+      }
+
+      .chart-box {
+        width: 100%;
+        height: 300px;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <!-- <nav>
+      <div class="nav-brand">DairyIQ</div>
+
+      <form action="/history" method="get">
+        <button type="submit" class="logout-btn">Historical Data</button>
+      </form>
+      <form action="/logout" method="get">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </nav> -->
+    <!-- Navigation Bar -->
+    <nav>
+      <!-- <div class="nav-brand">DairyIQ</div> -->
+      <!-- <div class="nav-brand">DairyIQ</div> -->
+      <a href="{{ url_for('index') }}" class="nav-link">
+        <div class="nav-brand">DairyIQ</div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="{{ url_for('index') }}" class="nav-btn">Enter New Sample</a>
+        <a href="{{ url_for('history') }}" class="nav-btn">Historical Data</a>
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">Logout</a>
+      </div>
+    </nav>
+
+    <div class="dashboard">
+      <header class="dashboard-header">
+        <h2>Milk Quality Prediction</h2>
+        <button class="export-btn">EXPORT</button>
+      </header>
+
+      <!-- //////////////////////////////////////////// -->
+      <div class="grid-layout">
+        <!-- Prediction Result -->
+        <div class="card prediction">
+          <div class="status success">✔ Prediction Result</div>
+          <h2 class="quality">{{ prediction }}</h2>
+          <div
+            class="features"
+            style="
+              background-color: #9ad5f134;
+              padding: 5px;
+              margin-bottom: 2px;
+              border-radius: 10px;
+            "
+          >
+            <p><strong>Feature Snapshot (Raw Values)</strong></p>
+            <ul>
+              {% for i in range(feature_names|length) %}
+              <li>
+                {{ feature_names[i] }}
+                <span><strong>{{ raw_values[i] }}</strong></span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Feature Snapshot Chart -->
+        <div class="card">
+          <h4>Feature Snapshot</h4>
+          <div class="chart-box">
+            <canvas id="featureChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="card suggestions">
+          <h4>Suggestions</h4>
+          <ul>
+            {% for item in suggestions %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Current Batch Info -->
+        <div class="card batch">
+          <h4>Current Batch Info</h4>
+          <ul>
+            {% for key, value in batch_info.items() %}
+            <li>{{ key }}: <span>{{ value }}</span></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <!-- //////////////////////////////////////////// -->
+
+      <div class="grid">
+        <!-- Prediction Result -->
+        <div class="card prediction">
+          <div class="status success">✔ Prediction Result</div>
+          <h2 class="quality">{{ prediction }}</h2>
+          <div
+            class="features"
+            style="
+              background-color: #9ad5f134;
+              padding: 5px;
+              margin-bottom: 2px;
+              border-radius: 10px;
+            "
+          >
+            <p><strong>Feature Snapshot</strong></p>
+            <ul>
+              {% for i in range(feature_names|length) %}
+              <li>
+                {{ feature_names[i] }}
+                <span><strong>{{ raw_values[i] }}</strong></span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Parameter Status -->
+        <div class="card batch">
+          <div class="card row-layout">
+            <!-- Feature Snapshot -->
+            <div class="col">
+              <h4>Feature Snapshot</h4>
+              <div class="chart-box">
+                <canvas id="featureChart"></canvas>
+              </div>
+            </div>
+            <hr />
+            <!-- Prediction Result -->
+            <div class="col">
+              <h4>Prediction Result</h4>
+              <div class="chart-box">
+                <canvas id="predictionChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parameter Status -->
+        <div class="card batch">
+          <h4>Parameter Status</h4>
+          <ul>
+            {% for i in range(feature_names|length) %}
+            <li>
+              {{ feature_names[i] }} {% if colors[i] == '#2ecc71' %}
+              <span class="normal">✅ Normal</span>
+              {% else %}
+              <span class="abnormal">⚠ Out of Range</span>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Suggestions (simple rules for demo) -->
+        <!-- <div class="card suggestions">
+          <h4>Suggestions</h4>
+          <ul>
+            {% if prediction == "Low" %}
+            <li>⚠ Review supplier hygiene practices.</li>
+            <li>⚠ Cooling system may need servicing.</li>
+            {% elif prediction == "Moderate" %}
+            <li>⚠ Monitor bacterial counts closely.</li>
+            <li>⚠ Consider adjusting feed for better fat/protein balance.</li>
+            {% else %}
+            <li>✅ Milk meets quality standards.</li>
+            <li>✅ Maintain current handling procedures.</li>
+            {% endif %}
+          </ul>
+        </div> -->
+        <div class="card suggestions">
+          <h4>Suggestions</h4>
+          <ul>
+            {% for item in suggestions %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Current Batch -->
+        <!-- <div class="card batch">
+          <h4>Current Batch</h4>
+          <ul>
+            {% for i in range(feature_names|length) %}
+            <li>
+              {{ feature_names[i] }}
+              <span>{{ raw_values[i] }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div> -->
+        <div class="card batch">
+          <h4>Current Batch Info</h4>
+          <ul>
+            {% for key, value in batch_info.items() %}
+            <li>{{ key }}: <span>{{ value }}</span></li>
+            {% endfor %}
+          </ul>
+          <!-- <ul>
+            {% for i in range(feature_names|length) %}
+            <li>
+              {{ feature_names[i] }}
+              <span>{{ raw_values[i] }}</span>
+            </li>
+            {% endfor %}
+          </ul> -->
+        </div>
+      </div>
+      <br />
+      <!-- <div class="btn-container">
+        <a href="{{ url_for('index') }}" class="btn">Enter New Sample</a>
+      </div> -->
+    </div>
+
+    <footer>&copy; 2023 DairyIQ. All rights reserved.</footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <!-- <script>
+      const chartData = {{ chart_data | tojson }};
+
+      const labels = chartData.map(b => b.date);           // ISO timestamps
+      const qualityData = chartData.map(b => b.prediction); // [1,2,3]
+
+      console.log("Chart labels:", labels);
+      console.log("Quality data:", qualityData);
+
+      const ctx = document.getElementById('milkChart').getContext('2d');
+      const milkChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: 'Milk Quality',
+                  data: qualityData,
+                  borderColor: 'rgba(52, 152, 219, 1)',
+                  backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                  fill: false,
+                  tension: 0.2,
+                  pointRadius: 5
+              }]
+          },
+          options: {
+              responsive: true,
+              scales: {
+                  x: {
+                      type: 'time',
+                      time: {
+                          unit: 'day',   // you can change to 'hour' if needed
+                          tooltipFormat: 'PPpp'
+                      },
+                      title: {
+                          display: true,
+                          text: "Date"
+                      }
+                  },
+                  y: {
+                      min: 0,
+                      max: 3,
+                      ticks: {
+                          stepSize: 1,
+                          callback: function(value) {
+                              return ["Low", "Moderate", "High", ""][value];
+                          }
+                      },
+                      title: {
+                          display: true,
+                          text: "Milk Quality"
+                      }
+                  }
+              }
+          }
+      });
+    </script> -->
+    <!-- <script>
+      const chartData = {{ chart_data | tojson }};
+      const labels = chartData.map(b => b.date);       // "2025-09-14 09:50:54"
+      const values = chartData.map(b => b.prediction); // 0,1,2
+
+      new Chart(document.getElementById("milkChart"), {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Milk Quality",
+            data: values,
+            borderColor: "blue",
+            fill: false,
+            tension: 0.1
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              title: { display: true, text: "Time of Collection" }
+            },
+            y: {
+              min: 0,
+              max: 2.1,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return ["Low", "Moderate", "High"][value] || value;
+                }
+              },
+              title: { display: true, text: "Quality" }
+            }
+          }
+        }
+      });
+    </script> -->
+    <!-- <script>
+      const chartData = {{ chart_data | tojson }};
+
+      new Chart(document.getElementById("milkChart"), {
+        type: "line",
+        data: {
+          labels: chartData.map(b => b.date),
+          datasets: [{
+            label: "Milk Quality",
+            data: chartData.map(b => b.prediction),
+            borderColor: "blue",
+            fill: false,
+            tension: 0.1,
+            pointRadius: 5
+          }]
+        },
+        options: {
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const index = context.dataIndex;
+                  const batch = chartData[index];
+                  return [
+                    `Quality: ${batch.prediction_label}`,
+                    `Farmer: ${batch.farmer}`,
+                    `Collected: ${batch.date}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 2.3,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return ["Low", "Moderate", "High"][value] || value;
+                }
+              },
+              title: { display: true, text: "Quality" }
+            }
+          }
+        }
+      });
+    </script> -->
+
+    <script>
+      // Data from Flask
+      const features = {{ feature_names | tojson }};
+      const values = {{ raw_values | tojson }};
+      const prediction = "{{ prediction }}"; // "High", "Moderate", "Low"
+
+      // Normal ranges (passed from Flask too if needed)
+      const NORMAL_RANGES = {{ NORMAL_RANGES | tojson }};
+
+      // Build colors based on normal ranges
+      const featureColors = features.map((feat, i) => {
+        const val = values[i];
+        const [low, high] = NORMAL_RANGES[feat];
+        let inRange = true;
+        if (low !== null && val < low) inRange = false;
+        if (high !== null && val > high) inRange = false;
+        return inRange ? "#2ecc71" : "#e74c3c"; // green or red
+      });
+
+      // Feature Chart
+      new Chart(document.getElementById("featureChart"), {
+        type: "bar",
+        data: {
+          labels: features,
+          datasets: [{
+            label: "Feature Values",
+            // data: values,
+            data: values.map(() => 1),   // force all bars to height=1
+            backgroundColor: featureColors
+          }]
+        },
+        options: {
+            plugins: {
+            legend: {
+              display: false // hide default
+            },
+            title: {
+              display: true,
+              text: "Parameters (Green = Normal, Red = Out of Range)"
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true,
+                  max: 1,              // 👈 cap scale at 1
+                ticks: { stepSize: 1 }
+             }
+          }
+        }
+      });
+
+      // Prediction Chart
+      const predictionLabels = ["Low", "Moderate", "High"];
+      const predictionColors = predictionLabels.map(lbl => {
+        if (lbl === "High") return "green";
+        if (lbl === "Moderate") return "orange";
+        if (lbl === "Low") return "red";
+      });
+      const predictionValues = predictionLabels.map(lbl => lbl === prediction ? 1 : 0);
+
+      new Chart(document.getElementById("predictionChart"), {
+        type: "bar",
+        data: {
+          labels: predictionLabels,
+          datasets: [{
+            label: "Prediction",
+            data: predictionValues,
+            backgroundColor: predictionColors
+          }]
+        },
+        options: {
+            plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: "Predicted Quality"
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

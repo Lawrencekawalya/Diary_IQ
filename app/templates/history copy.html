@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='favicon.png') }}"
+    />
+    <!-- DataTables CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+    />
+
+    <!-- Buttons extension CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css"
+    />
+
+    <!-- jQuery + DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Buttons extension JS -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <!-- JSZip and pdfmake for Excel/PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <title>Historical Data</title>
+    <style>
+      /* Reset and base styles */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Hide vertical scrollbar but keep scrolling */
+      html,
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        padding-top: 30px;
+        overflow-y: scroll; /* enable vertical scroll */
+        overflow-x: hidden; /* prevent horizontal scroll */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge Legacy */
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge, Opera */
+      }
+      /* body { */
+      /* font-family: Arial, sans-serif; */
+      /* background-color: #f5f5f5; */
+      /* color: #333; */
+      /* overflow-x: hidden; */
+      /* Prevents horizontal scrolling */
+      /* width: 100%; */
+      /* overflow-y: scroll; keep scroll enabled */
+      /* scrollbar-width: none; Firefox */
+      /* } */
+      /* body {
+        overflow-y: scroll; keep scroll enabled
+        scrollbar-width: none; Firefox
+      } */
+
+      /* body::-webkit-scrollbar { */
+      /* display: none; Chrome, Safari, Edge */
+      /* } */
+      /* body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 20px;
+      } */
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background: #2c3e50;
+        color: white;
+      }
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+
+      /* Navigation */
+      nav {
+        /* position: sticky; */
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: #2c3e50;
+        padding: 15px 30px;
+        font-size: 18px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-brand {
+        font-size: 22px;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+      }
+
+      .logout-form {
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .logout-btn {
+        padding: 8px 20px;
+        background-color: #e74c3c;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        white-space: nowrap;
+      }
+
+      /* Main content */
+      .container {
+        max-width: 100%;
+        width: 100%;
+        padding: 40px 20px;
+        margin: 0 auto;
+      }
+
+      /* h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 15px;
+        padding: 0 15px;
+        word-wrap: break-word;
+      } */
+
+      /* div heading */
+      .div_heading {
+        /* background-color: #f5f5f5; light gray background */
+        padding: 1px 0px; /* space inside */
+        border-radius: 6px; /* rounded corners */
+        /* border: 1px solid #ddd; subtle border */
+        margin-bottom: 15px; /* space below */
+      }
+
+      .div_heading h3 {
+        margin: 0; /* remove default h3 margin */
+        font-size: 18px; /* adjust size */
+        font-weight: 600; /* bold but not too heavy */
+        color: #333; /* dark gray text */
+      }
+
+      /* Form styling */
+      .predictor-form {
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 550px;
+        margin: 0 auto;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: grid;
+        gap: 2px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+        width: 100%;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 12px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      /* Result and footer */
+      /* .result {
+        text-align: center;
+        margin: 30px auto;
+        font-size: 18px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 5px;
+        max-width: 400px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      } */
+
+      footer {
+        text-align: center;
+        margin-top: 0px;
+        padding: 20px;
+        color: #7f8c8d;
+        width: 100%;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        nav {
+          padding: 15px;
+        }
+
+        .container {
+          padding: 30px 15px;
+        }
+
+        .predictor-form {
+          padding: 20px;
+        }
+      }
+      .nav-btn {
+        padding: 8px 20px;
+        /* background-color: #3498db; blue for normal buttons */
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        text-decoration: none; /* remove underline */
+        margin-left: 10px;
+        display: inline-block;
+      }
+      .nav-btn.logout {
+        background-color: #e74c3c; /* red for logout */
+      }
+      .nav-btn:hover {
+        /* opacity: 0.9; */
+        color: #3498db;
+      }
+      .nav-link {
+        text-decoration: none;
+        color: inherit; /* make it use the parent text color */
+      }
+
+      .nav-link:visited,
+      .nav-link:hover,
+      .nav-link:active {
+        text-decoration: none;
+        color: inherit; /* prevent browser from applying purple/blue */
+      }
+      .dashboard {
+        max-width: 1400px;
+        margin: auto;
+        /* background: #fff; */
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .export-btn {
+        padding: 6px 14px;
+        background: #f0f4f8;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      #historyTable tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* white */
+      }
+
+      #historyTable tbody tr:nth-child(even) {
+        background-color: #dbdbdb; /* light gray */
+      }
+    </style>
+    <!-- <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 20px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background: #2c3e50;
+        color: white;
+      }
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+    </style> -->
+  </head>
+  <body>
+    <!-- Nav bar -->
+    <nav>
+      <!-- <div class="nav-brand">DairyIQ</div> -->
+      <a href="{{ url_for('index') }}" class="nav-link">
+        <div class="nav-brand">DairyIQ</div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="{{ url_for('index') }}" class="nav-btn">Enter New Sample</a>
+        <!-- <a href="{{ url_for('history') }}" class="nav-btn">Historical Data</a> -->
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">Logout</a>
+      </div>
+    </nav>
+    <div class="dashboard">
+      <header class="dashboard-header">
+        <h2>Historical Data</h2>
+        <!-- <button class="export-btn">EXPORT</button> -->
+      </header>
+
+      <!-- Quality Over Time (Chart Placeholder) -->
+      <!-- <div class="card chart">
+        <h4>Milk Quality Over Time</h4>
+        <div class="chart-box">
+          <img
+            src="https://dummyimage.com/300x150/ddd/000&text=Chart+Goes+Here"
+            alt="Chart"
+          />
+        </div>
+      </div> -->
+      <div class="card chart">
+        <h4>Milk Quality Over Time</h4>
+        <div class="chart-box">
+          <canvas id="milkChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+      <!-- <h1>Historical Data</h1> -->
+      <table id="historyTable" class="display stripe">
+        <thead>
+          <tr>
+            <th>Batch Number</th>
+            <th>Farmer</th>
+            <th>Location</th>
+            <th>Time of Collection</th>
+            <th>Prediction</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in history_data %}
+          <tr>
+            <td>{{ row["Batch Number"] }}</td>
+            <td>{{ row["Farmer"] }}</td>
+            <td>{{ row["Location"] }}</td>
+            <td>{{ row["Time of Collection"] }}</td>
+            <td>{{ row["Prediction"] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <footer>&copy; 2023 DairyIQ. All rights reserved.</footer>
+    <script>
+      $(document).ready(function () {
+        $("#historyTable").DataTable({
+          pageLength: 10, // show 20 rows per page
+          ordering: true, // enable sorting
+          searching: true, // enable search box
+          lengthChange: true, // allow changing rows per page
+          info: true, // show "Showing X of Y entries"
+          dom: "Bfrtip", // place buttons on top
+          buttons: ["copy", "csv", "excel", "pdf", "print"],
+        });
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <!-- <script>
+      const chartData = {{ chart_data | tojson }};
+
+      const labels = chartData.map(b => b.date);           // ISO timestamps
+      const qualityData = chartData.map(b => b.prediction); // [1,2,3]
+
+      console.log("Chart labels:", labels);
+      console.log("Quality data:", qualityData);
+
+      const ctx = document.getElementById('milkChart').getContext('2d');
+      const milkChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: 'Milk Quality',
+                  data: qualityData,
+                  borderColor: 'rgba(52, 152, 219, 1)',
+                  backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                  fill: false,
+                  tension: 0.2,
+                  pointRadius: 5
+              }]
+          },
+          options: {
+              responsive: true,
+              scales: {
+                  x: {
+                      type: 'time',
+                      time: {
+                          unit: 'day',   // you can change to 'hour' if needed
+                          tooltipFormat: 'PPpp'
+                      },
+                      title: {
+                          display: true,
+                          text: "Date"
+                      }
+                  },
+                  y: {
+                      min: 0,
+                      max: 3,
+                      ticks: {
+                          stepSize: 1,
+                          callback: function(value) {
+                              return ["Low", "Moderate", "High", ""][value];
+                          }
+                      },
+                      title: {
+                          display: true,
+                          text: "Milk Quality"
+                      }
+                  }
+              }
+          }
+      });
+    </script> -->
+    <!-- <script>
+      const chartData = {{ chart_data | tojson }};
+      const labels = chartData.map(b => b.date);       // "2025-09-14 09:50:54"
+      const values = chartData.map(b => b.prediction); // 0,1,2
+
+      new Chart(document.getElementById("milkChart"), {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Milk Quality",
+            data: values,
+            borderColor: "blue",
+            fill: false,
+            tension: 0.1
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              title: { display: true, text: "Time of Collection" }
+            },
+            y: {
+              min: 0,
+              max: 2.1,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return ["Low", "Moderate", "High"][value] || value;
+                }
+              },
+              title: { display: true, text: "Quality" }
+            }
+          }
+        }
+      });
+    </script> -->
+    <script>
+      const chartData = {{ chart_data | tojson }};
+
+      new Chart(document.getElementById("milkChart"), {
+        type: "line",
+        data: {
+          labels: chartData.map(b => b.date),
+          datasets: [{
+            label: "Milk Quality",
+            data: chartData.map(b => b.prediction),
+            borderColor: "blue",
+            fill: false,
+            tension: 0.1,
+            pointRadius: 5
+          }]
+        },
+        options: {
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const index = context.dataIndex;
+                  const batch = chartData[index];
+                  return [
+                    `Quality: ${batch.prediction_label}`,
+                    `Farmer: ${batch.farmer}`,
+                    `Collected: ${batch.date}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 2.3,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return ["Low", "Moderate", "High"][value] || value;
+                }
+              },
+              title: { display: true, text: "Quality" }
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

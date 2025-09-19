@@ -24,8 +24,8 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', '3e59e99addb9052eb7da6ab9935
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
-# cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
-cred = credentials.Certificate("firebase_key.json")
+cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
+# cred = credentials.Certificate("firebase_key.json")
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -164,6 +164,27 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html')
 
+# @app.route('/history')
+# def history():
+#     if 'user' not in session:
+#         return redirect(url_for('login'))
+
+#     # Fetch all batches ordered by created_at
+#     batches = db.collection("milk_batches").order_by("created_at").stream()
+
+#     history_data = []
+#     for batch in batches:
+#         d = batch.to_dict()
+#         history_data.append({
+#             "Farmer": d.get("Farmer"),
+#             "Batch Number": d.get("Batch Number"),
+#             "Time of Collection": d.get("Time of Collection"),
+#             "Location": d.get("Location"),
+#             "Prediction": d.get("prediction"),
+#         })
+
+#     return render_template("history.html", history_data=history_data)
+
 @app.route('/history')
 def history():
     if 'user' not in session:
@@ -173,6 +194,7 @@ def history():
     batches = db.collection("milk_batches").order_by("created_at").stream()
 
     history_data = []
+    chart_data = []
     for batch in batches:
         d = batch.to_dict()
         history_data.append({
@@ -182,8 +204,17 @@ def history():
             "Location": d.get("Location"),
             "Prediction": d.get("prediction"),
         })
+        # build chart data too
+        if "Time of Collection" in d:
+            chart_data.append({
+                "date": d["Time of Collection"],
+                "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
+                "farmer": d.get("Farmer"),
+                "prediction_label": d.get("prediction"),
+            })
 
-    return render_template("history.html", history_data=history_data)
+    return render_template("history.html", history_data=history_data, chart_data=chart_data)
+
 
 @app.route('/debug/firebase')
 def debug_firebase():
@@ -249,17 +280,52 @@ def predict():
         colors.append('#2ecc71' if is_normal else '#e67e22')
 
     # 5) Suggestions (for later reuse)
+    # suggestions = []
+    # if raw['Temperature'] > 4:
+    #     suggestions.append("⚠ Check cooling system – temperature above safe range.")
+    # if raw['SCC'] > 400000:
+    #     suggestions.append("⚠ High SCC – possible mastitis, review herd health.")
+    # if raw['Fat_Content'] < 3.25:
+    #     suggestions.append("⚠ Low fat content – check feed and nutrition.")
+    # if raw['TPC'] > 100000:
+    #     suggestions.append("⚠ High bacterial count – review hygiene and storage.")
+    # if raw['pH'] < 6.6 or raw['pH'] > 6.8:
+    #     suggestions.append("⚠ Abnormal pH – check for contamination or spoilage.")
+    # Suggestions based on thresholds
     suggestions = []
-    if raw['Temperature'] > 4:
-        suggestions.append("⚠ Check cooling system – temperature above safe range.")
-    if raw['SCC'] > 400000:
-        suggestions.append("⚠ High SCC – possible mastitis, review herd health.")
-    if raw['Fat_Content'] < 3.25:
-        suggestions.append("⚠ Low fat content – check feed and nutrition.")
-    if raw['TPC'] > 100000:
-        suggestions.append("⚠ High bacterial count – review hygiene and storage.")
     if raw['pH'] < 6.6 or raw['pH'] > 6.8:
-        suggestions.append("⚠ Abnormal pH – check for contamination or spoilage.")
+        suggestions.append("⚠ Abnormal pH – check for contamination, adulteration, or spoilage.")
+
+    if raw['Temperature'] > 4:
+        suggestions.append("⚠ Temperature above safe range – check cooling/storage system immediately.")
+
+    if raw['Fat_Content'] < 3.25:
+        suggestions.append("⚠ Low fat content – review cow nutrition and feed quality.")
+
+    if raw['SNF'] < 8.25:
+        suggestions.append("⚠ Low SNF – possible dilution or poor feed; check for adulteration or water addition.")
+
+    if raw['Titratable_Acidity'] < 0.13:
+        suggestions.append("⚠ Acidity too low – may indicate over-neutralization or poor microbial activity.")
+    elif raw['Titratable_Acidity'] > 0.17:
+        suggestions.append("⚠ High acidity – possible souring/spoilage due to bacterial growth.")
+
+    if raw['Protein_Content'] < 3.0:
+        suggestions.append("⚠ Low protein – could be linked to poor feeding or animal health issues.")
+    elif raw['Protein_Content'] > 3.5:
+        suggestions.append("⚠ High protein – check herd nutrition; may affect processing behavior.")
+
+    if raw['Lactose_Content'] < 4.5:
+        suggestions.append("⚠ Low lactose – could be due to mastitis or milk adulteration.")
+    elif raw['Lactose_Content'] > 5.2:
+        suggestions.append("⚠ High lactose – may suggest sampling/lab errors; review test procedure.")
+
+    if raw['TPC'] > 100000:
+        suggestions.append("⚠ High bacterial count (TPC) – review hygiene, sanitation, and storage conditions.")
+
+    if raw['SCC'] > 400000:
+        suggestions.append("⚠ High somatic cell count – possible mastitis; review herd health and udder hygiene.")
+
 
     if not suggestions:
         suggestions.append("✅ Milk meets quality standards.")
@@ -323,7 +389,8 @@ def show_result(batch_id):
             "Time of Collection": data.get("Time of Collection"),
             "Transport Details": data.get("Transport Details"),
         },
-        chart_data=chart_data
+        chart_data=chart_data,
+        NORMAL_RANGES=NORMAL_RANGES
     )
 
 if __name__ == '__main__':
