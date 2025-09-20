@@ -1,0 +1,114 @@
+[
+  {
+    "Parameter": "pH",
+    "NormalRange": "6.6 – 6.8",
+    "Min": 6.6,
+    "Max": 6.8,
+    "Remarks": "Abnormal pH may indicate contamination, adulteration, or spoilage."
+  },
+  {
+    "Parameter": "Temperature",
+    "NormalRange": "≤ 4°C (ideal), ≤ 8°C (daily collection), ≤ 6°C (if not daily)",
+    "Min": null,
+    "Max": 4.0,
+    "Remarks": "Higher temperatures promote bacterial growth; check cooling/storage."
+  },
+  {
+    "Parameter": "Density (20°C)",
+    "NormalRange": "1.026 – 1.034 g/cm³",
+    "Min": 1.026,
+    "Max": 1.034,
+    "Remarks": "Low density may indicate adulteration with water."
+  },
+  {
+    "Parameter": "Fat_Content",
+    "NormalRange": "3.2 – 4.5 (up to 6.0 depending on breed)",
+    "Min": 3.2,
+    "Max": 4.5,
+    "Remarks": "Low fat may suggest poor feeding/adulteration; higher in buffalo milk."
+  },
+  {
+    "Parameter": "SNF",
+    "NormalRange": "8.3 – 9.0",
+    "Min": 8.3,
+    "Max": 9.0,
+    "Remarks": "Low SNF suggests watering or poor nutrition."
+  },
+  {
+    "Parameter": "Total Solids",
+    "NormalRange": "12 – 15",
+    "Min": 12.0,
+    "Max": 15.0,
+    "Remarks": "Represents Fat + SNF; low values may indicate dilution."
+  },
+  {
+    "Parameter": "Titratable_Acidity",
+    "NormalRange": "0.14 – 0.17 % lactic acid",
+    "Min": 0.14,
+    "Max": 0.17,
+    "Remarks": "Acidity >0.18 indicates sour milk; low acidity may mean neutralization."
+  },
+  {
+    "Parameter": "Protein_Content",
+    "NormalRange": "3.0 – 3.5",
+    "Min": 3.0,
+    "Max": 3.5,
+    "Remarks": "Low protein linked to poor feeding/health; high may affect processing."
+  },
+  {
+    "Parameter": "Lactose_Content",
+    "NormalRange": "4.5 – 5.2",
+    "Min": 4.5,
+    "Max": 5.2,
+    "Remarks": "Low lactose may signal mastitis/adulteration; high may be lab error."
+  },
+  {
+    "Parameter": "TPC",
+    "NormalRange": "≤ 100,000 cfu/ml",
+    "Min": null,
+    "Max": 100000,
+    "Remarks": "High bacterial count suggests poor hygiene or storage."
+  },
+  {
+    "Parameter": "SCC",
+    "NormalRange": "≤ 400,000 cells/ml",
+    "Min": null,
+    "Max": 400000,
+    "Remarks": "High SCC may indicate mastitis and poor udder health."
+  },
+  {
+    "Parameter": "Resazurin Test (RRT)",
+    "NormalRange": "Excellent: ≥ 5–6 hrs, Good: 3–4 hrs, Fair: 1–2 hrs, Poor: ≤ 30–60 min",
+    "Min": null,
+    "Max": null,
+    "Remarks": "Indicates bacterial load through reduction time."
+  },
+  {
+    "Parameter": "OGT (Oxidation-Reduction Test)",
+    "NormalRange": "Good: > 5 hrs, Poor: < 1 hr",
+    "Min": null,
+    "Max": null,
+    "Remarks": "Measures bacterial activity; short times = high bacterial presence."
+  },
+  {
+    "Parameter": "Color",
+    "NormalRange": "White to creamy white (uniform)",
+    "Min": null,
+    "Max": null,
+    "Remarks": "Abnormal tints indicate defects or contamination."
+  },
+  {
+    "Parameter": "Odour",
+    "NormalRange": "Fresh, slightly sweet, clean",
+    "Min": null,
+    "Max": null,
+    "Remarks": "Rancid, sour, or medicinal odour indicates spoilage/defects."
+  },
+  {
+    "Parameter": "Keeping Temperature",
+    "NormalRange": "≤ 8°C (daily), ≤ 6°C (non-daily), ideally ≤ 4°C",
+    "Min": null,
+    "Max": 8.0,
+    "Remarks": "Storage temperature guideline to prevent bacterial growth."
+  }
+]

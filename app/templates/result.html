@@ -589,19 +589,20 @@
     <footer>&copy; 2023 DairyIQ Analytics. All rights reserved.</footer>
     <!-- </div> -->
 
-    <script>
+    <!-- <script>
       // Data from Flask
       const features = {{ feature_names | tojson }};
       const values = {{ raw_values | tojson }};
       const prediction = "{{ prediction }}"; // "High", "Moderate", "Low"
 
       // Normal ranges (passed from Flask too if needed)
-      const NORMAL_RANGES = {{ NORMAL_RANGES | tojson }};
+
+      const STANDARDS = {{ STANDARDS | tojson }};
 
       // Build colors based on normal ranges
       const featureColors = features.map((feat, i) => {
         const val = values[i];
-        const [low, high] = NORMAL_RANGES[feat];
+        const [low, high] = STANDARDS[feat];
         let inRange = true;
         if (low !== null && val < low) inRange = false;
         if (high !== null && val > high) inRange = false;
@@ -700,7 +701,184 @@
           }
         }
       });
+    </script> -->
+    <!-- ############################################################################### -->
+    <script>
+        // Data from Flask
+        const features = {{ feature_names | tojson }};
+        const values = {{ raw_values | tojson }};
+        const prediction = "{{ prediction }}"; // "High", "Moderate", "Low"
+        const STANDARDS = {{ STANDARDS | tojson }};
+
+        // Build colors based on normal ranges
+        const featureColors = features.map((feat, i) => {
+          const val = values[i];
+          const rule = STANDARDS[feat];
+          if (!rule || val === null) return "#bdc3c7"; // gray if missing
+
+          const low = rule.Min;
+          const high = rule.Max;
+
+          let inRange = true;
+          if (low !== null && val < low) inRange = false;
+          if (high !== null && val > high) inRange = false;
+
+          return inRange ? "#2ecc71" : "#e74c3c"; // green or red
+        });
+
+        // === Feature Chart ===
+        // new Chart(document.getElementById("featureChart"), {
+        //   type: "bar",
+        //   data: {
+        //     labels: features,
+        //     datasets: [{
+        //       label: "Feature Values",
+        //       data: values,
+        //       backgroundColor: featureColors
+        //     }]
+        //   },
+        //   options: {
+        //     plugins: {
+        //       legend: { display: false },
+        //       title: {
+        //         display: true,
+        //         text: "Parameters vs Normal Ranges"
+        //       }
+        //     },
+        //     responsive: true,
+        //     maintainAspectRatio: false,
+        //     scales: {
+        //       y: {
+        //         beginAtZero: true
+        //       },
+        //       x: {
+        //         ticks: {
+        //           autoSkip: false,
+        //           maxRotation: 45,
+        //           minRotation: 45
+        //         }
+        //       }
+        //     }
+        //   }
+        // });
+        // === Feature Chart (Normalized) ===
+      // === Feature Chart (Normalized, always show bar) ===
+        new Chart(document.getElementById("featureChart"), {
+          type: "bar",
+          data: {
+            labels: features,
+            datasets: [{
+              label: "Feature Status",
+              data: features.map((feat, i) => {
+                const val = values[i];
+                const rule = STANDARDS[feat];
+                if (!rule || val === null) return 0;
+
+                const low = rule.Min;
+                const high = rule.Max;
+
+                let inRange = true;
+                if (low !== null && val < low) inRange = false;
+                if (high !== null && val > high) inRange = false;
+
+                return 1;  // ✅ always show bar of height 1
+              }),
+              backgroundColor: features.map((feat, i) => {
+                const val = values[i];
+                const rule = STANDARDS[feat];
+                if (!rule || val === null) return "#bdc3c7";
+
+                const low = rule.Min;
+                const high = rule.Max;
+
+                let inRange = true;
+                if (low !== null && val < low) inRange = false;
+                if (high !== null && val > high) inRange = false;
+
+                return inRange ? "#2ecc71" : "#e74c3c"; // ✅ color indicates status
+              })
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { display: false },
+              title: {
+                display: true,
+                text: "Parameters (Green = Normal, Red = Out of Range)"
+              }
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 1,
+                ticks: {
+                  stepSize: 1,
+                  callback: (value) => (value === 1 ? "Present" : "")
+                }
+              },
+              x: {
+                ticks: {
+                  autoSkip: false,
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            }
+          }
+        });
+
+
+
+        // === Prediction Chart ===
+        const predictionLabels = ["Low", "Moderate", "High"];
+        const predictionColors = ["#e74c3c", "#f39c12", "#2ecc71"];
+        const predictionValues = predictionLabels.map(lbl => lbl === prediction ? 1 : 0);
+
+        new Chart(document.getElementById("predictionChart"), {
+          type: "bar",
+          data: {
+            labels: predictionLabels,
+            datasets: [{
+              label: "Prediction",
+              data: predictionValues,
+              backgroundColor: predictionColors
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    if (context.parsed.y === 1) {
+                      return "Selected Quality: " + context.label;
+                    }
+                    return "";
+                  }
+                }
+              }
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 1,
+                ticks: {
+                  stepSize: 1,
+                  callback: function(value) {
+                    return value === 1 ? "Selected" : "";
+                  }
+                }
+              }
+            }
+          }
+        });
     </script>
+
+    <!-- ############################################################################### -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
