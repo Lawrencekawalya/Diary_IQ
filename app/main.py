@@ -84,6 +84,12 @@ def firebase_login(email, password):
 def login_page():
     return render_template('login.html')
 
+@app.route('/index')
+def index():
+    if 'user' not in session:
+        return redirect(url_for('login_page'))
+    return render_template('index.html')
+
 # Handle login form submission
 @app.route('/login', methods=['POST'])
 def login():
@@ -107,16 +113,16 @@ def logout():
     return redirect(url_for('login_page'))
 
 
-@app.route('/index')
-def index():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    return render_template('index.html')
+# @app.route('/index')
+# def index():
+#     if 'user' not in session:
+#         return redirect(url_for('login_page'))
+#     return render_template('index.html')
 
 @app.route('/history')
 def history():
     if 'user' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('login_page'))
 
     # Fetch all batches ordered by created_at
     batches = db.collection("milk_batches").order_by("created_at").stream()
@@ -279,7 +285,7 @@ def debug_firebase():
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'user' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('login_page'))
 
     # 1) Collect batch info
     batch_info = {
@@ -403,7 +409,7 @@ def predict():
 @app.route('/result/<batch_id>')
 def show_result(batch_id):
     if 'user' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('login_page'))
 
     # Get this batch
     doc = db.collection("milk_batches").document(batch_id).get()
