@@ -15,6 +15,17 @@ import secrets
 from dotenv import load_dotenv
 load_dotenv()
 import json
+import time
+import logging
+import google.api_core.exceptions
+
+# Configure logging
+logging.basicConfig(
+    filename="firestore_errors.log",
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 # Load standards.json
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, "..", "config", "standards.json")
@@ -79,6 +90,13 @@ def firebase_login(email, password):
     response = requests.post(url, json=payload)
     return response.json()
 
+def safe_float(value, field_name):
+    """Try to convert to float, return None or raise a friendly error."""
+    try:
+        return float(value)
+    except ValueError:
+        raise ValueError(f"Invalid entry for {field_name}. Please enter a numeric value.")
+
 # Show login form
 @app.route('/')
 def login_page():
@@ -119,6 +137,36 @@ def logout():
 #         return redirect(url_for('login_page'))
 #     return render_template('index.html')
 
+# @app.route('/history')
+# def history():
+#     if 'user' not in session:
+#         return redirect(url_for('login_page'))
+
+#     # Fetch all batches ordered by created_at
+#     batches = db.collection("milk_batches").order_by("created_at").stream()
+
+#     history_data = []
+#     chart_data = []
+#     for batch in batches:
+#         d = batch.to_dict()
+#         history_data.append({
+#             # "Farmer": d.get("Farmer"),
+#             'Collection Center': request.form.get('collection_center'),
+#             "Batch Number": d.get("Batch Number"),
+#             "Time of Collection": d.get("Time of Collection"),
+#             "Location": d.get("Location"),
+#             "Prediction": d.get("prediction"),
+#         })
+#         # build chart data too
+#         if "Time of Collection" in d:
+#             chart_data.append({
+#                 "date": d["Time of Collection"],
+#                 "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
+#                 "farmer": d.get("Farmer"),
+#                 "prediction_label": d.get("prediction"),
+#             })
+
+#     return render_template("history.html", history_data=history_data, chart_data=chart_data)
 @app.route('/history')
 def history():
     if 'user' not in session:
@@ -132,22 +180,24 @@ def history():
     for batch in batches:
         d = batch.to_dict()
         history_data.append({
-            "Farmer": d.get("Farmer"),
+            "Collection Center": d.get("Collection Center"),  # ✅ Fix here
             "Batch Number": d.get("Batch Number"),
             "Time of Collection": d.get("Time of Collection"),
             "Location": d.get("Location"),
             "Prediction": d.get("prediction"),
         })
-        # build chart data too
+
+        # Build chart data too
         if "Time of Collection" in d:
             chart_data.append({
                 "date": d["Time of Collection"],
                 "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-                "farmer": d.get("Farmer"),
+                "collection_center": d.get("Collection Center"),  # ✅ Fix here too
                 "prediction_label": d.get("prediction"),
             })
 
     return render_template("history.html", history_data=history_data, chart_data=chart_data)
+
 
 
 @app.route('/debug/firebase')
@@ -289,7 +339,8 @@ def predict():
 
     # 1) Collect batch info
     batch_info = {
-        'Farmer': request.form.get('farmer'),
+        # 'Farmer': request.form.get('farmer'),
+        'Collection Center': request.form.get('collection_center'),
         'Contact': request.form.get('contact'),
         'Location': request.form.get('location'),
         'Batch Number': f"BATCH-{uuid.uuid4().hex[:8].upper()}",
@@ -298,17 +349,40 @@ def predict():
     }
 
     # 2) Collect predictor inputs (numerical only for model)
-    raw = {
-        'pH':                 float(request.form['ph']),
-        'Temperature':        float(request.form['temperature']),
-        'Fat_Content':        float(request.form['fat']),
-        'SNF':                float(request.form['snf']),
-        'Titratable_Acidity': float(request.form['acidity']),
-        'Protein_Content':    float(request.form['protein']),
-        'Lactose_Content':    float(request.form['lactose']),
-        'TPC':                float(request.form['tpc']),
-        'SCC':                float(request.form['scc']),
-    }
+    # raw = {
+    #     'pH':                 float(request.form['ph']),
+    #     'Temperature':        float(request.form['temperature']),
+    #     'Fat_Content':        float(request.form['fat']),
+    #     'SNF':                float(request.form['snf']),
+    #     'Titratable_Acidity': float(request.form['acidity']),
+    #     'Protein_Content':    float(request.form['protein']),
+    #     'Lactose_Content':    float(request.form['lactose']),
+    #     'TPC':                float(request.form['tpc']),
+    #     'SCC':                float(request.form['scc']),
+    # }
+    try:
+        raw = {
+            'pH':                 safe_float(request.form['ph'], 'pH Level'),
+            'Temperature':        safe_float(request.form['temperature'], 'Temperature'),
+            'Fat_Content':        safe_float(request.form['fat'], 'Fat Content'),
+            'SNF':                safe_float(request.form['snf'], 'SNF'),
+            'Titratable_Acidity': safe_float(request.form['acidity'], 'Titratable Acidity'),
+            'Protein_Content':    safe_float(request.form['protein'], 'Protein Content'),
+            'Lactose_Content':    safe_float(request.form['lactose'], 'Lactose Content'),
+            'TPC':                safe_float(request.form['tpc'], 'Total Plate Count'),
+            'SCC':                safe_float(request.form['scc'], 'Somatic Cell Count'),
+        }
+    except ValueError as e:
+        logging.error(f"❌ User input error: {e}")
+
+        # Re-render form with previous user input and error message
+        return render_template(
+            "index.html",
+            error=f"⚠️ {e} Please enter only numeric values in all testing fields.",
+            previous_inputs=request.form,      # pass all old values
+            show_predictor=True                # signal to reopen the testing section
+        )
+
 
     # 3) Run ML prediction
     df = pd.DataFrame([list(raw.values())], columns=list(raw.keys()))
@@ -342,6 +416,23 @@ def predict():
         suggestions.append("✅ Milk meets quality standards.")
         suggestions.append("✅ Maintain current handling procedures.")
 
+    # # 6) Save to Firestore
+    # batch_doc = {
+    #     **batch_info,
+    #     **raw,
+    #     "prediction": prediction,
+    #     "colors": colors,
+    #     "suggestions": suggestions,
+    #     "created_at": firestore.SERVER_TIMESTAMP
+    # }
+    # doc_ref = db.collection("milk_batches").add(batch_doc)
+    # ############
+
+    # ############
+    # batch_id = doc_ref[1].id
+
+    # # 7) Redirect to result page
+    # return redirect(url_for('show_result', batch_id=batch_id))
     # 6) Save to Firestore
     batch_doc = {
         **batch_info,
@@ -351,11 +442,48 @@ def predict():
         "suggestions": suggestions,
         "created_at": firestore.SERVER_TIMESTAMP
     }
-    doc_ref = db.collection("milk_batches").add(batch_doc)
+
+    # Firestore write with automatic retry and error logging
+    max_retries = 3
+    retry_delay = 3  # seconds
+
+    for attempt in range(max_retries):
+        try:
+            doc_ref = db.collection("milk_batches").add(batch_doc)
+            print(f"✅ Firestore write successful on attempt {attempt + 1}")
+            logging.info(f"✅ Firestore write successful on attempt {attempt + 1}")
+            break  # success → exit loop
+
+        except google.api_core.exceptions.ServiceUnavailable as e:
+            # Log error to file
+            logging.error(f"⚠️ Firestore unavailable (attempt {attempt + 1}): {e}")
+
+            if attempt < max_retries - 1:
+                print(f"⚠️ Retrying Firestore connection in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                continue
+            else:
+                print("❌ Firestore still unavailable after retries.")
+                logging.error("❌ Firestore still unavailable after retries.")
+                return render_template(
+                    "index.html",
+                    error="Firestore connection failed. Please check your internet and try again.",
+                )
+
+        except Exception as e:
+            print(f"❌ Unexpected Firestore error: {e}")
+            logging.error(f"❌ Unexpected Firestore error: {e}")
+            return render_template(
+                "index.html",
+                error="An unexpected error occurred while saving data. Please try again.",
+            )
+
+    # ✅ Only reach this point if Firestore succeeded
     batch_id = doc_ref[1].id
 
     # 7) Redirect to result page
     return redirect(url_for('show_result', batch_id=batch_id))
+
 
 # ###############################################################################
 
@@ -427,21 +555,55 @@ def show_result(batch_id):
         chart_data.append({
             "date": d["Time of Collection"],
             "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-            "farmer": d.get("Farmer"),
+            "Collection Center": d.get("Collection Center"),
             "prediction_label": d.get("prediction")
         })
         
     # Render template
+    # return render_template(
+    #     "result.html",
+    #     prediction=data.get("prediction"),
+    #     feature_names=list(STANDARDS.keys()),
+    #     raw_values=[data.get(k) for k in STANDARDS.keys()],
+    #     colors=data.get("colors", []),
+    #     raw={k: data.get(k) for k in STANDARDS.keys()},
+    #     suggestions=data.get("suggestions", []),
+    #     batch_info={
+    #         "Farmer": data.get("Farmer"),
+    #         "Contact": data.get("Contact"),
+    #         "Location": data.get("Location"),
+    #         "Batch Number": data.get("Batch Number"),
+    #         "Time of Collection": data.get("Time of Collection"),
+    #         "Transport Details": data.get("Transport Details"),
+    #     },
+    #     chart_data=chart_data,
+    #     STANDARDS=STANDARDS   # ✅ available to JS
+    # )
+        # Only show parameters entered by user
+    visible_fields = [
+        'pH',
+        'Temperature',
+        'Fat_Content',
+        'SNF',
+        'Titratable_Acidity',
+        'Protein_Content',
+        'Lactose_Content',
+        'TPC',
+        'SCC'
+    ]
+
+    # Render template
     return render_template(
         "result.html",
         prediction=data.get("prediction"),
-        feature_names=list(STANDARDS.keys()),
-        raw_values=[data.get(k) for k in STANDARDS.keys()],
+        feature_names=visible_fields,
+        raw_values=[data.get(k) for k in visible_fields],
         colors=data.get("colors", []),
-        raw={k: data.get(k) for k in STANDARDS.keys()},
+        raw={k: data.get(k) for k in visible_fields},
         suggestions=data.get("suggestions", []),
         batch_info={
-            "Farmer": data.get("Farmer"),
+            # "Farmer": data.get("Farmer"),
+            "Collection Center": d.get("Collection Center"),
             "Contact": data.get("Contact"),
             "Location": data.get("Location"),
             "Batch Number": data.get("Batch Number"),
@@ -449,8 +611,9 @@ def show_result(batch_id):
             "Transport Details": data.get("Transport Details"),
         },
         chart_data=chart_data,
-        STANDARDS=STANDARDS   # ✅ available to JS
+        STANDARDS=STANDARDS
     )
+
 
 
 ##############################################################

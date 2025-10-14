@@ -506,7 +506,12 @@
           opacity: 0;
         }
       }
+      /* input:invalid {
+        border-color: red;
+        background-color: #fff6f6;
+      }
     </style>
+    */
   </head>
 
   <body>
@@ -544,7 +549,22 @@
           id="milkForm"
           method="POST"
           action="/predict"
+          novalidate
         >
+          {% if error %}
+          <div
+            style="
+              background-color: #f8d7da;
+              color: #721c24;
+              padding: 12px 15px;
+              border-radius: 6px;
+              margin-bottom: 20px;
+              border: 1px solid #f5c6cb;
+            "
+          >
+            {{ error }}
+          </div>
+          {% endif %}
           <!-- Batch Info Section -->
           <div id="batchInfo">
             <div class="form-section">
@@ -554,11 +574,11 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="farmer">Farmer's Full Name</label>
+                  <label for="collection_center">Collection Center Name</label>
                   <input
                     type="text"
-                    name="farmer"
-                    placeholder="Enter farmer's name"
+                    name="collection_center"
+                    placeholder="Enter Collection Center name"
                     required
                   />
                 </div>
@@ -575,11 +595,11 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="location">Farm Location</label>
+                  <label for="location">Collection Center Location</label>
                   <input
                     type="text"
                     name="location"
-                    placeholder="Enter farm location"
+                    placeholder="Enter Collection center location"
                     required
                   />
                 </div>
@@ -632,7 +652,8 @@
                 <div class="form-group">
                   <label for="ph">pH Level</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="ph"
                     placeholder="Enter pH value"
                     required
@@ -641,7 +662,8 @@
                 <div class="form-group">
                   <label for="temperature">Temperature (°C)</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="temperature"
                     placeholder="Enter temperature"
                     required
@@ -653,7 +675,8 @@
                 <div class="form-group">
                   <label for="fat">Fat Content (%)</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="fat"
                     placeholder="Enter fat content"
                     required
@@ -662,7 +685,8 @@
                 <div class="form-group">
                   <label for="snf">SNF (Solids-not-fat)</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="snf"
                     placeholder="Enter SNF value"
                     required
@@ -674,7 +698,8 @@
                 <div class="form-group">
                   <label for="acidity">Titratable Acidity</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="acidity"
                     placeholder="Enter acidity value"
                     required
@@ -683,7 +708,8 @@
                 <div class="form-group">
                   <label for="protein">Protein Content (%)</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="protein"
                     placeholder="Enter protein content"
                     required
@@ -695,7 +721,8 @@
                 <div class="form-group">
                   <label for="lactose">Lactose Content (%)</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="lactose"
                     placeholder="Enter lactose content"
                     required
@@ -704,7 +731,8 @@
                 <div class="form-group">
                   <label for="tpc">Total Plate Count (TPC)</label>
                   <input
-                    type="text"
+                    type="number"
+                    step="any"
                     name="tpc"
                     placeholder="Enter TPC value"
                     required
@@ -715,7 +743,8 @@
               <div class="form-group">
                 <label for="scc">Somatic Cell Count</label>
                 <input
-                  type="text"
+                  type="number"
+                  step="any"
                   name="scc"
                   placeholder="Enter SCC value"
                   required
@@ -760,7 +789,7 @@
       <p>Machine Learning in Progress...</p>
     </div>
 
-    <script>
+    <!-- <script>
       // Generate unique batch number when form loads
       document.getElementById("batch_number").value = "BATCH-" + Date.now();
 
@@ -790,25 +819,132 @@
       milkForm.addEventListener("submit", function () {
         document.getElementById("loadingOverlay").style.display = "flex";
       });
-    </script>
+    </script> -->
     <!-- <script>
-      function showLoader() {
-        document.getElementById("loadingOverlay").style.display = "flex";
-      }
+      // Generate unique batch number and set date
+      document.getElementById("batch_number").value = "BATCH-" + Date.now();
+      const now = new Date();
+      document.getElementById("time_of_collection").value = now
+        .toISOString()
+        .split("T")[0];
 
-      function hideLoader() {
-        document.getElementById("loadingOverlay").style.display = "none";
-      }
+      // Elements
+      const nextBtn = document.getElementById("nextBtn");
+      const backBtn = document.getElementById("backBtn");
+      const batchInfo = document.getElementById("batchInfo");
+      const predictorForm = document.getElementById("predictorForm");
+      const milkForm = document.getElementById("milkForm");
 
-      // Attach loader to your form submit
-      document
-        .getElementById("milkForm")
-        .addEventListener("submit", function () {
-          showLoader();
+      // ✅ VALIDATION before moving to testing section
+      nextBtn.addEventListener("click", () => {
+        const inputs = batchInfo.querySelectorAll("input[required]");
+        let isValid = true;
+
+        inputs.forEach((input) => {
+          if (!input.value.trim()) {
+            input.style.borderColor = "red";
+            isValid = false;
+          } else {
+            input.style.borderColor = "#ddd";
+          }
         });
 
-      // Example: If you want to hide it automatically after 3s (for demo purposes):
-      // setTimeout(hideLoader, 3000);
+        if (!isValid) {
+          alert(
+            "⚠️ Please fill in all required Batch Information fields before continuing."
+          );
+          return;
+        }
+
+        // If all required fields are filled
+        batchInfo.style.display = "none";
+        predictorForm.style.display = "block";
+      });
+
+      // Go back
+      backBtn.addEventListener("click", () => {
+        predictorForm.style.display = "none";
+        batchInfo.style.display = "block";
+      });
+
+      // Show loader on submit
+      milkForm.addEventListener("submit", function () {
+        document.getElementById("loadingOverlay").style.display = "flex";
+      });
     </script> -->
+
+    <script>
+      // Generate unique batch number and set date
+      document.getElementById("batch_number").value = "BATCH-" + Date.now();
+      const now = new Date();
+      document.getElementById("time_of_collection").value = now
+        .toISOString()
+        .split("T")[0];
+
+      // Elements
+      const nextBtn = document.getElementById("nextBtn");
+      const backBtn = document.getElementById("backBtn");
+      const batchInfo = document.getElementById("batchInfo");
+      const predictorForm = document.getElementById("predictorForm");
+      const milkForm = document.getElementById("milkForm");
+
+      // ✅ Validate Batch Info before moving to Testing section
+      nextBtn.addEventListener("click", () => {
+        const inputs = batchInfo.querySelectorAll("input[required]");
+        let isValid = true;
+
+        inputs.forEach((input) => {
+          if (!input.value.trim()) {
+            input.style.borderColor = "red";
+            isValid = false;
+          } else {
+            input.style.borderColor = "#ddd";
+          }
+        });
+
+        if (!isValid) {
+          alert(
+            "⚠️ Please fill in all required Batch Information fields before continuing."
+          );
+          return;
+        }
+
+        batchInfo.style.display = "none";
+        predictorForm.style.display = "block";
+      });
+
+      // ✅ Validate Testing Parameters before submitting form
+      milkForm.addEventListener("submit", function (e) {
+        const predictorInputs =
+          predictorForm.querySelectorAll("input[required]");
+        let isValid = true;
+
+        predictorInputs.forEach((input) => {
+          if (!input.value.trim()) {
+            input.style.borderColor = "red";
+            isValid = false;
+          } else {
+            input.style.borderColor = "#ddd";
+          }
+        });
+
+        if (!isValid) {
+          e.preventDefault(); // stop form submission
+          alert(
+            "⚠️ Please fill in all required Testing Parameter fields before predicting."
+          );
+          return;
+        }
+
+        // Show loader only when everything is valid
+        document.getElementById("loadingOverlay").style.display = "flex";
+      });
+
+      // Go back
+      backBtn.addEventListener("click", () => {
+        predictorForm.style.display = "none";
+        batchInfo.style.display = "block";
+      });
+    </script>
   </body>
 </html>

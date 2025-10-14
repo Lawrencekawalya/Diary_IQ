@@ -497,8 +497,9 @@
       </a>
 
       <div class="nav-actions">
-        <a href="{{ url_for('history') }}" class="nav-btn">
-          <i class="fas fa-history"></i> Historical Data
+        <a href="{{ url_for('index') }}" class="nav-btn">
+          <!-- <a href="{{ url_for('index') }}" class="btn"></a> -->
+          <i class="fas fa-plus-circle"></i> Analyze Another Sample
         </a>
         <a href="{{ url_for('logout') }}" class="nav-btn logout">
           <i class="fas fa-sign-out-alt"></i> Logout
@@ -567,7 +568,7 @@
           <thead>
             <tr>
               <th>Batch Number</th>
-              <th>Farmer</th>
+              <th>Collection Center</th>
               <th>Location</th>
               <th>Time of Collection</th>
               <th>Quality</th>
@@ -577,7 +578,7 @@
             {% for row in history_data %}
             <tr>
               <td>{{ row["Batch Number"] }}</td>
-              <td>{{ row["Farmer"] }}</td>
+              <td>{{ row["Collection Center"] }}</td>
               <td>{{ row["Location"] }}</td>
               <td>{{ row["Time of Collection"] }}</td>
               <td>
@@ -610,6 +611,7 @@
           searching: true,
           lengthChange: true,
           info: true,
+          order: [[3, "desc"]], // column index 3 = "Time of Collection"
           dom: "Bfrtip",
           buttons: [
             {
@@ -689,7 +691,7 @@
                     const batch = chartData[index];
                     return [
                       `Quality: ${batch.prediction_label}`,
-                      `Farmer: ${batch.farmer}`,
+                      `Collection Center: ${batch.collection_center}`,
                       `Collected: ${batch.date}`
                     ];
                   }
