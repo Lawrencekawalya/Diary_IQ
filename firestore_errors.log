@@ -235,3 +235,21 @@
 2025-10-14 10:10:36,517 - INFO - 127.0.0.1 - - [14/Oct/2025 10:10:36] "[36mGET /static/login-bg.webp HTTP/1.1[0m" 304 -
 2025-10-14 10:11:47,459 - INFO -  * Detected change in 'c:\\Users\\Administrator\\dairyiq\\app\\main.py', reloading
 2025-10-14 10:11:53,724 - INFO -  * Restarting with stat
+2025-10-14 11:22:10,282 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-14 11:22:10,284 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-14 11:22:10,288 - INFO -  * Restarting with stat
+2025-10-14 11:22:13,841 - WARNING -  * Debugger is active!
+2025-10-14 11:22:13,851 - INFO -  * Debugger PIN: 316-340-985
+2025-10-14 11:22:35,190 - INFO - 127.0.0.1 - - [14/Oct/2025 11:22:35] "GET / HTTP/1.1" 200 -
+2025-10-14 11:22:35,973 - INFO - 127.0.0.1 - - [14/Oct/2025 11:22:35] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-14 11:22:36,039 - INFO - 127.0.0.1 - - [14/Oct/2025 11:22:36] "[36mGET /static/login-bg.webp HTTP/1.1[0m" 304 -
+2025-10-14 11:22:38,834 - INFO - 127.0.0.1 - - [14/Oct/2025 11:22:38] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-10-14 11:22:39,371 - INFO - 127.0.0.1 - - [14/Oct/2025 11:22:39] "GET /index HTTP/1.1" 200 -
+2025-10-14 11:22:39,535 - INFO - 127.0.0.1 - - [14/Oct/2025 11:22:39] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-14 11:24:31,902 - INFO - 127.0.0.1 - - [14/Oct/2025 11:24:31] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-10-14 11:24:31,920 - INFO - 127.0.0.1 - - [14/Oct/2025 11:24:31] "GET / HTTP/1.1" 200 -
+2025-10-14 11:24:31,984 - INFO - 127.0.0.1 - - [14/Oct/2025 11:24:31] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-14 11:24:32,097 - INFO - 127.0.0.1 - - [14/Oct/2025 11:24:32] "[36mGET /static/login-bg.webp HTTP/1.1[0m" 304 -
+2025-10-14 11:37:02,438 - INFO -  * Detected change in 'c:\\Users\\Administrator\\dairyiq\\app\\main.py', reloading
+2025-10-14 11:37:03,026 - INFO -  * Restarting with stat
