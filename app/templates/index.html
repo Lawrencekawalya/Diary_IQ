@@ -566,6 +566,133 @@
           {% endif %}
           <!-- Batch Info Section -->
           <div id="batchInfo">
+            <!-- Section A: Collection Center Information -->
+            <div class="form-section">
+              <h3 class="section-heading">
+                <i class="fas fa-house-user"></i> Collection Center Information
+              </h3>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="collection_center">Collection Center Name</label>
+                  <input
+                    type="text"
+                    name="collection_center"
+                    placeholder="Enter Collection Center name"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="contact">Contact Details</label>
+                  <input
+                    type="text"
+                    name="contact"
+                    placeholder="Enter contact information"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="district">District</label>
+                  <input
+                    type="text"
+                    name="district"
+                    placeholder="Enter District"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="location">Location (Village/Town)</label>
+                  <input
+                    type="text"
+                    name="location"
+                    placeholder="Enter Collection center location"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tested_by">Tested By</label>
+                  <input
+                    type="text"
+                    name="tested_by"
+                    placeholder="Enter chemist name"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="liters_collected"
+                    >Number of Liters Collected</label
+                  >
+                  <input
+                    type="number"
+                    step="0.1"
+                    name="liters_collected"
+                    placeholder="Enter amount in liters"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Section B: Transportation Information -->
+            <div class="form-section">
+              <h3 class="section-heading">
+                <i class="fas fa-truck"></i> Transportation Information
+              </h3>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="driver_name">Driver Name</label>
+                  <input
+                    type="text"
+                    name="driver_name"
+                    placeholder="Enter Driver's full name"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="transport_details">Vehicle Details</label>
+                  <input
+                    type="text"
+                    name="transport_details"
+                    placeholder="Enter Vehicle Number Plate"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="time_of_collection">Collection Date</label>
+                  <input
+                    type="date"
+                    name="time_of_collection"
+                    id="time_of_collection"
+                    readonly
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="batch_number">Batch Number</label>
+                  <input
+                    type="text"
+                    name="batch_number"
+                    id="batch_number"
+                    readonly
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button type="button" id="nextBtn" class="btn">
+              <i class="fas fa-arrow-right"></i> Continue
+            </button>
+          </div>
+          <!-- <div id="batchInfo">
             <div class="form-section">
               <h3 class="section-heading">
                 <i class="fas fa-info-circle"></i> Batch Information
@@ -594,11 +721,34 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="location">Collection Center Location</label>
+                  <label for="district">District</label>
+                  <input
+                    type="text"
+                    name="district"
+                    placeholder="Enter District"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="location"
+                    >Collection Center Location (vilage/Town)</label
+                  >
                   <input
                     type="text"
                     name="location"
                     placeholder="Enter Collection center location"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="driver_name">Driver Name</label>
+                  <input
+                    type="text"
+                    name="driver_name"
+                    placeholder="Enter Driver’s full name"
                     required
                   />
                 </div>
@@ -607,7 +757,31 @@
                   <input
                     type="text"
                     name="transport_details"
-                    placeholder="Enter transport details"
+                    placeholder="Enter Vehicle Number Plate"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tested_by">Tested By</label>
+                  <input
+                    type="text"
+                    name="tested_by"
+                    placeholder="Enter chemist name"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="liters_collected"
+                    >Number of Liters Collected</label
+                  >
+                  <input
+                    type="number"
+                    step="0.1"
+                    name="liters_collected"
+                    placeholder="Enter amount in liters"
                     required
                   />
                 </div>
@@ -635,10 +809,10 @@
               </div>
 
               <button type="button" id="nextBtn" class="btn">
-                <i class="fas fa-arrow-right"></i> Continue to Testing
+                <i class="fas fa-arrow-right"></i> Continue
               </button>
             </div>
-          </div>
+          </div> -->
 
           <!-- Predictor Section (hidden initially) -->
           <div id="predictorForm" style="display: none">

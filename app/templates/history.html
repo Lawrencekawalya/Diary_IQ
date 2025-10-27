@@ -464,6 +464,80 @@
           font-size: 16px;
         }
       }
+      /* Enhanced chart container styles */
+      .chart-box {
+        height: 450px; /* Slightly taller for better visibility */
+        width: 100%;
+        position: relative;
+        background: var(--white);
+        border-radius: 8px;
+        padding: 15px;
+      }
+
+      /* Chart header improvements */
+      .card h4 {
+        margin-bottom: 20px;
+        color: var(--primary);
+        font-size: 18px;
+        font-weight: 600;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Performance indicator legend */
+      .performance-legend {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+      }
+
+      .performance-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .performance-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+      }
+
+      /* Chart controls */
+      .chart-controls {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .chart-control-btn {
+        padding: 6px 12px;
+        background: var(--light);
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .chart-control-btn:hover {
+        background: var(--secondary);
+        color: white;
+      }
+
+      .chart-control-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
     </style>
   </head>
   <body>
@@ -560,16 +634,65 @@
           </div>
         </div>
       </div>
+      <!-- Enhanced District Milk Output Card -->
+      <div class="card">
+        <h4><i class="fas fa-chart-bar"></i> District Performance Analysis</h4>
+
+        <!-- Chart Controls -->
+        <div class="chart-controls">
+          <button class="chart-control-btn active" data-metric="volume">
+            Volume View
+          </button>
+          <button class="chart-control-btn" data-metric="quality">
+            Quality View
+          </button>
+          <button class="chart-control-btn" data-metric="combined">
+            Combined View
+          </button>
+        </div>
+
+        <div class="chart-box">
+          <canvas id="districtChart"></canvas>
+        </div>
+
+        <!-- Performance Legend -->
+        <div class="performance-legend">
+          <div class="performance-item">
+            <div
+              class="performance-color"
+              style="background-color: #27ae60"
+            ></div>
+            <span>High Performance (>70%)</span>
+          </div>
+          <div class="performance-item">
+            <div
+              class="performance-color"
+              style="background-color: #f39c12"
+            ></div>
+            <span>Medium Performance (40-70%)</span>
+          </div>
+          <div class="performance-item">
+            <div
+              class="performance-color"
+              style="background-color: #e74c3c"
+            ></div>
+            <span>Low Performance (<40%)</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Table Card -->
-      <div class="card table-card">
+      <!-- <div class="card table-card">
         <h4><i class="fas fa-table"></i> Milk Batch Records</h4>
         <table id="historyTable" class="display stripe">
           <thead>
             <tr>
               <th>Batch Number</th>
+              <th>Number of Litters collected</th>
               <th>Collection Center</th>
+              <th>District</th>
               <th>Location</th>
+              <th>Tested by</th>
               <th>Time of Collection</th>
               <th>Quality</th>
             </tr>
@@ -596,6 +719,47 @@
             {% endfor %}
           </tbody>
         </table>
+      </div> -->
+      <div class="card table-card">
+        <h4><i class="fas fa-table"></i> Milk Batch Records</h4>
+        <table id="historyTable" class="display stripe">
+          <thead>
+            <tr>
+              <th>Batch Number</th>
+              <th>Number of Liters Collected</th>
+              <th>Collection Center</th>
+              <th>District</th>
+              <th>Location</th>
+              <th>Tested By</th>
+              <th>Time of Collection</th>
+              <th>Quality</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in history_data %}
+            <tr>
+              <td>{{ row["Batch Number"] }}</td>
+              <td>{{ row["Number of Liters Collected"] }}</td>
+              <td>{{ row["Collection Center"] }}</td>
+              <td>{{ row["District"] }}</td>
+              <td>{{ row["Location"] }}</td>
+              <td>{{ row["Tested By"] }}</td>
+              <td>{{ row["Time of Collection"] }}</td>
+              <td>
+                {% if row["Prediction"] == "High" %}
+                <span class="quality-badge badge-high">High Quality</span>
+                {% elif row["Prediction"] == "Moderate" %}
+                <span class="quality-badge badge-moderate"
+                  >Moderate Quality</span
+                >
+                {% else %}
+                <span class="quality-badge badge-low">Low Quality</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
       <!-- </div> -->
 
@@ -603,135 +767,782 @@
     </div>
 
     <script>
+      // Global variables to store chart data and instance
+      let districtChartInstance = null;
+      let districtChartData = null;
+
       $(document).ready(function () {
-        // Initialize DataTable with export buttons
-        $("#historyTable").DataTable({
-          pageLength: 10,
-          ordering: true,
-          searching: true,
-          lengthChange: true,
-          info: true,
-          order: [[3, "desc"]], // column index 3 = "Time of Collection"
-          dom: "Bfrtip",
-          buttons: [
-            {
-              extend: 'copy',
-              className: 'dt-button',
-              text: '<i class="fas fa-copy"></i> Copy'
-            },
-            {
-              extend: 'csv',
-              className: 'dt-button',
-              text: '<i class="fas fa-file-csv"></i> CSV'
-            },
-            {
-              extend: 'excel',
-              className: 'dt-button',
-              text: '<i class="fas fa-file-excel"></i> Excel'
-            },
-            {
-              extend: 'pdf',
-              className: 'dt-button',
-              text: '<i class="fas fa-file-pdf"></i> PDF'
-            },
-            {
-              extend: 'print',
-              className: 'dt-button',
-              text: '<i class="fas fa-print"></i> Print'
-            }
-          ],
-          language: {
-            search: "Filter:",
-            lengthMenu: "Show _MENU_ entries",
-            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-            paginate: {
-              previous: "<i class='fas fa-chevron-left'></i>",
-              next: "<i class='fas fa-chevron-right'></i>"
-            }
+          // Initialize DataTable
+          $("#historyTable").DataTable({
+              pageLength: 10,
+              ordering: true,
+              searching: true,
+              lengthChange: true,
+              info: true,
+              order: [[3, "desc"]],
+              dom: "Bfrtip",
+              buttons: [
+                  { extend: 'copy', className: 'dt-button', text: '<i class="fas fa-copy"></i> Copy' },
+                  { extend: 'csv', className: 'dt-button', text: '<i class="fas fa-file-csv"></i> CSV' },
+                  { extend: 'excel', className: 'dt-button', text: '<i class="fas fa-file-excel"></i> Excel' },
+                  { extend: 'pdf', className: 'dt-button', text: '<i class="fas fa-file-pdf"></i> PDF' },
+                  { extend: 'print', className: 'dt-button', text: '<i class="fas fa-print"></i> Print' }
+              ]
+          });
+
+          // Inject chart_data from Flask
+          const chartData = {{ chart_data | tojson }};
+
+          // === Line Chart: Milk Quality Over Time ===
+          const qualityColors = chartData.map(b => {
+              if (b.prediction_label === "High") return "#2ecc71";
+              if (b.prediction_label === "Moderate") return "#f39c12";
+              if (b.prediction_label === "Low") return "#e74c3c";
+              return "#95a5a6";
+          });
+
+          new Chart(document.getElementById("milkChart"), {
+              type: "line",
+              data: {
+                  labels: chartData.map(b => b.date),
+                  datasets: [{
+                      label: "Milk Quality Score",
+                      data: chartData.map(b => b.prediction),
+                      borderColor: "#3498db",
+                      backgroundColor: "rgba(52, 152, 219, 0.1)",
+                      fill: true,
+                      tension: 0.3,
+                      pointRadius: 5,
+                      pointBackgroundColor: qualityColors,
+                      pointBorderColor: "#fff",
+                      pointBorderWidth: 2,
+                      pointHoverRadius: 7
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  const batch = chartData[context.dataIndex];
+                                  return [
+                                      `Quality: ${batch.prediction_label}`,
+                                      `Collection Center: ${batch.collection_center}`,
+                                      `Collected: ${batch.date}`
+                                  ];
+                              }
+                          }
+                      },
+                      legend: { position: 'top' }
+                  },
+                  scales: {
+                      y: {
+                          min: -0.2,
+                          max: 2.2,
+                          ticks: {
+                              stepSize: 1,
+                              callback: value => ["Low", "Moderate", "High"][value] || ""
+                          },
+                          title: { display: true, text: "Quality Rating" },
+                          grid: { color: "rgba(0, 0, 0, 0.05)" }
+                      },
+                      x: {
+                          title: { display: true, text: "Collection Date" },
+                          grid: { display: false }
+                      }
+                  }
+              }
+          });
+
+          // === Prepare District Data ===
+          prepareDistrictData(chartData);
+
+          // Initialize with default view (volume)
+          switchDistrictChartView('volume');
+
+          // Add view switching functionality
+          document.querySelectorAll('.chart-control-btn').forEach(btn => {
+              btn.addEventListener('click', function() {
+                  // Remove active class from all buttons
+                  document.querySelectorAll('.chart-control-btn').forEach(b => b.classList.remove('active'));
+                  // Add active class to clicked button
+                  this.classList.add('active');
+
+                  // Implement view switching logic here
+                  const view = this.dataset.metric;
+                  switchDistrictChartView(view);
+              });
+          });
+      });
+
+      function prepareDistrictData(chartData) {
+          districtChartData = {
+              labels: [],
+              litersValues: [],
+              avgQualityValues: [],
+              qualityDistribution: {},
+              backgroundColors: []
+          };
+
+          const districtData = {};
+          const districtQuality = {};
+
+          // Process data
+          chartData.forEach(b => {
+              const district = b.district || "Unknown";
+              const liters = parseFloat(b.liters_collected || 0);
+
+              if (!districtData[district]) {
+                  districtData[district] = 0;
+                  districtQuality[district] = { high: 0, moderate: 0, low: 0 };
+              }
+
+              districtData[district] += liters;
+
+              // Count quality distribution
+              if (b.prediction_label === "High") districtQuality[district].high++;
+              else if (b.prediction_label === "Moderate") districtQuality[district].moderate++;
+              else districtQuality[district].low++;
+          });
+
+          districtChartData.labels = Object.keys(districtData);
+          districtChartData.litersValues = Object.values(districtData);
+
+          // Calculate average quality per district
+          districtChartData.avgQualityValues = districtChartData.labels.map(district => {
+              const total = districtQuality[district].high + districtQuality[district].moderate + districtQuality[district].low;
+              const qualityScore = (districtQuality[district].high * 2 + districtQuality[district].moderate * 1) / total;
+              return qualityScore;
+          });
+
+          // Store quality distribution
+          districtChartData.qualityDistribution = districtQuality;
+
+          // Create performance-based colors
+          const maxLiters = Math.max(...districtChartData.litersValues);
+          districtChartData.backgroundColors = districtChartData.litersValues.map(value =>
+              getPerformanceColor(value, maxLiters)
+          );
+      }
+
+      function getPerformanceColor(value, maxValue) {
+          const ratio = value / maxValue;
+          if (ratio > 0.7) return '#27ae60'; // High performance - green
+          if (ratio > 0.4) return '#f39c12'; // Medium performance - orange
+          return '#e74c3c'; // Low performance - red
+      }
+
+      function getQualityColor(value) {
+          if (value >= 1.5) return '#2ecc71'; // High quality - green
+          if (value >= 1.0) return '#f39c12'; // Moderate quality - orange
+          return '#e74c3c'; // Low quality - red
+      }
+
+      function switchDistrictChartView(view) {
+          const ctx = document.getElementById('districtChart').getContext('2d');
+
+          // Destroy existing chart if it exists
+          if (districtChartInstance) {
+              districtChartInstance.destroy();
           }
-        });
 
-        // Inject chart_data from Flask into JS
-        const chartData = {{ chart_data | tojson }};
+          let chartConfig;
 
-        const qualityColors = chartData.map(b => {
-          if (b.prediction_label === "High") return "#2ecc71";
-          if (b.prediction_label === "Moderate") return "#f39c12";
-          if (b.prediction_label === "Low") return "#e74c3c";
-          return "#95a5a6";
-        });
+          switch(view) {
+              case 'volume':
+                  chartConfig = createVolumeViewConfig();
+                  break;
+              case 'quality':
+                  chartConfig = createQualityViewConfig();
+                  break;
+              case 'combined':
+                  chartConfig = createCombinedViewConfig();
+                  break;
+              default:
+                  chartConfig = createVolumeViewConfig();
+          }
 
-        // Create the chart
-        new Chart(document.getElementById("milkChart"), {
-          type: "line",
-          data: {
-            labels: chartData.map(b => b.date),
-            datasets: [{
-              label: "Milk Quality Score",
-              data: chartData.map(b => b.prediction),
+          districtChartInstance = new Chart(ctx, chartConfig);
+      }
+
+      function createVolumeViewConfig() {
+          return {
+              type: "bar",
+              data: {
+                  labels: districtChartData.labels,
+                  datasets: [{
+                      label: "Total Liters Collected",
+                      data: districtChartData.litersValues,
+                      backgroundColor: districtChartData.backgroundColors,
+                      borderColor: districtChartData.backgroundColors.map(color => color),
+                      borderWidth: 2,
+                      borderRadius: 4,
+                      barPercentage: 0.7,
+                      categoryPercentage: 0.8
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          position: "top",
+                          labels: {
+                              usePointStyle: true,
+                              padding: 20
+                          }
+                      },
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  return `Liters: ${context.parsed.y.toLocaleString()}`;
+                              },
+                              afterLabel: function(context) {
+                                  const district = districtChartData.labels[context.dataIndex];
+                                  const quality = districtChartData.qualityDistribution[district];
+                                  const total = quality.high + quality.moderate + quality.low;
+                                  return [
+                                      `Quality Distribution:`,
+                                      `High: ${quality.high} (${((quality.high/total)*100).toFixed(1)}%)`,
+                                      `Moderate: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
+                                      `Low: ${quality.low} (${((quality.low/total)*100).toFixed(1)}%)`
+                                  ];
+                              }
+                          }
+                      },
+                      title: {
+                          display: true,
+                          text: 'District Volume Performance',
+                          font: { size: 16, weight: 'bold' },
+                          padding: { bottom: 20 }
+                      }
+                  },
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: "Liters Collected",
+                              font: { weight: 'bold' }
+                          },
+                          grid: {
+                              color: "rgba(0, 0, 0, 0.05)"
+                          },
+                          ticks: {
+                              callback: function(value) {
+                                  return value >= 1000 ? (value/1000).toFixed(1) + 'k' : value;
+                              }
+                          }
+                      },
+                      x: {
+                          title: {
+                              display: true,
+                              text: "Districts",
+                              font: { weight: 'bold' }
+                          },
+                          grid: { display: false }
+                      }
+                  },
+                  animation: {
+                      duration: 1000,
+                      easing: 'easeOutQuart'
+                  }
+              }
+          };
+      }
+
+      function createQualityViewConfig() {
+          const qualityColors = districtChartData.avgQualityValues.map(value => getQualityColor(value));
+
+          return {
+              type: "bar",
+              data: {
+                  labels: districtChartData.labels,
+                  datasets: [{
+                      label: "Average Quality Score",
+                      data: districtChartData.avgQualityValues,
+                      backgroundColor: qualityColors,
+                      borderColor: qualityColors.map(color => color),
+                      borderWidth: 2,
+                      borderRadius: 4,
+                      barPercentage: 0.7,
+                      categoryPercentage: 0.8
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: {
+                          position: "top",
+                          labels: {
+                              usePointStyle: true,
+                              padding: 20
+                          }
+                      },
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  const qualityLabels = ["Low", "Moderate", "High"];
+                                  const qualityValue = districtChartData.avgQualityValues[context.dataIndex];
+                                  return `Quality: ${qualityLabels[Math.round(qualityValue)]} (${qualityValue.toFixed(2)})`;
+                              },
+                              afterLabel: function(context) {
+                                  const district = districtChartData.labels[context.dataIndex];
+                                  const liters = districtChartData.litersValues[context.dataIndex];
+                                  return `Total Volume: ${liters.toLocaleString()} liters`;
+                              }
+                          }
+                      },
+                      title: {
+                          display: true,
+                          text: 'District Quality Performance',
+                          font: { size: 16, weight: 'bold' },
+                          padding: { bottom: 20 }
+                      }
+                  },
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          max: 2,
+                          title: {
+                              display: true,
+                              text: "Quality Score",
+                              font: { weight: 'bold' }
+                          },
+                          grid: {
+                              color: "rgba(0, 0, 0, 0.05)"
+                          },
+                          ticks: {
+                              stepSize: 0.5,
+                              callback: function(value) {
+                                  const qualityLabels = ["Low", "Moderate", "High"];
+                                  return qualityLabels[value] || value.toFixed(1);
+                              }
+                          }
+                      },
+                      x: {
+                          title: {
+                              display: true,
+                              text: "Districts",
+                              font: { weight: 'bold' }
+                          },
+                          grid: { display: false }
+                      }
+                  },
+                  animation: {
+                      duration: 1000,
+                      easing: 'easeOutQuart'
+                  }
+              }
+          };
+      }
+
+      function createCombinedViewConfig() {
+          const qualityColors = districtChartData.avgQualityValues.map(value => getQualityColor(value));
+
+          return {
+              type: "bar",
+              data: {
+                  labels: districtChartData.labels,
+                  datasets: [
+                      {
+                          label: "Total Liters Collected",
+                          data: districtChartData.litersValues,
+                          backgroundColor: districtChartData.backgroundColors,
+                          borderColor: districtChartData.backgroundColors.map(color => color),
+                          borderWidth: 2,
+                          borderRadius: 4,
+                          barPercentage: 0.7,
+                          categoryPercentage: 0.8,
+                          yAxisID: 'y'
+                      },
+                      {
+                          label: "Avg Quality Score",
+                          data: districtChartData.avgQualityValues,
+                          type: "line",
+                          borderColor: "#3498db",
+                          backgroundColor: "rgba(52, 152, 219, 0.1)",
+                          borderWidth: 3,
+                          pointBackgroundColor: qualityColors,
+                          pointBorderColor: "#fff",
+                          pointBorderWidth: 2,
+                          pointRadius: 6,
+                          yAxisID: 'y1',
+                          tension: 0.3,
+                          fill: false
+                      }
+                  ]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  interaction: {
+                      mode: 'index',
+                      intersect: false
+                  },
+                  plugins: {
+                      legend: {
+                          position: "top",
+                          labels: {
+                              usePointStyle: true,
+                              padding: 20
+                          }
+                      },
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  const label = context.dataset.label || '';
+                                  if (context.datasetIndex === 0) {
+                                      return `${label}: ${context.parsed.y.toLocaleString()} liters`;
+                                  } else {
+                                      const qualityLabels = ["Low", "Moderate", "High"];
+                                      const qualityValue = districtChartData.avgQualityValues[context.dataIndex];
+                                      return `${label}: ${qualityLabels[Math.round(qualityValue)]} (${qualityValue.toFixed(2)})`;
+                                  }
+                              },
+                              afterLabel: function(context) {
+                                  const district = districtChartData.labels[context.dataIndex];
+                                  const quality = districtChartData.qualityDistribution[district];
+                                  const total = quality.high + quality.moderate + quality.low;
+                                  return [
+                                      `Quality Distribution:`,
+                                      `High: ${quality.high} (${((quality.high/total)*100).toFixed(1)}%)`,
+                                      `Moderate: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
+                                      `Low: ${quality.low} (${((quality.low/total)*100).toFixed(1)}%)`
+                                  ];
+                              }
+                          }
+                      },
+                      title: {
+                          display: true,
+                          text: 'District Performance: Volume vs. Quality',
+                          font: { size: 16, weight: 'bold' },
+                          padding: { bottom: 20 }
+                      }
+                  },
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: "Liters Collected",
+                              font: { weight: 'bold' }
+                          },
+                          grid: {
+                              color: "rgba(0, 0, 0, 0.05)"
+                          },
+                          ticks: {
+                              callback: function(value) {
+                                  return value >= 1000 ? (value/1000).toFixed(1) + 'k' : value;
+                              }
+                          }
+                      },
+                      y1: {
+                          position: 'right',
+                          beginAtZero: true,
+                          max: 2,
+                          title: {
+                              display: true,
+                              text: "Average Quality",
+                              font: { weight: 'bold' }
+                          },
+                          grid: { display: false },
+                          ticks: {
+                              stepSize: 0.5,
+                              callback: function(value) {
+                                  const qualityLabels = ["Low", "Moderate", "High"];
+                                  return qualityLabels[value] || value.toFixed(1);
+                              }
+                          }
+                      },
+                      x: {
+                          title: {
+                              display: true,
+                              text: "Districts",
+                              font: { weight: 'bold' }
+                          },
+                          grid: { display: false }
+                      }
+                  },
+                  animation: {
+                      duration: 1000,
+                      easing: 'easeOutQuart'
+                  }
+              }
+          };
+      }
+    </script>
+
+    <!-- <script>
+            $(document).ready(function () {
+              // Initialize DataTable
+              $("#historyTable").DataTable({
+                pageLength: 10,
+                ordering: true,
+                searching: true,
+                lengthChange: true,
+                info: true,
+                order: [[3, "desc"]],
+                dom: "Bfrtip",
+                buttons: [
+                  { extend: 'copy', className: 'dt-button', text: '<i class="fas fa-copy"></i> Copy' },
+                  { extend: 'csv', className: 'dt-button', text: '<i class="fas fa-file-csv"></i> CSV' },
+                  { extend: 'excel', className: 'dt-button', text: '<i class="fas fa-file-excel"></i> Excel' },
+                  { extend: 'pdf', className: 'dt-button', text: '<i class="fas fa-file-pdf"></i> PDF' },
+                  { extend: 'print', className: 'dt-button', text: '<i class="fas fa-print"></i> Print' }
+                ]
+              });
+
+              // Inject chart_data from Flask
+              const chartData = {{ chart_data | tojson }};
+
+              // === Line Chart: Milk Quality Over Time ===
+              const qualityColors = chartData.map(b => {
+                if (b.prediction_label === "High") return "#2ecc71";
+                if (b.prediction_label === "Moderate") return "#f39c12";
+                if (b.prediction_label === "Low") return "#e74c3c";
+                return "#95a5a6";
+              });
+
+              new Chart(document.getElementById("milkChart"), {
+                type: "line",
+                data: {
+                  labels: chartData.map(b => b.date),
+                  datasets: [{
+                    label: "Milk Quality Score",
+                    data: chartData.map(b => b.prediction),
+                    borderColor: "#3498db",
+                    backgroundColor: "rgba(52, 152, 219, 0.1)",
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: qualityColors,
+                    pointBorderColor: "#fff",
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 7
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          const batch = chartData[context.dataIndex];
+                          return [
+                            `Quality: ${batch.prediction_label}`,
+                            `Collection Center: ${batch.collection_center}`,
+                            `Collected: ${batch.date}`
+                          ];
+                        }
+                      }
+                    },
+                    legend: { position: 'top' }
+                  },
+                  scales: {
+                    y: {
+                      min: -0.2,
+                      max: 2.2,
+                      ticks: {
+                        stepSize: 1,
+                        callback: value => ["Low", "Moderate", "High"][value] || ""
+                      },
+                      title: { display: true, text: "Quality Rating" },
+                      grid: { color: "rgba(0, 0, 0, 0.05)" }
+                    },
+                    x: {
+                      title: { display: true, text: "Collection Date" },
+                      grid: { display: false }
+                    }
+                  }
+                }
+              });
+
+              // === Bar Chart: District vs. Milk Output ===
+              // === Enhanced Bar Chart: District vs. Milk Output ===
+      const districtData = {};
+      const districtQuality = {}; // Track quality distribution per district
+
+      chartData.forEach(b => {
+        const district = b.district || "Unknown";
+        const liters = parseFloat(b.liters_collected || 0);
+
+        if (!districtData[district]) {
+          districtData[district] = 0;
+          districtQuality[district] = { high: 0, moderate: 0, low: 0 };
+        }
+
+        districtData[district] += liters;
+
+        // Count quality distribution
+        if (b.prediction_label === "High") districtQuality[district].high++;
+        else if (b.prediction_label === "Moderate") districtQuality[district].moderate++;
+        else districtQuality[district].low++;
+      });
+
+      const districtLabels = Object.keys(districtData);
+      const litersValues = Object.values(districtData);
+
+      // Calculate average quality per district
+      const avgQualityValues = districtLabels.map(district => {
+        const total = districtQuality[district].high + districtQuality[district].moderate + districtQuality[district].low;
+        const qualityScore = (districtQuality[district].high * 2 + districtQuality[district].moderate * 1) / total;
+        return qualityScore;
+      });
+
+      // Create gradient colors based on performance
+      const getPerformanceColor = (value, maxValue) => {
+        const ratio = value / maxValue;
+        if (ratio > 0.7) return '#27ae60'; // High performance - green
+        if (ratio > 0.4) return '#f39c12'; // Medium performance - orange
+        return '#e74c3c'; // Low performance - red
+      };
+
+      const maxLiters = Math.max(...litersValues);
+      const backgroundColors = litersValues.map(value => getPerformanceColor(value, maxLiters));
+
+      new Chart(document.getElementById("districtChart"), {
+        type: "bar",
+        data: {
+          labels: districtLabels,
+          datasets: [
+            {
+              label: "Total Liters Collected",
+              data: litersValues,
+              backgroundColor: backgroundColors,
+              borderColor: backgroundColors.map(color => color.replace('0.8', '1')),
+              borderWidth: 2,
+              borderRadius: 4,
+              barPercentage: 0.7,
+              categoryPercentage: 0.8
+            },
+            {
+              label: "Avg Quality Score",
+              data: avgQualityValues,
+              type: "line",
               borderColor: "#3498db",
               backgroundColor: "rgba(52, 152, 219, 0.1)",
-              fill: true,
-              tension: 0.3,
-              pointRadius: 5,
-              pointBackgroundColor: qualityColors,
+              borderWidth: 3,
+              pointBackgroundColor: "#2980b9",
               pointBorderColor: "#fff",
               pointBorderWidth: 2,
-              pointHoverRadius: 7
-            }]
+              pointRadius: 6,
+              yAxisID: 'y1',
+              tension: 0.3,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const index = context.dataIndex;
-                    const batch = chartData[index];
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                usePointStyle: true,
+                padding: 20
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  if (context.datasetIndex === 0) {
+                    return `${label}: ${context.parsed.y.toLocaleString()} liters`;
+                  } else {
+                    const qualityLabels = ["Low", "Moderate", "High"];
+                    return `${label}: ${qualityLabels[Math.round(context.parsed.y)]} (${context.parsed.y.toFixed(2)})`;
+                  }
+                },
+                afterLabel: function(context) {
+                  if (context.datasetIndex === 0) {
+                    const district = districtLabels[context.dataIndex];
+                    const quality = districtQuality[district];
+                    const total = quality.high + quality.moderate + quality.low;
                     return [
-                      `Quality: ${batch.prediction_label}`,
-                      `Collection Center: ${batch.collection_center}`,
-                      `Collected: ${batch.date}`
+                      `Quality Distribution:`,
+                      `High: ${quality.high} (${((quality.high/total)*100).toFixed(1)}%)`,
+                      `Moderate: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
+                      `Low: ${quality.low} (${((quality.low/total)*100).toFixed(1)}%)`
                     ];
                   }
                 }
               },
-              legend: {
-                position: 'top',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              titleColor: '#2c3e50',
+              bodyColor: '#34495e',
+              borderColor: '#bdc3c7',
+              borderWidth: 1,
+              padding: 12,
+              usePointStyle: true
+            },
+            title: {
+              display: true,
+              text: 'District Performance: Volume vs. Quality',
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 20 }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Liters Collected",
+                font: { weight: 'bold' }
+              },
+              grid: {
+                color: "rgba(0, 0, 0, 0.05)"
+              },
+              ticks: {
+                callback: function(value) {
+                  return value >= 1000 ? (value/1000).toFixed(1) + 'k' : value;
+                }
               }
             },
-            scales: {
-              y: {
-                min: -0.2,
-                max: 2.2,
-                ticks: {
-                  stepSize: 1,
-                  callback: function(value) {
-                    return ["Low", "Moderate", "High"][value] || "";
-                  }
-                },
-                title: {
-                  display: true,
-                  text: "Quality Rating"
-                },
-                grid: {
-                  color: "rgba(0, 0, 0, 0.05)"
-                }
+            y1: {
+              position: 'right',
+              min: 0,
+              max: 2,
+              title: {
+                display: true,
+                text: "Average Quality",
+                font: { weight: 'bold' }
               },
-              x: {
-                title: {
-                  display: true,
-                  text: "Collection Date"
-                },
-                grid: {
-                  display: false
+              grid: { display: false },
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  const qualityLabels = ["Low", "Moderate", "High"];
+                  return qualityLabels[value] || '';
                 }
               }
+            },
+            x: {
+              title: {
+                display: true,
+                text: "Districts",
+                font: { weight: 'bold' }
+              },
+              grid: { display: false }
             }
+          },
+          animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
           }
-        });
+        }
       });
-    </script>
+      });
+    </script> -->
   </body>
 </html>

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='favicon.png') }}"
+    />
+    <!-- DataTables CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+    />
+
+    <!-- Buttons extension CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css"
+    />
+
+    <!-- jQuery + DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Buttons extension JS -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <!-- JSZip and pdfmake for Excel/PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <title>Historical Data - DairyIQ</title>
+    <style>
+      /* ===== GLOBAL STYLES ===== */
+      :root {
+        /* --primary: #2c3e50; */
+        --primary: #1f3a93;
+        --secondary: #3498db;
+        --success: #2ecc71;
+        --warning: #f39c12;
+        --danger: #e74c3c;
+        --light: #ecf0f1;
+        --dark: #2c3e50;
+        --gray: #95a5a6;
+        --white: #ffffff;
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+        overflow-x: hidden;
+      } */
+      html,
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        /* padding-top: 30px; */
+        overflow-y: scroll; /* enable vertical scroll */
+        overflow-x: hidden; /* prevent horizontal scroll */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge Legacy */
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge, Opera */
+      }
+
+      /* ===== NAVIGATION ===== */
+      nav {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: var(--primary);
+        padding: 15px 30px;
+        font-size: 18px;
+        color: var(--white);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-brand {
+        font-size: 22px;
+        font-weight: bold;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 10px; /* spacing between logo and text */
+      }
+
+      .nav-logo {
+        height: 45px; /* adjust size */
+        width: auto;
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .nav-btn {
+        padding: 8px 20px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: var(--transition);
+      }
+
+      .nav-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .nav-btn.logout {
+        background-color: var(--danger);
+      }
+
+      .nav-btn.logout:hover {
+        background-color: #c0392b;
+      }
+
+      .nav-link {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      /* ===== MAIN CONTENT ===== */
+      .container {
+        max-width: 1400px;
+        margin: 80px auto 30px;
+        padding: 0 20px;
+      }
+
+      .dashboard {
+        /* background: var(--white); */
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+      }
+
+      .dashboard-header {
+        padding: 25px 30px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--primary);
+        color: var(--white);
+      }
+
+      .dashboard-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      /* ===== CARD STYLES ===== */
+      .card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .card h4 {
+        margin-bottom: 20px;
+        color: var(--primary);
+        font-size: 18px;
+        font-weight: 600;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--secondary);
+      }
+
+      /* ===== CHART LAYOUT ===== */
+      .row-layout {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -12px;
+      }
+
+      .col {
+        padding: 0 12px;
+      }
+
+      .chart-col {
+        flex: 0 0 75%;
+        max-width: 75%;
+      }
+
+      .insights-col {
+        flex: 0 0 25%;
+        max-width: 25%;
+      }
+
+      .chart-box {
+        height: 400px;
+        width: 100%;
+        position: relative;
+      }
+
+      /* ===== INSIGHTS STYLES ===== */
+      .insights ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .insights li {
+        padding: 15px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        background: var(--light);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: var(--transition);
+        border-left: 4px solid var(--gray);
+      }
+
+      .insights li:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .insight-label {
+        font-weight: 500;
+        color: var(--dark);
+      }
+
+      /* .insight-value {
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--primary);
+      } */
+
+      /* Increased specificity for quality classes */
+      .insights li.quality-high {
+        border-left-color: var(--success) !important;
+      }
+
+      .insights li.quality-moderate {
+        border-left-color: var(--warning) !important;
+      }
+
+      .insights li.quality-low {
+        border-left-color: var(--danger) !important;
+      }
+
+      .insight-value {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      /* ===== TABLE STYLES ===== */
+      .table-card {
+        overflow-x: auto;
+      }
+
+      #historyTable {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      #historyTable thead th {
+        background-color: var(--primary);
+        color: var(--white);
+        padding: 15px;
+        font-weight: 600;
+        text-align: left;
+      }
+
+      #historyTable tbody td {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+      }
+
+      #historyTable tbody tr {
+        transition: var(--transition);
+      }
+
+      #historyTable tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+      }
+
+      #historyTable tbody tr:nth-child(even) {
+        background-color: var(--white);
+      }
+
+      #historyTable tbody tr:hover {
+        background-color: #e8f4fc;
+      }
+
+      /* Quality badges */
+      #historyTable tbody td:last-child {
+        font-weight: 600;
+      }
+
+      .quality-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .badge-high {
+        background-color: rgba(46, 204, 113, 0.15);
+        color: var(--success);
+      }
+
+      .badge-moderate {
+        background-color: rgba(243, 156, 18, 0.15);
+        color: var(--warning);
+      }
+
+      .badge-low {
+        background-color: rgba(231, 76, 60, 0.15);
+        color: var(--danger);
+      }
+
+      /* ===== FOOTER ===== */
+      footer {
+        text-align: center;
+        margin-top: 40px;
+        padding: 20px;
+        color: var(--gray);
+        font-size: 14px;
+      }
+
+      /* ===== DATA TABLE CONTROLS ===== */
+      .dataTables_wrapper {
+        margin-top: 20px;
+      }
+
+      .dataTables_filter input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-left: 10px;
+      }
+
+      .dataTables_length select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin: 0 10px;
+      }
+
+      .dt-buttons {
+        margin-bottom: 15px;
+      }
+
+      .dt-button {
+        background-color: var(--secondary) !important;
+        color: white !important;
+        border: none !important;
+        padding: 8px 16px !important;
+        border-radius: 4px !important;
+        margin-right: 8px !important;
+        transition: var(--transition) !important;
+      }
+
+      .dt-button:hover {
+        background-color: #2980b9 !important;
+        transform: translateY(-2px);
+      }
+
+      /* ===== RESPONSIVE STYLES ===== */
+      @media (max-width: 1200px) {
+        .chart-col,
+        .insights-col {
+          flex: 0 0 100%;
+          max-width: 100%;
+        }
+
+        .insights-col {
+          margin-top: 25px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        nav {
+          padding: 15px;
+        }
+
+        .nav-actions {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .container {
+          margin-top: 100px;
+          padding: 0 15px;
+        }
+
+        .dashboard-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+
+        .card {
+          padding: 20px;
+        }
+
+        .chart-box {
+          height: 300px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .nav-brand {
+          font-size: 18px;
+        }
+
+        .nav-btn {
+          padding: 6px 12px;
+          font-size: 14px;
+        }
+
+        .dashboard-header h2 {
+          font-size: 20px;
+        }
+
+        .card h4 {
+          font-size: 16px;
+        }
+
+        .insight-value {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <!-- <nav>
+      <a href="{{ url_for('index') }}" class="nav-link">
+        <div class="nav-brand">DairyIQ Analytics</div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="{{ url_for('index') }}" class="nav-btn">
+          <i class="fas fa-plus-circle"></i> New Sample
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </nav> -->
+
+    <!-- Navigation Bar -->
+    <nav>
+      <a href="{{ url_for('index') }}" class="nav-link">
+        <div class="nav-brand">
+          <img
+            src="{{ url_for('static', filename='favicon_white.png') }}"
+            alt="DairyIQ Logo"
+            class="nav-logo"
+          />
+          <span>DairyIQ Analytics</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="{{ url_for('index') }}" class="nav-btn">
+          <!-- <a href="{{ url_for('index') }}" class="btn"></a> -->
+          <i class="fas fa-plus-circle"></i> Analyze Another Sample
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-btn logout">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+      <!-- <div class="dashboard"> -->
+      <!-- <header class="dashboard-header">
+          <h2><i class="fas fa-history"></i> Milk Quality Historical Data</h2>
+        </header> -->
+
+      <!-- Chart Card -->
+      <div class="card">
+        <h4><i class="fas fa-chart-line"></i> Milk Quality Over Time</h4>
+        <div class="row-layout">
+          <!-- Chart Column (3/4 width) -->
+          <div class="col chart-col">
+            <div class="chart-box">
+              <canvas id="milkChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Insights Column (1/4 width) -->
+          <div class="col insights-col">
+            <div class="insights">
+              <h4><i class="fas fa-lightbulb"></i> Quality Insights</h4>
+              <ul>
+                <li class="insight-value">
+                  <span class="insight-label">Total Samples:</span>
+                  <span class="insight-value">{{ history_data|length }}</span>
+                </li>
+                <li class="quality-high">
+                  <span class="insight-label">High Quality:</span>
+                  <span class="insight-value">
+                    {{ history_data | selectattr("Prediction", "equalto",
+                    "High") | list | length }}
+                  </span>
+                </li>
+                <li class="quality-moderate">
+                  <span class="insight-label">Moderate Quality:</span>
+                  <span class="insight-value">
+                    {{ history_data | selectattr("Prediction", "equalto",
+                    "Moderate") | list | length }}
+                  </span>
+                </li>
+                <li class="quality-low">
+                  <span class="insight-label">Low Quality:</span>
+                  <span class="insight-value">
+                    {{ history_data | selectattr("Prediction", "equalto", "Low")
+                    | list | length }}
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- District Milk Output Card -->
+      <div class="card">
+        <h4>
+          <i class="fas fa-chart-bar"></i> District Milk Output Comparison
+        </h4>
+        <div class="chart-box">
+          <canvas id="districtChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <!-- <div class="card table-card">
+        <h4><i class="fas fa-table"></i> Milk Batch Records</h4>
+        <table id="historyTable" class="display stripe">
+          <thead>
+            <tr>
+              <th>Batch Number</th>
+              <th>Number of Litters collected</th>
+              <th>Collection Center</th>
+              <th>District</th>
+              <th>Location</th>
+              <th>Tested by</th>
+              <th>Time of Collection</th>
+              <th>Quality</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in history_data %}
+            <tr>
+              <td>{{ row["Batch Number"] }}</td>
+              <td>{{ row["Collection Center"] }}</td>
+              <td>{{ row["Location"] }}</td>
+              <td>{{ row["Time of Collection"] }}</td>
+              <td>
+                {% if row["Prediction"] == "High" %}
+                <span class="quality-badge badge-high">High Quality</span>
+                {% elif row["Prediction"] == "Moderate" %}
+                <span class="quality-badge badge-moderate"
+                  >Moderate Quality</span
+                >
+                {% else %}
+                <span class="quality-badge badge-low">Low Quality</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div> -->
+      <div class="card table-card">
+        <h4><i class="fas fa-table"></i> Milk Batch Records</h4>
+        <table id="historyTable" class="display stripe">
+          <thead>
+            <tr>
+              <th>Batch Number</th>
+              <th>Number of Liters Collected</th>
+              <th>Collection Center</th>
+              <th>District</th>
+              <th>Location</th>
+              <th>Tested By</th>
+              <th>Time of Collection</th>
+              <th>Quality</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in history_data %}
+            <tr>
+              <td>{{ row["Batch Number"] }}</td>
+              <td>{{ row["Number of Liters Collected"] }}</td>
+              <td>{{ row["Collection Center"] }}</td>
+              <td>{{ row["District"] }}</td>
+              <td>{{ row["Location"] }}</td>
+              <td>{{ row["Tested By"] }}</td>
+              <td>{{ row["Time of Collection"] }}</td>
+              <td>
+                {% if row["Prediction"] == "High" %}
+                <span class="quality-badge badge-high">High Quality</span>
+                {% elif row["Prediction"] == "Moderate" %}
+                <span class="quality-badge badge-moderate"
+                  >Moderate Quality</span
+                >
+                {% else %}
+                <span class="quality-badge badge-low">Low Quality</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <!-- </div> -->
+
+      <footer>&copy; 2023 DairyIQ Analytics. All rights reserved.</footer>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        // Initialize DataTable
+        $("#historyTable").DataTable({
+          pageLength: 10,
+          ordering: true,
+          searching: true,
+          lengthChange: true,
+          info: true,
+          order: [[3, "desc"]],
+          dom: "Bfrtip",
+          buttons: [
+            { extend: 'copy', className: 'dt-button', text: '<i class="fas fa-copy"></i> Copy' },
+            { extend: 'csv', className: 'dt-button', text: '<i class="fas fa-file-csv"></i> CSV' },
+            { extend: 'excel', className: 'dt-button', text: '<i class="fas fa-file-excel"></i> Excel' },
+            { extend: 'pdf', className: 'dt-button', text: '<i class="fas fa-file-pdf"></i> PDF' },
+            { extend: 'print', className: 'dt-button', text: '<i class="fas fa-print"></i> Print' }
+          ]
+        });
+
+        // Inject chart_data from Flask
+        const chartData = {{ chart_data | tojson }};
+
+        // === Line Chart: Milk Quality Over Time ===
+        const qualityColors = chartData.map(b => {
+          if (b.prediction_label === "High") return "#2ecc71";
+          if (b.prediction_label === "Moderate") return "#f39c12";
+          if (b.prediction_label === "Low") return "#e74c3c";
+          return "#95a5a6";
+        });
+
+        new Chart(document.getElementById("milkChart"), {
+          type: "line",
+          data: {
+            labels: chartData.map(b => b.date),
+            datasets: [{
+              label: "Milk Quality Score",
+              data: chartData.map(b => b.prediction),
+              borderColor: "#3498db",
+              backgroundColor: "rgba(52, 152, 219, 0.1)",
+              fill: true,
+              tension: 0.3,
+              pointRadius: 5,
+              pointBackgroundColor: qualityColors,
+              pointBorderColor: "#fff",
+              pointBorderWidth: 2,
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const batch = chartData[context.dataIndex];
+                    return [
+                      `Quality: ${batch.prediction_label}`,
+                      `Collection Center: ${batch.collection_center}`,
+                      `Collected: ${batch.date}`
+                    ];
+                  }
+                }
+              },
+              legend: { position: 'top' }
+            },
+            scales: {
+              y: {
+                min: -0.2,
+                max: 2.2,
+                ticks: {
+                  stepSize: 1,
+                  callback: value => ["Low", "Moderate", "High"][value] || ""
+                },
+                title: { display: true, text: "Quality Rating" },
+                grid: { color: "rgba(0, 0, 0, 0.05)" }
+              },
+              x: {
+                title: { display: true, text: "Collection Date" },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+
+        // === Bar Chart: District vs. Milk Output ===
+        const districtData = {};
+        chartData.forEach(b => {
+          const district = b.district || "Unknown";
+          const liters = parseFloat(b.liters_collected || 0);
+          if (!districtData[district]) districtData[district] = 0;
+          districtData[district] += liters;
+        });
+
+        const districtLabels = Object.keys(districtData);
+        const litersValues = Object.values(districtData);
+
+        new Chart(document.getElementById("districtChart"), {
+          type: "bar",
+          data: {
+            labels: districtLabels,
+            datasets: [{
+              label: "Total Liters Collected",
+              data: litersValues,
+              backgroundColor: "#1abc9c",
+              borderColor: "#16a085",
+              borderWidth: 1,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "top" },
+              tooltip: {
+                callbacks: {
+                  label: context => `${context.parsed.y.toLocaleString()} liters`
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: "Liters Collected" },
+                grid: { color: "rgba(0, 0, 0, 0.05)" }
+              },
+              x: {
+                title: { display: true, text: "Districts" },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

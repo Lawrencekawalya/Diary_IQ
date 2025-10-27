@@ -46,8 +46,8 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', '3e59e99addb9052eb7da6ab9935
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
-# cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
-cred = credentials.Certificate("firebase_key.json")
+cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
+# cred = credentials.Certificate("firebase_key.json")
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -58,19 +58,6 @@ labels = ['Low', 'Moderate', 'High']
 
 # Quality mapping (used in charts)
 QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
-
-# Normal ranges
-# NORMAL_RANGES = {
-#     'pH':                   (6.6,   6.8),
-#     'Temperature':         (None,  4),
-#     'Fat_Content':         (3.25, None),
-#     'SNF':                  (8.25, None),
-#     'Titratable_Acidity':   (0.13, 0.17),
-#     'Protein_Content':      (3.0,   3.5),
-#     'Lactose_Content':      (4.5,   5.2),
-#     'TPC':                  (None, 100000),
-#     'SCC':                  (None, 400000),
-# }
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 
@@ -130,42 +117,6 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login_page'))
 
-
-# @app.route('/index')
-# def index():
-#     if 'user' not in session:
-#         return redirect(url_for('login_page'))
-#     return render_template('index.html')
-
-# @app.route('/history')
-# def history():
-#     if 'user' not in session:
-#         return redirect(url_for('login_page'))
-
-#     # Fetch all batches ordered by created_at
-#     batches = db.collection("milk_batches").order_by("created_at").stream()
-
-#     history_data = []
-#     chart_data = []
-#     for batch in batches:
-#         d = batch.to_dict()
-#         history_data.append({
-#             # "Farmer": d.get("Farmer"),
-#             'Collection Center': request.form.get('collection_center'),
-#             "Batch Number": d.get("Batch Number"),
-#             "Time of Collection": d.get("Time of Collection"),
-#             "Location": d.get("Location"),
-#             "Prediction": d.get("prediction"),
-#         })
-#         # build chart data too
-#         if "Time of Collection" in d:
-#             chart_data.append({
-#                 "date": d["Time of Collection"],
-#                 "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-#                 "farmer": d.get("Farmer"),
-#                 "prediction_label": d.get("prediction"),
-#             })
-
 #     return render_template("history.html", history_data=history_data, chart_data=chart_data)
 @app.route('/history')
 def history():
@@ -180,10 +131,13 @@ def history():
     for batch in batches:
         d = batch.to_dict()
         history_data.append({
-            "Collection Center": d.get("Collection Center"),  # ✅ Fix here
             "Batch Number": d.get("Batch Number"),
-            "Time of Collection": d.get("Time of Collection"),
+            "Number of Liters Collected": d.get("Number of Liters Collected", 0),
+            "Collection Center": d.get("Collection Center"),
+            "District": d.get("District"),
             "Location": d.get("Location"),
+            "Tested By": d.get("Tested By"),
+            "Time of Collection": d.get("Time of Collection"),
             "Prediction": d.get("prediction"),
         })
 
@@ -192,9 +146,18 @@ def history():
             chart_data.append({
                 "date": d["Time of Collection"],
                 "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-                "collection_center": d.get("Collection Center"),  # ✅ Fix here too
+                "collection_center": d.get("Collection Center"),
                 "prediction_label": d.get("prediction"),
+                "district": d.get("District"),
+                "liters_collected": d.get("Number of Liters Collected", 0)
             })
+
+            # chart_data.append({
+            #     "date": d["Time of Collection"],
+            #     "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
+            #     "collection_center": d.get("Collection Center"),  # ✅ Fix here too
+            #     "prediction_label": d.get("prediction"),
+            # })
 
     return render_template("history.html", history_data=history_data, chart_data=chart_data)
 
@@ -220,118 +183,6 @@ def debug_firebase():
 ############################################################################
 # QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
 
-# @app.route('/predict', methods=['POST'])
-# def predict():
-#     if 'user' not in session:
-#         return redirect(url_for('login'))
-
-#     # 1) Collect batch info
-#     batch_info = {
-#         'Farmer': request.form.get('farmer'),
-#         'Contact': request.form.get('contact'),
-#         'Location': request.form.get('location'),
-#         'Batch Number': f"BATCH-{uuid.uuid4().hex[:8].upper()}",
-#         'Time of Collection': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-#         'Transport Details': request.form.get('transport_details'),
-#     }
-
-#     # 2) Collect predictor inputs
-#     raw = {
-#         'pH':                 float(request.form['ph']),
-#         'Temperature':        float(request.form['temperature']),
-#         'Fat_Content':        float(request.form['fat']),
-#         'SNF':                float(request.form['snf']),
-#         'Titratable_Acidity': float(request.form['acidity']),
-#         'Protein_Content':    float(request.form['protein']),
-#         'Lactose_Content':    float(request.form['lactose']),
-#         'TPC':                float(request.form['tpc']),
-#         'SCC':                float(request.form['scc']),
-#     }
-
-#     # 3) Run prediction
-#     df = pd.DataFrame([list(raw.values())], columns=list(raw.keys()))
-#     prediction = model.predict(df)[0]   # "Low", "Moderate", "High"
-
-#     # 4) Build color list (for later reuse)
-#     colors = []
-#     for feat, val in raw.items():
-#         low, high = NORMAL_RANGES[feat]
-#         is_normal = True
-#         if low is not None and val < low:
-#             is_normal = False
-#         if high is not None and val > high:
-#             is_normal = False
-#         colors.append('#2ecc71' if is_normal else '#e67e22')
-
-#     # 5) Suggestions (for later reuse)
-#     # suggestions = []
-#     # if raw['Temperature'] > 4:
-#     #     suggestions.append("⚠ Check cooling system – temperature above safe range.")
-#     # if raw['SCC'] > 400000:
-#     #     suggestions.append("⚠ High SCC – possible mastitis, review herd health.")
-#     # if raw['Fat_Content'] < 3.25:
-#     #     suggestions.append("⚠ Low fat content – check feed and nutrition.")
-#     # if raw['TPC'] > 100000:
-#     #     suggestions.append("⚠ High bacterial count – review hygiene and storage.")
-#     # if raw['pH'] < 6.6 or raw['pH'] > 6.8:
-#     #     suggestions.append("⚠ Abnormal pH – check for contamination or spoilage.")
-#     # Suggestions based on thresholds
-#     suggestions = []
-#     if raw['pH'] < 6.6 or raw['pH'] > 6.8:
-#         suggestions.append("⚠ Abnormal pH – check for contamination, adulteration, or spoilage.")
-
-#     if raw['Temperature'] > 4:
-#         suggestions.append("⚠ Temperature above safe range – check cooling/storage system immediately.")
-
-#     if raw['Fat_Content'] < 3.25:
-#         suggestions.append("⚠ Low fat content – review cow nutrition and feed quality.")
-
-#     if raw['SNF'] < 8.25:
-#         suggestions.append("⚠ Low SNF – possible dilution or poor feed; check for adulteration or water addition.")
-
-#     if raw['Titratable_Acidity'] < 0.13:
-#         suggestions.append("⚠ Acidity too low – may indicate over-neutralization or poor microbial activity.")
-#     elif raw['Titratable_Acidity'] > 0.17:
-#         suggestions.append("⚠ High acidity – possible souring/spoilage due to bacterial growth.")
-
-#     if raw['Protein_Content'] < 3.0:
-#         suggestions.append("⚠ Low protein – could be linked to poor feeding or animal health issues.")
-#     elif raw['Protein_Content'] > 3.5:
-#         suggestions.append("⚠ High protein – check herd nutrition; may affect processing behavior.")
-
-#     if raw['Lactose_Content'] < 4.5:
-#         suggestions.append("⚠ Low lactose – could be due to mastitis or milk adulteration.")
-#     elif raw['Lactose_Content'] > 5.2:
-#         suggestions.append("⚠ High lactose – may suggest sampling/lab errors; review test procedure.")
-
-#     if raw['TPC'] > 100000:
-#         suggestions.append("⚠ High bacterial count (TPC) – review hygiene, sanitation, and storage conditions.")
-
-#     if raw['SCC'] > 400000:
-#         suggestions.append("⚠ High somatic cell count – possible mastitis; review herd health and udder hygiene.")
-
-
-#     if not suggestions:
-#         suggestions.append("✅ Milk meets quality standards.")
-#         suggestions.append("✅ Maintain current handling procedures.")
-
-#     # 6) Save to Firestore
-#     batch_doc = {
-#         **batch_info,
-#         **raw,
-#         "prediction": prediction,
-#         "colors": colors,         # store colors for later use
-#         "suggestions": suggestions,
-#         "created_at": firestore.SERVER_TIMESTAMP
-#     }
-#     doc_ref = db.collection("milk_batches").add(batch_doc)
-#     batch_id = doc_ref[1].id  # Firestore returns (write_result, doc_ref)
-
-#     # 7) Redirect to dedicated result page
-#     return redirect(url_for('show_result', batch_id=batch_id))
-
-# QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
-
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'user' not in session:
@@ -339,27 +190,18 @@ def predict():
 
     # 1) Collect batch info
     batch_info = {
-        # 'Farmer': request.form.get('farmer'),
-        'Collection Center': request.form.get('collection_center'),
-        'Contact': request.form.get('contact'),
-        'Location': request.form.get('location'),
-        'Batch Number': f"BATCH-{uuid.uuid4().hex[:8].upper()}",
-        'Time of Collection': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        'Transport Details': request.form.get('transport_details'),
+    'Collection Center': request.form.get('collection_center'),
+    'Contact': request.form.get('contact'),
+    'District': request.form.get('district'),
+    'Location': request.form.get('location'),
+    'Driver Name': request.form.get('driver_name'),
+    'Transport Details': request.form.get('transport_details'),
+    'Batch Number': f"BATCH-{uuid.uuid4().hex[:8].upper()}",
+    'Time of Collection': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    'Tested By': request.form.get('tested_by'),
+    'Number of Liters Collected': safe_float(request.form.get('liters_collected', 0), 'Number of Liters Collected'),
     }
 
-    # 2) Collect predictor inputs (numerical only for model)
-    # raw = {
-    #     'pH':                 float(request.form['ph']),
-    #     'Temperature':        float(request.form['temperature']),
-    #     'Fat_Content':        float(request.form['fat']),
-    #     'SNF':                float(request.form['snf']),
-    #     'Titratable_Acidity': float(request.form['acidity']),
-    #     'Protein_Content':    float(request.form['protein']),
-    #     'Lactose_Content':    float(request.form['lactose']),
-    #     'TPC':                float(request.form['tpc']),
-    #     'SCC':                float(request.form['scc']),
-    # }
     try:
         raw = {
             'pH':                 safe_float(request.form['ph'], 'pH Level'),
@@ -416,23 +258,6 @@ def predict():
         suggestions.append("✅ Milk meets quality standards.")
         suggestions.append("✅ Maintain current handling procedures.")
 
-    # # 6) Save to Firestore
-    # batch_doc = {
-    #     **batch_info,
-    #     **raw,
-    #     "prediction": prediction,
-    #     "colors": colors,
-    #     "suggestions": suggestions,
-    #     "created_at": firestore.SERVER_TIMESTAMP
-    # }
-    # doc_ref = db.collection("milk_batches").add(batch_doc)
-    # ############
-
-    # ############
-    # batch_id = doc_ref[1].id
-
-    # # 7) Redirect to result page
-    # return redirect(url_for('show_result', batch_id=batch_id))
     # 6) Save to Firestore
     batch_doc = {
         **batch_info,
@@ -483,57 +308,7 @@ def predict():
 
     # 7) Redirect to result page
     return redirect(url_for('show_result', batch_id=batch_id))
-
-
 # ###############################################################################
-
-# @app.route('/result/<batch_id>')
-# def show_result(batch_id):
-#     if 'user' not in session:
-#         return redirect(url_for('login'))
-
-#     # Get this batch
-#     doc = db.collection("milk_batches").document(batch_id).get()
-#     if not doc.exists:
-#         return "Batch not found", 404
-#     data = doc.to_dict()
-
-#     # Fetch history for chart
-#     batches = db.collection("milk_batches").order_by("created_at").stream()
-#     chart_data = []
-#     for batch in batches:
-#         d = batch.to_dict()
-#         if "Time of Collection" not in d:
-#             continue
-#         chart_data.append({
-#             "date": d["Time of Collection"],
-#             "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-#             "farmer": d.get("Farmer"),
-#             "prediction_label": d.get("prediction")
-#         })
-        
-#     # Render template
-#     return render_template(
-#         "result.html",
-#         prediction=data.get("prediction"),
-#         feature_names=list(STANDARDS.keys()),   # ✅ use STANDARDS
-#         raw_values=[data.get(k) for k in STANDARDS.keys()],
-#         colors=data.get("colors", []),
-#         raw={k: data.get(k) for k in STANDARDS.keys()},
-#         suggestions=data.get("suggestions", []),
-#         batch_info={
-#             "Farmer": data.get("Farmer"),
-#             "Contact": data.get("Contact"),
-#             "Location": data.get("Location"),
-#             "Batch Number": data.get("Batch Number"),
-#             "Time of Collection": data.get("Time of Collection"),
-#             "Transport Details": data.get("Transport Details"),
-#         },
-#         chart_data=chart_data,
-#         STANDARDS=STANDARDS   # ✅ pass standards to template if needed
-#     )
-
-
 @app.route('/result/<batch_id>')
 def show_result(batch_id):
     if 'user' not in session:
@@ -558,28 +333,7 @@ def show_result(batch_id):
             "Collection Center": d.get("Collection Center"),
             "prediction_label": d.get("prediction")
         })
-        
-    # Render template
-    # return render_template(
-    #     "result.html",
-    #     prediction=data.get("prediction"),
-    #     feature_names=list(STANDARDS.keys()),
-    #     raw_values=[data.get(k) for k in STANDARDS.keys()],
-    #     colors=data.get("colors", []),
-    #     raw={k: data.get(k) for k in STANDARDS.keys()},
-    #     suggestions=data.get("suggestions", []),
-    #     batch_info={
-    #         "Farmer": data.get("Farmer"),
-    #         "Contact": data.get("Contact"),
-    #         "Location": data.get("Location"),
-    #         "Batch Number": data.get("Batch Number"),
-    #         "Time of Collection": data.get("Time of Collection"),
-    #         "Transport Details": data.get("Transport Details"),
-    #     },
-    #     chart_data=chart_data,
-    #     STANDARDS=STANDARDS   # ✅ available to JS
-    # )
-        # Only show parameters entered by user
+    # Only show parameters entered by user
     visible_fields = [
         'pH',
         'Temperature',
@@ -601,67 +355,21 @@ def show_result(batch_id):
         colors=data.get("colors", []),
         raw={k: data.get(k) for k in visible_fields},
         suggestions=data.get("suggestions", []),
-        batch_info={
-            # "Farmer": data.get("Farmer"),
-            "Collection Center": d.get("Collection Center"),
-            "Contact": data.get("Contact"),
-            "Location": data.get("Location"),
-            "Batch Number": data.get("Batch Number"),
-            "Time of Collection": data.get("Time of Collection"),
-            "Transport Details": data.get("Transport Details"),
+        batch_info = {
+        "Collection Center": data.get("Collection Center"),
+        "Contact": data.get("Contact"),
+        "District": data.get("District"),
+        "Location": data.get("Location"),
+        "Driver Name": data.get("Driver Name"),
+        "Vehicle Number Plate": data.get("Transport Details"),
+        "Batch Number": data.get("Batch Number"),
+        "Time of Collection": data.get("Time of Collection"),
+        "Tested By": data.get("Tested By"),
+        "Number of Liters Collected": data.get("Number of Liters Collected"),
         },
         chart_data=chart_data,
         STANDARDS=STANDARDS
     )
-
-
-
-##############################################################
-# @app.route('/result/<batch_id>')
-# def show_result(batch_id):
-#     if 'user' not in session:
-#         return redirect(url_for('login'))
-
-#     # Get this batch
-#     doc = db.collection("milk_batches").document(batch_id).get()
-#     if not doc.exists:
-#         return "Batch not found", 404
-#     data = doc.to_dict()
-
-#     # Fetch history for chart
-#     batches = db.collection("milk_batches").order_by("created_at").stream()
-#     chart_data = []
-#     for batch in batches:
-#         d = batch.to_dict()
-#         if "Time of Collection" not in d:
-#             continue
-#         chart_data.append({
-#             "date": d["Time of Collection"],
-#             "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-#             "farmer": d.get("Farmer"),                 # ✅ from this batch
-#             "prediction_label": d.get("prediction")    # ✅ from this batch
-#         })
-        
-#     # Render template
-#     return render_template(
-#         "result.html",
-#         prediction=data.get("prediction"),
-#         feature_names=list(STANDARDS.keys()),
-#         raw_values=[data.get(k) for k in STANDARDS.keys()],
-#         colors=data.get("colors", []),
-#         raw={k: data.get(k) for k in STANDARDS.keys()},
-#         suggestions=data.get("suggestions", []),
-#         batch_info={
-#             "Farmer": data.get("Farmer"),
-#             "Contact": data.get("Contact"),
-#             "Location": data.get("Location"),
-#             "Batch Number": data.get("Batch Number"),
-#             "Time of Collection": data.get("Time of Collection"),
-#             "Transport Details": data.get("Transport Details"),
-#         },
-#         chart_data=chart_data,
-#         STANDARDS=STANDARDS
-#     )
 
 if __name__ == '__main__':
     app.run(debug=True)
