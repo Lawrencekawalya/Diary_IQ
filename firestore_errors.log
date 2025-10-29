@@ -385,3 +385,47 @@
 2025-10-27 19:53:57,257 - INFO - 127.0.0.1 - - [27/Oct/2025 19:53:57] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
 2025-10-27 19:53:57,958 - INFO - 127.0.0.1 - - [27/Oct/2025 19:53:57] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
 2025-10-27 19:55:31,120 - INFO - 127.0.0.1 - - [27/Oct/2025 19:55:31] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 18:46:29,466 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-29 18:46:29,467 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-29 18:46:29,471 - INFO -  * Restarting with stat
+2025-10-29 18:46:39,894 - WARNING -  * Debugger is active!
+2025-10-29 18:46:39,912 - INFO -  * Debugger PIN: 118-908-646
+2025-10-29 18:46:41,035 - INFO - 127.0.0.1 - - [29/Oct/2025 18:46:41] "GET / HTTP/1.1" 200 -
+2025-10-29 18:46:43,224 - INFO - 127.0.0.1 - - [29/Oct/2025 18:46:43] "GET /static/favicon_white.png HTTP/1.1" 200 -
+2025-10-29 18:46:43,241 - INFO - 127.0.0.1 - - [29/Oct/2025 18:46:43] "GET /static/login-bg.webp HTTP/1.1" 200 -
+2025-10-29 18:47:35,883 - INFO - 127.0.0.1 - - [29/Oct/2025 18:47:35] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-10-29 18:47:35,947 - INFO - 127.0.0.1 - - [29/Oct/2025 18:47:35] "GET /index HTTP/1.1" 200 -
+2025-10-29 18:47:36,305 - INFO - 127.0.0.1 - - [29/Oct/2025 18:47:36] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 18:49:09,302 - INFO - 127.0.0.1 - - [29/Oct/2025 18:49:09] "GET /history HTTP/1.1" 200 -
+2025-10-29 18:49:10,772 - INFO - 127.0.0.1 - - [29/Oct/2025 18:49:10] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 18:51:10,577 - INFO - 127.0.0.1 - - [29/Oct/2025 18:51:10] "GET /static/favicon.png HTTP/1.1" 200 -
+2025-10-29 18:59:18,291 - INFO - 127.0.0.1 - - [29/Oct/2025 18:59:18] "GET /index HTTP/1.1" 200 -
+2025-10-29 18:59:18,502 - INFO - 127.0.0.1 - - [29/Oct/2025 18:59:18] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 18:59:18,932 - INFO - 127.0.0.1 - - [29/Oct/2025 18:59:18] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
+2025-10-29 19:03:20,854 - INFO - 127.0.0.1 - - [29/Oct/2025 19:03:20] "[32mPOST /predict HTTP/1.1[0m" 302 -
+2025-10-29 19:03:22,621 - INFO - 127.0.0.1 - - [29/Oct/2025 19:03:22] "GET /result/UC47KH1XbHUNLMZfWOIU HTTP/1.1" 200 -
+2025-10-29 19:03:22,953 - INFO - 127.0.0.1 - - [29/Oct/2025 19:03:22] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:05:05,280 - INFO - 127.0.0.1 - - [29/Oct/2025 19:05:05] "GET /result/UC47KH1XbHUNLMZfWOIU HTTP/1.1" 200 -
+2025-10-29 19:05:05,640 - INFO - 127.0.0.1 - - [29/Oct/2025 19:05:05] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:05:05,863 - INFO - 127.0.0.1 - - [29/Oct/2025 19:05:05] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
+2025-10-29 19:06:01,986 - INFO - 127.0.0.1 - - [29/Oct/2025 19:06:01] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:07:04,494 - INFO - 127.0.0.1 - - [29/Oct/2025 19:07:04] "GET /history HTTP/1.1" 200 -
+2025-10-29 19:07:05,147 - INFO - 127.0.0.1 - - [29/Oct/2025 19:07:05] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:07:06,474 - INFO - 127.0.0.1 - - [29/Oct/2025 19:07:06] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
+2025-10-29 19:11:13,091 - INFO - 127.0.0.1 - - [29/Oct/2025 19:11:13] "GET /history HTTP/1.1" 200 -
+2025-10-29 19:11:13,182 - INFO - 127.0.0.1 - - [29/Oct/2025 19:11:13] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:11:14,733 - INFO - 127.0.0.1 - - [29/Oct/2025 19:11:14] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
+2025-10-29 19:13:10,997 - INFO - 127.0.0.1 - - [29/Oct/2025 19:13:10] "GET /index HTTP/1.1" 200 -
+2025-10-29 19:13:11,321 - INFO - 127.0.0.1 - - [29/Oct/2025 19:13:11] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:32:30,476 - INFO - 127.0.0.1 - - [29/Oct/2025 19:32:30] "[32mPOST /predict HTTP/1.1[0m" 302 -
+2025-10-29 19:32:32,740 - INFO - 127.0.0.1 - - [29/Oct/2025 19:32:32] "GET /result/XBK1OnVIlo2czC3PwnFl HTTP/1.1" 200 -
+2025-10-29 19:32:32,922 - INFO - 127.0.0.1 - - [29/Oct/2025 19:32:32] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:34:21,473 - INFO - 127.0.0.1 - - [29/Oct/2025 19:34:21] "GET /index HTTP/1.1" 200 -
+2025-10-29 19:34:21,697 - INFO - 127.0.0.1 - - [29/Oct/2025 19:34:21] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:38:08,303 - INFO - 127.0.0.1 - - [29/Oct/2025 19:38:08] "GET /index HTTP/1.1" 200 -
+2025-10-29 19:38:08,384 - INFO - 127.0.0.1 - - [29/Oct/2025 19:38:08] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:38:08,562 - INFO - 127.0.0.1 - - [29/Oct/2025 19:38:08] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
+2025-10-29 19:41:02,013 - INFO - 127.0.0.1 - - [29/Oct/2025 19:41:02] "GET /index HTTP/1.1" 200 -
+2025-10-29 19:41:02,088 - INFO - 127.0.0.1 - - [29/Oct/2025 19:41:02] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2025-10-29 19:41:02,209 - INFO - 127.0.0.1 - - [29/Oct/2025 19:41:02] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
