@@ -429,3 +429,66 @@
 2025-10-29 19:41:02,013 - INFO - 127.0.0.1 - - [29/Oct/2025 19:41:02] "GET /index HTTP/1.1" 200 -
 2025-10-29 19:41:02,088 - INFO - 127.0.0.1 - - [29/Oct/2025 19:41:02] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
 2025-10-29 19:41:02,209 - INFO - 127.0.0.1 - - [29/Oct/2025 19:41:02] "[36mGET /static/favicon.png HTTP/1.1[0m" 304 -
+2026-06-09 03:51:06,239 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-06-09 03:51:06,240 - INFO - [33mPress CTRL+C to quit[0m
+2026-06-09 03:51:06,240 - INFO -  * Restarting with stat
+2026-06-09 03:51:07,491 - WARNING -  * Debugger is active!
+2026-06-09 03:51:07,501 - INFO -  * Debugger PIN: 592-654-717
+2026-06-09 03:54:21,436 - INFO - 127.0.0.1 - - [09/Jun/2026 03:54:21] "GET / HTTP/1.1" 200 -
+2026-06-09 03:54:21,886 - INFO - 127.0.0.1 - - [09/Jun/2026 03:54:21] "GET /static/favicon_white.png HTTP/1.1" 200 -
+2026-06-09 03:54:21,905 - INFO - 127.0.0.1 - - [09/Jun/2026 03:54:21] "GET /static/login-bg.webp HTTP/1.1" 200 -
+2026-06-09 03:54:21,910 - INFO - 127.0.0.1 - - [09/Jun/2026 03:54:21] "GET /static/favicon.png HTTP/1.1" 200 -
+2026-06-09 03:56:27,261 - INFO - 127.0.0.1 - - [09/Jun/2026 03:56:27] "POST /login HTTP/1.1" 200 -
+2026-06-09 03:56:27,573 - INFO - 127.0.0.1 - - [09/Jun/2026 03:56:27] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 03:57:20,793 - INFO - 127.0.0.1 - - [09/Jun/2026 03:57:20] "POST /login HTTP/1.1" 200 -
+2026-06-09 03:57:21,103 - INFO - 127.0.0.1 - - [09/Jun/2026 03:57:21] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 03:57:44,239 - INFO - 127.0.0.1 - - [09/Jun/2026 03:57:44] "POST /login HTTP/1.1" 200 -
+2026-06-09 03:57:44,532 - INFO - 127.0.0.1 - - [09/Jun/2026 03:57:44] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 03:58:23,130 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-06-09 03:58:23,130 - INFO - [33mPress CTRL+C to quit[0m
+2026-06-09 03:58:23,131 - INFO -  * Restarting with stat
+2026-06-09 03:58:24,474 - WARNING -  * Debugger is active!
+2026-06-09 03:58:24,477 - INFO -  * Debugger PIN: 592-654-717
+2026-06-09 03:59:05,540 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:05] "POST /login HTTP/1.1" 200 -
+2026-06-09 03:59:05,568 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:05] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 03:59:15,054 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:15] "POST /login HTTP/1.1" 200 -
+2026-06-09 03:59:15,094 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:15] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 03:59:21,038 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:21] "GET / HTTP/1.1" 200 -
+2026-06-09 03:59:21,092 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:21] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 03:59:24,636 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:24] "GET / HTTP/1.1" 200 -
+2026-06-09 03:59:24,662 - INFO - 127.0.0.1 - - [09/Jun/2026 03:59:24] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:01:14,136 - INFO - 127.0.0.1 - - [09/Jun/2026 04:01:14] "GET / HTTP/1.1" 200 -
+2026-06-09 04:01:14,180 - INFO - 127.0.0.1 - - [09/Jun/2026 04:01:14] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:01:33,069 - INFO - 127.0.0.1 - - [09/Jun/2026 04:01:33] "GET / HTTP/1.1" 200 -
+2026-06-09 04:01:33,137 - INFO - 127.0.0.1 - - [09/Jun/2026 04:01:33] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:03:05,053 - INFO - 127.0.0.1 - - [09/Jun/2026 04:03:05] "GET / HTTP/1.1" 200 -
+2026-06-09 04:03:05,113 - INFO - 127.0.0.1 - - [09/Jun/2026 04:03:05] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:03:21,124 - INFO - 127.0.0.1 - - [09/Jun/2026 04:03:21] "POST /login HTTP/1.1" 200 -
+2026-06-09 04:03:21,205 - INFO - 127.0.0.1 - - [09/Jun/2026 04:03:21] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:09:49,560 - INFO -  * Detected change in '/home/kawaly/Projects/Laravel_APPs/Diary_IQ/app/main.py', reloading
+2026-06-09 04:09:51,858 - INFO -  * Restarting with stat
+2026-06-09 04:10:08,126 - WARNING -  * Debugger is active!
+2026-06-09 04:10:08,143 - INFO -  * Debugger PIN: 592-654-717
+2026-06-09 04:10:56,620 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-06-09 04:10:56,621 - INFO - [33mPress CTRL+C to quit[0m
+2026-06-09 04:10:56,628 - INFO -  * Restarting with stat
+2026-06-09 04:11:12,979 - WARNING -  * Debugger is active!
+2026-06-09 04:11:12,997 - INFO -  * Debugger PIN: 592-654-717
+2026-06-09 04:11:29,674 - INFO - 127.0.0.1 - - [09/Jun/2026 04:11:29] "GET / HTTP/1.1" 200 -
+2026-06-09 04:11:31,026 - INFO - 127.0.0.1 - - [09/Jun/2026 04:11:31] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:11:36,554 - INFO - 127.0.0.1 - - [09/Jun/2026 04:11:36] "POST /login HTTP/1.1" 200 -
+2026-06-09 04:11:37,193 - INFO - 127.0.0.1 - - [09/Jun/2026 04:11:37] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:18:38,339 - INFO - 127.0.0.1 - - [09/Jun/2026 04:18:38] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-06-09 04:18:38,473 - INFO - 127.0.0.1 - - [09/Jun/2026 04:18:38] "GET /index HTTP/1.1" 200 -
+2026-06-09 04:18:39,083 - INFO - 127.0.0.1 - - [09/Jun/2026 04:18:39] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:19:02,902 - INFO - 127.0.0.1 - - [09/Jun/2026 04:19:02] "GET /history HTTP/1.1" 200 -
+2026-06-09 04:19:06,040 - INFO - 127.0.0.1 - - [09/Jun/2026 04:19:06] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:22:34,908 - INFO - 127.0.0.1 - - [09/Jun/2026 04:22:34] "GET /index HTTP/1.1" 200 -
+2026-06-09 04:22:34,949 - INFO - 127.0.0.1 - - [09/Jun/2026 04:22:34] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:22:57,399 - INFO - 127.0.0.1 - - [09/Jun/2026 04:22:57] "GET /history HTTP/1.1" 200 -
+2026-06-09 04:22:57,511 - INFO - 127.0.0.1 - - [09/Jun/2026 04:22:57] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-06-09 04:25:43,830 - INFO - 127.0.0.1 - - [09/Jun/2026 04:25:43] "GET /index HTTP/1.1" 200 -
+2026-06-09 04:25:43,858 - INFO - 127.0.0.1 - - [09/Jun/2026 04:25:43] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -

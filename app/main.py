@@ -47,7 +47,7 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
 # cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
-cred = credentials.Certificate("firebase_key.json")
+cred = credentials.Certificate("firebase/firebase_key.json")
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -102,6 +102,12 @@ def login():
     password = request.form['password']
 
     result = firebase_login(email, password)
+
+    # result = firebase_login(email, password)
+
+    print("================================")
+    print("Firebase response:", result)
+    print("================================")
 
     if "idToken" in result:
         session.permanent = True
