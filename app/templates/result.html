@@ -240,7 +240,7 @@
         color: var(--success);
       }
 
-      .quality-moderate {
+      .quality-medium {
         color: var(--warning);
       }
 
@@ -611,7 +611,7 @@
       // Data from Flask
       const features = {{ feature_names | tojson }};
       const values = {{ raw_values | tojson }};
-      const prediction = "{{ prediction }}"; // "High", "Moderate", "Low"
+      const prediction = "{{ prediction }}"; // "High", "Medium", "Low"
 
       // Normal ranges (passed from Flask too if needed)
 
@@ -673,7 +673,7 @@
       });
 
       // Prediction Chart
-      const predictionLabels = ["Low", "Moderate", "High"];
+      const predictionLabels = ["Low", "Medium", "High"];
       const predictionColors = ["#e74c3c", "#f39c12", "#2ecc71"];
       const predictionValues = predictionLabels.map(lbl => lbl === prediction ? 1 : 0);
 
@@ -725,7 +725,7 @@
         // Data from Flask
         const features = {{ feature_names | tojson }};
         const values = {{ raw_values | tojson }};
-        const prediction = "{{ prediction }}"; // "High", "Moderate", "Low"
+        const prediction = "{{ prediction }}"; // "High", "Medium", "Low"
         const STANDARDS = {{ STANDARDS | tojson }};
 
         // Build colors based on normal ranges
@@ -850,7 +850,7 @@
 
 
         // === Prediction Chart ===
-        const predictionLabels = ["Low", "Moderate", "High"];
+        const predictionLabels = ["Low", "Medium", "High"];
         const predictionColors = ["#e74c3c", "#f39c12", "#2ecc71"];
         const predictionValues = predictionLabels.map(lbl => lbl === prediction ? 1 : 0);
 

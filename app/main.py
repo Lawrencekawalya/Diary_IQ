@@ -18,6 +18,12 @@ import json
 import time
 import logging
 import google.api_core.exceptions
+from model_contract import (
+    LEGACY_MODEL_FEATURES,
+    QUALITY_LABELS,
+    QUALITY_MAP,
+    normalize_quality_label,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -54,10 +60,7 @@ db = firestore.client()
 
 # Load legacy baseline model until the thesis-aligned artifact is trained.
 model = joblib.load("ml_model/dairy_model_legacy_9feature.pkl")
-labels = ['Low', 'Moderate', 'High']
-
-# Quality mapping (used in charts)
-QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
+labels = QUALITY_LABELS
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 
@@ -138,23 +141,23 @@ def history():
             "Location": d.get("Location"),
             "Tested By": d.get("Tested By"),
             "Time of Collection": d.get("Time of Collection"),
-            "Prediction": d.get("prediction"),
+            "Prediction": normalize_quality_label(d.get("prediction")),
         })
 
         # Build chart data too
         if "Time of Collection" in d:
             chart_data.append({
                 "date": d["Time of Collection"],
-                "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
+                "prediction": QUALITY_MAP.get(normalize_quality_label(d.get("prediction")), 0),
                 "collection_center": d.get("Collection Center"),
-                "prediction_label": d.get("prediction"),
+                "prediction_label": normalize_quality_label(d.get("prediction")),
                 "district": d.get("District"),
                 "liters_collected": d.get("Number of Liters Collected", 0)
             })
 
             # chart_data.append({
             #     "date": d["Time of Collection"],
-            #     "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
+            #     "prediction": QUALITY_MAP.get(normalize_quality_label(d.get("prediction")), 0),
             #     "collection_center": d.get("Collection Center"),  # ✅ Fix here too
             #     "prediction_label": d.get("prediction"),
             # })
@@ -178,7 +181,7 @@ def debug_firebase():
         "firebase_api_key_configured": bool(FIREBASE_API_KEY)
     }
 ############################################################################
-# QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
+# QUALITY_MAP comes from the approved model contract.
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -225,7 +228,7 @@ def predict():
 
     # 3) Run ML prediction
     df = pd.DataFrame([list(raw.values())], columns=list(raw.keys()))
-    prediction = model.predict(df)[0]   # "Low", "Moderate", "High"
+    prediction = normalize_quality_label(model.predict(df)[0])
 
     # 4) Build colors + suggestions dynamically from STANDARDS
     colors = []
@@ -326,27 +329,17 @@ def show_result(batch_id):
             continue
         chart_data.append({
             "date": d["Time of Collection"],
-            "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
+            "prediction": QUALITY_MAP.get(normalize_quality_label(d.get("prediction")), 0),
             "Collection Center": d.get("Collection Center"),
-            "prediction_label": d.get("prediction")
+            "prediction_label": normalize_quality_label(d.get("prediction"))
         })
     # Only show parameters entered by user
-    visible_fields = [
-        'pH',
-        'Temperature',
-        'Fat_Content',
-        'SNF',
-        'Titratable_Acidity',
-        'Protein_Content',
-        'Lactose_Content',
-        'TPC',
-        'SCC'
-    ]
+    visible_fields = LEGACY_MODEL_FEATURES
 
     # Render template
     return render_template(
         "result.html",
-        prediction=data.get("prediction"),
+        prediction=normalize_quality_label(data.get("prediction")),
         feature_names=visible_fields,
         raw_values=[data.get(k) for k in visible_fields],
         colors=data.get("colors", []),

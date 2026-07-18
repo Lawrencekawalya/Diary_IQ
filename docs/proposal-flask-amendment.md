@@ -33,7 +33,7 @@ DairyIQ is a responsive Flask-based decision-support web application that uses
 a trained Random Forest classifier to classify raw milk quality into:
 
 - `Low`
-- `Moderate`
+- `Medium`
 - `High`
 
 Authorized users enter milk collection details and laboratory measurements
@@ -58,28 +58,30 @@ The system provides:
 
 Subject to final validation against the approved dataset and milk-quality
 standard, the transformed Flask prototype and Random Forest model will use
-these 13 laboratory, sensory, and appearance features:
+these 11 laboratory, sensory, and appearance features:
 
 1. pH;
 2. temperature;
-3. fat content;
-4. solids-not-fat (SNF);
-5. titratable acidity;
-6. protein content;
-7. lactose content;
-8. Total Plate Count (TPC);
-9. Somatic Cell Count (SCC);
-10. taste;
-11. odor;
-12. color;
-13. turbidity.
+3. taste;
+4. odor;
+5. fat content;
+6. titratable acidity;
+7. protein content;
+8. lactose content;
+9. Total Plate Count (TPC);
+10. Somatic Cell Count (SCC);
+11. color.
 
-The four added parameters are required prediction inputs and must be included
+The three sensory and appearance parameters are required prediction inputs and must be included
 in the authoritative dataset, preprocessing pipeline, web form, Flask
 validation, model artifact, Firestore records, reports, and automated tests.
-The existing nine-feature model artifact cannot make valid 13-feature
+The existing nine-feature model artifact cannot make valid 11-feature
 predictions and must be retrained or replaced before these fields become
 active in production.
+
+`SNF` is not part of the approved model input contract. It may be retained only
+as non-model metadata if needed by the operational record. `Turbidity` must not
+be added because it is not part of the approved thesis feature contract.
 
 The initial encoding contract is:
 
@@ -88,12 +90,9 @@ The initial encoding contract is:
 | Taste     | Normal or acceptable taste     | Abnormal or off-taste          |
 | Odor      | Fresh or normal odor           | Abnormal or objectionable odor |
 | Color     | Normal creamy-white appearance | Abnormal appearance            |
-| Turbidity | Normal or expected opacity     | Abnormal turbidity             |
 
 The exact assessment procedure and user-facing wording must be approved by a
-milk-quality domain expert. If turbidity is obtained from an instrument, the
-approved numerical unit and valid range must replace the binary representation
-in the dataset, model contract, interface, and dissertation.
+milk-quality domain expert.
 
 The taste parameter must follow a documented safe assessment protocol. The
 system must not direct operators to consume potentially contaminated raw milk.
@@ -124,7 +123,7 @@ quality assessment and decision-making in Ugandan dairy processing plants.
 1. Which laboratory, sensory, and appearance measurements are most relevant
    for effective milk-quality classification?
 2. How effectively does the Random Forest model classify milk into `Low`,
-   `Moderate`, and `High` quality categories?
+   `Medium`, and `High` quality categories?
 3. How can the Random Forest model be integrated into a responsive Flask web
    application that supports authenticated batch recording, visualization,
    historical analysis, and reporting?
@@ -133,9 +132,9 @@ quality assessment and decision-making in Ugandan dairy processing plants.
 
 ## Revised Content Scope
 
-The study covers milk-quality classification using the approved 13-feature
-contract combining laboratory measurements with taste, odor, color, and
-turbidity assessments. It includes dataset validation, preprocessing, Random
+The study covers milk-quality classification using the approved 11-feature
+contract combining laboratory measurements with taste, odor, and color
+assessments. It includes dataset validation, preprocessing, Random
 Forest development, comparative model evaluation where academically required,
 model validation, and integration into a Flask-based prototype.
 
@@ -225,17 +224,17 @@ For each prediction:
    in Firestore.
 8. The browser displays the result, measurements, observations, and charts.
 
-The preprocessing pipeline must encode taste, odor, color, and turbidity using
+The preprocessing pipeline must encode taste, odor, and color using
 the same mapping during training and inference. User-facing labels must be
 stored alongside encoded values so that each prediction remains auditable.
 
 ## Revised Methodology: Expanded Dataset
 
-The authoritative dataset must contain all 13 target features for every sample.
+The authoritative dataset must contain all 11 target features for every sample.
 The four added parameters must contain meaningful, domain-valid variation and
 must not be introduced as constant or arbitrarily populated columns.
 
-For taste, odor, color, and visually assessed turbidity, the study must
+For taste, odor, and color, the study must
 document:
 
 - the assessment definitions;
@@ -247,9 +246,9 @@ document:
 - class distributions and feature distributions.
 
 The study will compare the existing nine-feature candidate with the expanded
-13-feature candidate using identical evaluation splits. This comparison will
+11-feature candidate using identical evaluation splits. This comparison will
 show whether the added parameters improve generalization, macro F1, and recall
-for `Low` and `Moderate` quality classes.
+for `Low` and `Medium` quality classes.
 
 ## Revised Methodology: System Testing
 
@@ -299,11 +298,11 @@ The system shall:
 2. allow users to log out and protect restricted routes;
 3. capture collection-center, district, transport, tester, and volume details;
 4. capture all approved milk-quality measurements;
-5. capture taste, odor, color, and turbidity using controlled input fields;
+5. capture taste, odor, and color using controlled input fields;
 6. validate laboratory and sensory input before prediction;
-7. classify milk as `Low`, `Moderate`, or `High`;
+7. classify milk as `Low`, `Medium`, or `High`;
 8. present standards-based observations separately from the ML result;
-9. save all 13 inputs, the batch, and the prediction to Firestore;
+9. save all 11 inputs, the batch, and the prediction to Firestore;
 10. display the result and entered measurements;
 11. display historical batch records and quality trends;
 12. provide district and collection-center analytics;
@@ -342,7 +341,7 @@ limitation and recommend one or more future improvements:
 ## Revised Expected Output
 
 The expected output is a functional Flask-based DairyIQ prototype through which
-authorized users can enter milk-batch information and all 13 laboratory,
+authorized users can enter milk-batch information and all 11 laboratory,
 sensory, and appearance parameters, obtain a Random Forest quality
 classification, review supporting observations and visualizations, store the
 result, inspect historical records, and export reports.
@@ -369,7 +368,7 @@ these have been reproduced by the approved pipeline.
 ### Section 1.8.1: Content Scope
 
 Replace "prototype desktop-based system" with "responsive Flask-based web
-prototype." Describe the approved 13-feature contract consistently.
+prototype." Describe the approved 11-feature contract consistently.
 
 ### Section 3.6.2: Implementation
 
@@ -389,7 +388,7 @@ actual Flask system:
 - login interface;
 - batch-information form;
 - testing-parameter form;
-- taste, odor, color, and turbidity controls;
+- taste, odor, and color controls;
 - prediction result page;
 - historical records and trend charts;
 - district analytics;

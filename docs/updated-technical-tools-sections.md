@@ -1,7 +1,7 @@
 # Updated Proposal Sections: Technical Tools and Software
 
 The following text replaces Section 3.12 and its subsections in the report. It
-describes the Flask-based DairyIQ prototype and the approved 13-feature machine
+describes the Flask-based DairyIQ prototype and the approved 11-feature machine
 learning contract.
 
 ## 3.12 Technical Tools and Software
@@ -17,7 +17,7 @@ web application. The training pipeline will prepare and validate the approved
 dataset, train and evaluate candidate classification models, and save the
 selected Random Forest model as a versioned artifact. The Flask application
 will then load the approved artifact and use it to classify milk samples from
-the 13 submitted laboratory, sensory, and appearance parameters.
+the 11 submitted laboratory, sensory, and appearance parameters.
 
 The prototype will use a client-server architecture. Flask will process user
 requests and coordinate model inference, while HTML, CSS, JavaScript, and Jinja
@@ -32,14 +32,14 @@ reporting, and future extension of the DairyIQ system.
 Pandas and NumPy will be used for data preparation and numerical processing.
 Pandas will provide DataFrame structures for loading, inspecting, cleaning, and
 transforming the milk-quality dataset. It will also support the selection and
-ordering of the 13 model features: pH, temperature, fat content, solids-not-fat
-(SNF), titratable acidity, protein content, lactose content, Total Plate Count
-(TPC), Somatic Cell Count (SCC), taste, odor, color, and turbidity.
+ordering of the 11 model features: pH, temperature, taste, odor, fat content,
+titratable acidity, protein content, lactose content, Total Plate Count (TPC),
+Somatic Cell Count (SCC), and color.
 
 Pandas will be used to identify missing values, duplicate records, invalid data
 types, inconsistent category names, and values outside approved physical or
 operational ranges. It will also support analysis of class distribution and
-verification that the target contains the defined `Low`, `Moderate`, and
+verification that the target contains the defined `Low`, `Medium`, and
 `High` quality categories.
 
 NumPy will support numerical operations used during preprocessing and
@@ -50,13 +50,11 @@ retained after experimentation will be included in the production
 preprocessing pipeline so that training and web-based prediction apply exactly
 the same processing rules.
 
-Taste, odor, color, and turbidity will be encoded according to a
-domain-approved mapping. The initial representation will use `1` for a normal
-or acceptable condition and `0` for an abnormal condition. If turbidity is
-measured using an approved instrument, its numerical unit and valid range will
-replace the binary representation consistently. The taste parameter will use a
-safe approved assessment method and will not instruct operators to consume
-potentially contaminated raw milk.
+Taste, odor, and color will be encoded according to a domain-approved mapping.
+The representation will use `1` for a normal or acceptable condition and `0`
+for an abnormal condition. The taste parameter will use a safe approved
+assessment method and will not instruct operators to consume potentially
+contaminated raw milk.
 
 Matplotlib and Seaborn will be used during exploratory analysis and model
 evaluation. Matplotlib will generate learning curves, confusion matrices, and
@@ -77,7 +75,7 @@ classification, models nonlinear relationships, handles mixed laboratory and
 encoded sensory features, and provides feature-importance estimates.
 
 The Random Forest model will be trained using a stratified training and testing
-strategy so that the `Low`, `Moderate`, and `High` classes are represented
+strategy so that the `Low`, `Medium`, and `High` classes are represented
 appropriately in each partition. Hyperparameters such as the number of trees,
 maximum tree depth, minimum samples required for splitting and leaf nodes,
 maximum features considered at each split, and class weighting will be
@@ -103,9 +101,9 @@ from the final implementation.
 Scikit-learn pipelines will be used to keep preprocessing and classification
 operations together. This will reduce the risk of applying different
 transformations during model training and Flask inference. The existing
-nine-feature candidate and the expanded 13-feature candidate will be evaluated
-using identical data partitions to determine whether taste, odor, color, and
-turbidity improve generalization and class-specific performance.
+nine-feature candidate and the expanded 11-feature candidate will be evaluated
+using identical data partitions to determine whether taste, odor, and color
+improve generalization and class-specific performance.
 
 Joblib will be used to save the selected preprocessing pipeline and Random
 Forest classifier as a trusted, versioned model artifact. The artifact or its
@@ -123,7 +121,7 @@ application routes, authenticated sessions, form submission, server-side
 validation, feature preparation, model inference, standards-based observations,
 historical record retrieval, and result rendering.
 
-The backend will validate all 13 required inputs before prediction. It will
+The backend will validate all 11 required inputs before prediction. It will
 convert the approved sensory selections into the same encoded values used
 during training, arrange all features in the model's required order, and submit
 the resulting DataFrame to the saved Random Forest pipeline. The prediction
@@ -144,7 +142,7 @@ not be stored as plain text in the application database. Flask sessions will
 protect restricted routes after successful authentication.
 
 Firebase Firestore will serve as the document-oriented database for the
-prototype. It will store collection-center and transport information, all 13
+prototype. It will store collection-center and transport information, all 11
 model inputs, original sensory descriptions, encoded sensory values, predicted
 class, class probabilities, observations, model metadata, user references, and
 timestamps. Firestore will also support retrieval of historical records for

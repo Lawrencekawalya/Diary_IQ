@@ -95,15 +95,15 @@ The implementation is complete only when:
 
 ## Phase 2: Feature and Label Contract
 
-- [ ] Create one shared model-contract module defining the 11 features.
-- [ ] Standardize labels as `Low`, `Medium`, and `High`.
-- [ ] Replace old `Moderate` references in backend, templates, charts, history,
+- [x] Create one shared model-contract module defining the 11 features.
+- [x] Standardize labels as `Low`, `Medium`, and `High`.
+- [x] Replace old `Moderate` references in backend, templates, charts, history,
       Firestore records, and docs.
-- [ ] Define sensory encoding:
+- [x] Define sensory encoding:
       - `Taste`: normal/acceptable = 1, abnormal/off = 0
       - `Odor`: fresh/normal = 1, abnormal/objectionable = 0
       - `Color`: normal/creamy-white = 1, abnormal = 0
-- [ ] Document that taste assessment must follow a safe approved protocol and
+- [x] Document that taste assessment must follow a safe approved protocol and
       the software must not instruct operators to consume unsafe raw milk.
 
 ## Phase 3: Standards Configuration

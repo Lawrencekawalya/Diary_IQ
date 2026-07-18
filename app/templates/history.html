@@ -270,7 +270,7 @@
         border-left-color: var(--success) !important;
       }
 
-      .insights li.quality-moderate {
+      .insights li.quality-medium {
         border-left-color: var(--warning) !important;
       }
 
@@ -342,7 +342,7 @@
         color: var(--success);
       }
 
-      .badge-moderate {
+      .badge-medium {
         background-color: rgba(243, 156, 18, 0.15);
         color: var(--warning);
       }
@@ -615,11 +615,11 @@
                     "High") | list | length }}
                   </span>
                 </li>
-                <li class="quality-moderate">
-                  <span class="insight-label">Moderate Quality:</span>
+                <li class="quality-medium">
+                  <span class="insight-label">Medium Quality:</span>
                   <span class="insight-value">
                     {{ history_data | selectattr("Prediction", "equalto",
-                    "Moderate") | list | length }}
+                    "Medium") | list | length }}
                   </span>
                 </li>
                 <li class="quality-low">
@@ -707,9 +707,9 @@
               <td>
                 {% if row["Prediction"] == "High" %}
                 <span class="quality-badge badge-high">High Quality</span>
-                {% elif row["Prediction"] == "Moderate" %}
-                <span class="quality-badge badge-moderate"
-                  >Moderate Quality</span
+                {% elif row["Prediction"] == "Medium" %}
+                <span class="quality-badge badge-medium"
+                  >Medium Quality</span
                 >
                 {% else %}
                 <span class="quality-badge badge-low">Low Quality</span>
@@ -748,9 +748,9 @@
               <td>
                 {% if row["Prediction"] == "High" %}
                 <span class="quality-badge badge-high">High Quality</span>
-                {% elif row["Prediction"] == "Moderate" %}
-                <span class="quality-badge badge-moderate"
-                  >Moderate Quality</span
+                {% elif row["Prediction"] == "Medium" %}
+                <span class="quality-badge badge-medium"
+                  >Medium Quality</span
                 >
                 {% else %}
                 <span class="quality-badge badge-low">Low Quality</span>
@@ -803,7 +803,7 @@
           // === Line Chart: Milk Quality Over Time ===
           const qualityColors = chartData.map(b => {
               if (b.prediction_label === "High") return "#2ecc71";
-              if (b.prediction_label === "Moderate") return "#f39c12";
+              if (b.prediction_label === "Medium") return "#f39c12";
               if (b.prediction_label === "Low") return "#e74c3c";
               return "#95a5a6";
           });
@@ -850,7 +850,7 @@
                           max: 2.2,
                           ticks: {
                               stepSize: 1,
-                              callback: value => ["Low", "Moderate", "High"][value] || ""
+                              callback: value => ["Low", "Medium", "High"][value] || ""
                           },
                           title: { display: true, text: "Quality Rating" },
                           grid: { color: "rgba(0, 0, 0, 0.05)" }
@@ -910,7 +910,7 @@
 
               // Count quality distribution
               if (b.prediction_label === "High") districtQuality[district].high++;
-              else if (b.prediction_label === "Moderate") districtQuality[district].moderate++;
+              else if (b.prediction_label === "Medium") districtQuality[district].moderate++;
               else districtQuality[district].low++;
           });
 
@@ -943,7 +943,7 @@
 
       function getQualityColor(value) {
           if (value >= 1.5) return '#2ecc71'; // High quality - green
-          if (value >= 1.0) return '#f39c12'; // Moderate quality - orange
+          if (value >= 1.0) return '#f39c12'; // Medium quality - orange
           return '#e74c3c'; // Low quality - red
       }
 
@@ -1013,7 +1013,7 @@
                                   return [
                                       `Quality Distribution:`,
                                       `High: ${quality.high} (${((quality.high/total)*100).toFixed(1)}%)`,
-                                      `Moderate: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
+                                      `Medium: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
                                       `Low: ${quality.low} (${((quality.low/total)*100).toFixed(1)}%)`
                                   ];
                               }
@@ -1092,7 +1092,7 @@
                       tooltip: {
                           callbacks: {
                               label: function(context) {
-                                  const qualityLabels = ["Low", "Moderate", "High"];
+                                  const qualityLabels = ["Low", "Medium", "High"];
                                   const qualityValue = districtChartData.avgQualityValues[context.dataIndex];
                                   return `Quality: ${qualityLabels[Math.round(qualityValue)]} (${qualityValue.toFixed(2)})`;
                               },
@@ -1125,7 +1125,7 @@
                           ticks: {
                               stepSize: 0.5,
                               callback: function(value) {
-                                  const qualityLabels = ["Low", "Moderate", "High"];
+                                  const qualityLabels = ["Low", "Medium", "High"];
                                   return qualityLabels[value] || value.toFixed(1);
                               }
                           }
@@ -1205,7 +1205,7 @@
                                   if (context.datasetIndex === 0) {
                                       return `${label}: ${context.parsed.y.toLocaleString()} liters`;
                                   } else {
-                                      const qualityLabels = ["Low", "Moderate", "High"];
+                                      const qualityLabels = ["Low", "Medium", "High"];
                                       const qualityValue = districtChartData.avgQualityValues[context.dataIndex];
                                       return `${label}: ${qualityLabels[Math.round(qualityValue)]} (${qualityValue.toFixed(2)})`;
                                   }
@@ -1217,7 +1217,7 @@
                                   return [
                                       `Quality Distribution:`,
                                       `High: ${quality.high} (${((quality.high/total)*100).toFixed(1)}%)`,
-                                      `Moderate: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
+                                      `Medium: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
                                       `Low: ${quality.low} (${((quality.low/total)*100).toFixed(1)}%)`
                                   ];
                               }
@@ -1260,7 +1260,7 @@
                           ticks: {
                               stepSize: 0.5,
                               callback: function(value) {
-                                  const qualityLabels = ["Low", "Moderate", "High"];
+                                  const qualityLabels = ["Low", "Medium", "High"];
                                   return qualityLabels[value] || value.toFixed(1);
                               }
                           }
@@ -1309,7 +1309,7 @@
               // === Line Chart: Milk Quality Over Time ===
               const qualityColors = chartData.map(b => {
                 if (b.prediction_label === "High") return "#2ecc71";
-                if (b.prediction_label === "Moderate") return "#f39c12";
+                if (b.prediction_label === "Medium") return "#f39c12";
                 if (b.prediction_label === "Low") return "#e74c3c";
                 return "#95a5a6";
               });
@@ -1356,7 +1356,7 @@
                       max: 2.2,
                       ticks: {
                         stepSize: 1,
-                        callback: value => ["Low", "Moderate", "High"][value] || ""
+                        callback: value => ["Low", "Medium", "High"][value] || ""
                       },
                       title: { display: true, text: "Quality Rating" },
                       grid: { color: "rgba(0, 0, 0, 0.05)" }
@@ -1387,7 +1387,7 @@
 
         // Count quality distribution
         if (b.prediction_label === "High") districtQuality[district].high++;
-        else if (b.prediction_label === "Moderate") districtQuality[district].moderate++;
+        else if (b.prediction_label === "Medium") districtQuality[district].moderate++;
         else districtQuality[district].low++;
       });
 
@@ -1466,7 +1466,7 @@
                   if (context.datasetIndex === 0) {
                     return `${label}: ${context.parsed.y.toLocaleString()} liters`;
                   } else {
-                    const qualityLabels = ["Low", "Moderate", "High"];
+                    const qualityLabels = ["Low", "Medium", "High"];
                     return `${label}: ${qualityLabels[Math.round(context.parsed.y)]} (${context.parsed.y.toFixed(2)})`;
                   }
                 },
@@ -1478,7 +1478,7 @@
                     return [
                       `Quality Distribution:`,
                       `High: ${quality.high} (${((quality.high/total)*100).toFixed(1)}%)`,
-                      `Moderate: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
+                      `Medium: ${quality.moderate} (${((quality.moderate/total)*100).toFixed(1)}%)`,
                       `Low: ${quality.low} (${((quality.low/total)*100).toFixed(1)}%)`
                     ];
                   }
@@ -1529,7 +1529,7 @@
               ticks: {
                 stepSize: 1,
                 callback: function(value) {
-                  const qualityLabels = ["Low", "Moderate", "High"];
+                  const qualityLabels = ["Low", "Medium", "High"];
                   return qualityLabels[value] || '';
                 }
               }
