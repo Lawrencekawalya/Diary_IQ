@@ -120,20 +120,20 @@ The implementation is complete only when:
 
 ## Phase 4: Dataset Generation
 
-- [ ] Build a reproducible script to generate the 1,500-row synthesized dataset.
-- [ ] Generate 500 `High`, 500 `Medium`, and 500 `Low` records.
-- [ ] Use EAS 67:2023 thresholds and documented supplementary assumptions.
-- [ ] Include all 11 features and one target column.
-- [ ] Store dataset metadata:
+- [x] Build a reproducible script to generate the 1,500-row synthesized dataset.
+- [x] Generate 500 `High`, 500 `Medium`, and 500 `Low` records.
+- [x] Use EAS 67:2023 thresholds and documented supplementary assumptions.
+- [x] Include all 11 features and one target column.
+- [x] Store dataset metadata:
       - source standard;
       - supplementary sources;
       - random seed;
       - generation date;
       - feature units;
       - label-policy version.
-- [ ] Validate no missing values, duplicates, invalid classes, or impossible
+- [x] Validate no missing values, duplicates, invalid classes, or impossible
       values.
-- [ ] Save the final dataset under a clear path, for example:
+- [x] Save the final dataset under a clear path, for example:
       `data/milk_quality_eas67_2023_synth_1500.csv`.
 
 ## Phase 5: Training and Evaluation

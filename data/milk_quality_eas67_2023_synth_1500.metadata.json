@@ -1,0 +1,65 @@
+{
+  "dataset_version": "milk_quality_eas67_2023_synth_1500_v1",
+  "label_policy_version": "eas67_codex_fao_policy_v1",
+  "generated_at": "2026-07-18T08:18:57.962017+00:00",
+  "random_seed": 20260718,
+  "row_count": 1500,
+  "rows_per_class": 500,
+  "class_distribution": {
+    "Low": 500,
+    "Medium": 500,
+    "High": 500
+  },
+  "features": [
+    "pH",
+    "Temperature",
+    "Taste",
+    "Odor",
+    "Fat_Content",
+    "Titratable_Acidity",
+    "Protein_Content",
+    "Lactose_Content",
+    "TPC",
+    "SCC",
+    "Color"
+  ],
+  "target_column": "Label",
+  "feature_units": {
+    "pH": "pH",
+    "Temperature": "deg C",
+    "Taste": "encoded binary, 1 normal/acceptable and 0 abnormal/off",
+    "Odor": "encoded binary, 1 fresh/normal and 0 abnormal/objectionable",
+    "Fat_Content": "%",
+    "Titratable_Acidity": "% lactic acid",
+    "Protein_Content": "%",
+    "Lactose_Content": "%",
+    "TPC": "CFU/ml",
+    "SCC": "cells/ml",
+    "Color": "encoded binary, 1 normal/creamy-white and 0 abnormal"
+  },
+  "sources": {
+    "primary_standard": "US EAS 67:2023",
+    "supplementary_sources": [
+      "Codex CXC 57-2004 / CAC/RCP 57 milk hygiene guidance for temperature",
+      "FAO milk composition reference ranges for protein and lactose"
+    ]
+  },
+  "generation_policy": {
+    "High": "Within configured standards and normal sensory values.",
+    "Medium": "Mild numeric deviations and occasional sensory defects.",
+    "Low": "Clear numeric failures and at least one sensory defect."
+  },
+  "excluded_model_inputs": {
+    "SNF": "Excluded from the approved 11-feature model contract.",
+    "Turbidity": "Excluded because it is not part of the approved thesis feature contract."
+  },
+  "validation_checks": [
+    "approved columns only",
+    "no missing values",
+    "valid labels only",
+    "500 rows per class",
+    "no duplicate feature rows",
+    "no impossible numeric values",
+    "sensory values encoded as 0 or 1"
+  ]
+}
