@@ -30,6 +30,12 @@ from model_contract import (
 )
 from model_artifact import load_model_bundle
 from prediction_service import predict_milk_quality
+from database_records import (
+    build_batch_info,
+    build_prediction_record,
+    chart_point_from_record,
+    history_row_from_record,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -86,13 +92,6 @@ def firebase_login(email, password):
     response = requests.post(url, json=payload)
     return response.json()
 
-def safe_float(value, field_name):
-    """Try to convert to float, return None or raise a friendly error."""
-    try:
-        return float(value)
-    except ValueError:
-        raise ValueError(f"Invalid entry for {field_name}. Please enter a numeric value.")
-
 # Show login form
 @app.route('/')
 def login_page():
@@ -139,41 +138,12 @@ def history():
     chart_data = []
     for batch in batches:
         d = batch.to_dict()
-        confidence = d.get("confidence")
-        if not isinstance(confidence, (int, float)):
-            confidence = ""
-        history_data.append({
-            "Batch Number": d.get("Batch Number"),
-            "Number of Liters Collected": d.get("Number of Liters Collected", 0),
-            "Collection Center": d.get("Collection Center"),
-            "District": d.get("District"),
-            "Location": d.get("Location"),
-            "Tested By": d.get("Tested By"),
-            "Time of Collection": d.get("Time of Collection"),
-            "Prediction": normalize_quality_label(d.get("prediction")),
-            **{feature: d.get(feature, "") for feature in APPROVED_MODEL_FEATURES},
-            "Confidence": confidence,
-            "Model Version": d.get("model_metadata", {}).get("model_version", ""),
-            "Dataset Version": d.get("model_metadata", {}).get("dataset_version", ""),
-        })
+        history_data.append(history_row_from_record(d))
 
         # Build chart data too
-        if "Time of Collection" in d:
-            chart_data.append({
-                "date": d["Time of Collection"],
-                "prediction": QUALITY_MAP.get(normalize_quality_label(d.get("prediction")), 0),
-                "collection_center": d.get("Collection Center"),
-                "prediction_label": normalize_quality_label(d.get("prediction")),
-                "district": d.get("District"),
-                "liters_collected": d.get("Number of Liters Collected", 0)
-            })
-
-            # chart_data.append({
-            #     "date": d["Time of Collection"],
-            #     "prediction": QUALITY_MAP.get(normalize_quality_label(d.get("prediction")), 0),
-            #     "collection_center": d.get("Collection Center"),  # ✅ Fix here too
-            #     "prediction_label": d.get("prediction"),
-            # })
+        chart_point = chart_point_from_record(d, QUALITY_MAP)
+        if chart_point:
+            chart_data.append(chart_point)
 
     return render_template("history.html", history_data=history_data, chart_data=chart_data)
 
@@ -201,21 +171,12 @@ def predict():
     if 'user' not in session:
         return redirect(url_for('login_page'))
 
-    # 1) Collect batch info
-    batch_info = {
-    'Collection Center': request.form.get('collection_center'),
-    'Contact': request.form.get('contact'),
-    'District': request.form.get('district'),
-    'Location': request.form.get('location'),
-    'Driver Name': request.form.get('driver_name'),
-    'Transport Details': request.form.get('transport_details'),
-    'Batch Number': f"BATCH-{uuid.uuid4().hex[:8].upper()}",
-    'Time of Collection': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    'Tested By': request.form.get('tested_by'),
-    'Number of Liters Collected': safe_float(request.form.get('liters_collected', 0), 'Number of Liters Collected'),
-    }
-
     try:
+        batch_info = build_batch_info(
+            request.form,
+            batch_number=f"BATCH-{uuid.uuid4().hex[:8].upper()}",
+            collected_at=datetime.now(),
+        )
         prediction_result = predict_milk_quality(request.form, model, model_metadata, STANDARDS)
     except ValueError as e:
         logging.error(f"❌ User input error: {e}")
@@ -228,21 +189,7 @@ def predict():
             show_predictor=True                # signal to reopen the testing section
         )
 
-    # 6) Save to Firestore
-    batch_doc = {
-        **batch_info,
-        **prediction_result["raw"],
-        "sensory_inputs": prediction_result["sensory_inputs"],
-        "encoded_sensory_values": prediction_result["encoded_sensory_values"],
-        "prediction": prediction_result["prediction"],
-        "confidence": prediction_result["confidence"],
-        "probabilities": prediction_result["probabilities"],
-        "model_metadata": prediction_result["model_metadata"],
-        "colors": prediction_result["colors"],
-        "standards_observations": prediction_result["standards_observations"],
-        "suggestions": prediction_result["standards_observations"],
-        "created_at": firestore.SERVER_TIMESTAMP
-    }
+    batch_doc = build_prediction_record(batch_info, prediction_result, firestore.SERVER_TIMESTAMP)
 
     # Firestore write with automatic retry and error logging
     max_retries = 3
@@ -303,12 +250,9 @@ def show_result(batch_id):
         d = batch.to_dict()
         if "Time of Collection" not in d:
             continue
-        chart_data.append({
-            "date": d["Time of Collection"],
-            "prediction": QUALITY_MAP.get(normalize_quality_label(d.get("prediction")), 0),
-            "Collection Center": d.get("Collection Center"),
-            "prediction_label": normalize_quality_label(d.get("prediction"))
-        })
+        chart_point = chart_point_from_record(d, QUALITY_MAP)
+        if chart_point:
+            chart_data.append(chart_point)
     # Only show parameters entered by user
     visible_fields = APPROVED_MODEL_FEATURES
 

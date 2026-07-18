@@ -590,3 +590,16 @@
 2026-07-18 12:51:07,118 - INFO - 127.0.0.1 - - [18/Jul/2026 12:51:07] "[32mPOST /predict HTTP/1.1[0m" 302 -
 2026-07-18 12:51:09,447 - INFO - 127.0.0.1 - - [18/Jul/2026 12:51:09] "GET /result/HNbQFBGNuj5m41htXnqR HTTP/1.1" 200 -
 2026-07-18 12:51:10,228 - INFO - 127.0.0.1 - - [18/Jul/2026 12:51:10] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 12:55:08,049 - INFO -  * Detected change in '/home/kawaly/Projects/Laravel_APPs/Diary_IQ/app/main.py', reloading
+2026-07-18 12:55:10,558 - INFO -  * Restarting with stat
+2026-07-18 12:55:12,151 - WARNING -  * Debugger is active!
+2026-07-18 12:55:12,155 - INFO -  * Debugger PIN: 123-544-131
+2026-07-18 12:55:26,466 - INFO -  * Detected change in '/home/kawaly/Projects/Laravel_APPs/Diary_IQ/app/main.py', reloading
+2026-07-18 12:55:26,927 - INFO -  * Restarting with stat
+2026-07-18 12:55:28,138 - WARNING -  * Debugger is active!
+2026-07-18 12:55:28,141 - INFO -  * Debugger PIN: 123-544-131
+2026-07-18 12:57:14,757 - INFO - 127.0.0.1 - - [18/Jul/2026 12:57:14] "GET /history HTTP/1.1" 200 -
+2026-07-18 12:57:16,199 - INFO - 127.0.0.1 - - [18/Jul/2026 12:57:16] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 13:03:00,360 - INFO - 127.0.0.1 - - [18/Jul/2026 13:03:00] "GET /history HTTP/1.1" 200 -
+2026-07-18 13:03:00,541 - INFO - 127.0.0.1 - - [18/Jul/2026 13:03:00] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 13:03:28,825 - INFO - 127.0.0.1 - - [18/Jul/2026 13:03:28] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -

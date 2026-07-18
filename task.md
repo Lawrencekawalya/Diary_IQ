@@ -207,7 +207,7 @@ The implementation is complete only when:
 
 ## Phase 9: Database and Records
 
-- [ ] Update Firestore write structure to include:
+- [x] Update Firestore write structure to include:
       - batch details;
       - all 11 measurements;
       - original sensory labels;
@@ -218,8 +218,8 @@ The implementation is complete only when:
       - model metadata;
       - standards observations;
       - timestamp.
-- [ ] Add compatibility handling for legacy records.
-- [ ] Avoid storing secrets or raw authentication responses.
+- [x] Add compatibility handling for legacy records.
+- [x] Avoid storing secrets or raw authentication responses.
 
 ## Phase 10: Testing
 

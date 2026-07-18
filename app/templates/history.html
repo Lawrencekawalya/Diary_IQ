@@ -711,8 +711,10 @@
                 <span class="quality-badge badge-medium"
                   >Medium Quality</span
                 >
-                {% else %}
+                {% elif row["Prediction"] == "Low" %}
                 <span class="quality-badge badge-low">Low Quality</span>
+                {% else %}
+                <span class="quality-badge">Unknown</span>
                 {% endif %}
               </td>
             </tr>
@@ -777,8 +779,10 @@
                 <span class="quality-badge badge-medium"
                   >Medium Quality</span
                 >
-                {% else %}
+                {% elif row["Prediction"] == "Low" %}
                 <span class="quality-badge badge-low">Low Quality</span>
+                {% else %}
+                <span class="quality-badge">Unknown</span>
                 {% endif %}
               </td>
               <td>
