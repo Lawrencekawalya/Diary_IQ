@@ -559,3 +559,34 @@
 2026-06-14 09:03:01,557 - INFO - 127.0.0.1 - - [14/Jun/2026 09:03:01] "[32mPOST /login HTTP/1.1[0m" 302 -
 2026-06-14 09:03:01,575 - INFO - 127.0.0.1 - - [14/Jun/2026 09:03:01] "GET /index HTTP/1.1" 200 -
 2026-06-14 09:03:01,610 - INFO - 127.0.0.1 - - [14/Jun/2026 09:03:01] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 12:29:27,413 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-07-18 12:29:27,413 - INFO - [33mPress CTRL+C to quit[0m
+2026-07-18 12:29:27,418 - INFO -  * Restarting with stat
+2026-07-18 12:29:28,280 - WARNING -  * Debugger is active!
+2026-07-18 12:29:28,292 - INFO -  * Debugger PIN: 123-544-131
+2026-07-18 12:29:54,885 - INFO - 127.0.0.1 - - [18/Jul/2026 12:29:54] "GET / HTTP/1.1" 200 -
+2026-07-18 12:29:54,932 - INFO - 127.0.0.1 - - [18/Jul/2026 12:29:54] "GET /static/favicon_white.png HTTP/1.1" 200 -
+2026-07-18 12:29:54,953 - INFO - 127.0.0.1 - - [18/Jul/2026 12:29:54] "GET /static/login-bg.webp HTTP/1.1" 200 -
+2026-07-18 12:29:54,958 - INFO - 127.0.0.1 - - [18/Jul/2026 12:29:54] "GET /static/favicon.png HTTP/1.1" 200 -
+2026-07-18 12:30:28,891 - INFO - 127.0.0.1 - - [18/Jul/2026 12:30:28] "POST /login HTTP/1.1" 200 -
+2026-07-18 12:30:28,933 - INFO - 127.0.0.1 - - [18/Jul/2026 12:30:28] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 12:45:25,403 - INFO - 127.0.0.1 - - [18/Jul/2026 12:45:25] "POST /login HTTP/1.1" 200 -
+2026-07-18 12:45:26,254 - INFO - 127.0.0.1 - - [18/Jul/2026 12:45:26] "GET /static/favicon_white.png HTTP/1.1" 200 -
+2026-07-18 12:45:26,279 - INFO - 127.0.0.1 - - [18/Jul/2026 12:45:26] "GET /static/favicon.png HTTP/1.1" 200 -
+2026-07-18 12:46:06,872 - INFO - 127.0.0.1 - - [18/Jul/2026 12:46:06] "POST /login HTTP/1.1" 200 -
+2026-07-18 12:46:06,922 - INFO - 127.0.0.1 - - [18/Jul/2026 12:46:06] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 12:46:55,436 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-07-18 12:46:55,436 - INFO - [33mPress CTRL+C to quit[0m
+2026-07-18 12:46:55,437 - INFO -  * Restarting with stat
+2026-07-18 12:46:56,668 - WARNING -  * Debugger is active!
+2026-07-18 12:46:56,678 - INFO -  * Debugger PIN: 123-544-131
+2026-07-18 12:47:11,434 - INFO - 127.0.0.1 - - [18/Jul/2026 12:47:11] "GET / HTTP/1.1" 200 -
+2026-07-18 12:47:11,486 - INFO - 127.0.0.1 - - [18/Jul/2026 12:47:11] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 12:47:35,578 - INFO - 127.0.0.1 - - [18/Jul/2026 12:47:35] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-07-18 12:47:35,597 - INFO - 127.0.0.1 - - [18/Jul/2026 12:47:35] "GET /index HTTP/1.1" 200 -
+2026-07-18 12:47:35,653 - INFO - 127.0.0.1 - - [18/Jul/2026 12:47:35] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 12:51:07,118 - INFO - 127.0.0.1 - - [18/Jul/2026 12:51:07] "[32mPOST /predict HTTP/1.1[0m" 302 -
+2026-07-18 12:51:09,447 - INFO - 127.0.0.1 - - [18/Jul/2026 12:51:09] "GET /result/HNbQFBGNuj5m41htXnqR HTTP/1.1" 200 -
+2026-07-18 12:51:10,228 - INFO - 127.0.0.1 - - [18/Jul/2026 12:51:10] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -

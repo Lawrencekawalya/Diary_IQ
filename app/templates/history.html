@@ -732,7 +732,21 @@
               <th>Location</th>
               <th>Tested By</th>
               <th>Time of Collection</th>
+              <th>pH</th>
+              <th>Temperature</th>
+              <th>Taste</th>
+              <th>Odor</th>
+              <th>Fat Content</th>
+              <th>Titratable Acidity</th>
+              <th>Protein Content</th>
+              <th>Lactose Content</th>
+              <th>TPC</th>
+              <th>SCC</th>
+              <th>Color</th>
               <th>Quality</th>
+              <th>Confidence</th>
+              <th>Model Version</th>
+              <th>Dataset Version</th>
             </tr>
           </thead>
           <tbody>
@@ -745,6 +759,17 @@
               <td>{{ row["Location"] }}</td>
               <td>{{ row["Tested By"] }}</td>
               <td>{{ row["Time of Collection"] }}</td>
+              <td>{{ row["pH"] }}</td>
+              <td>{{ row["Temperature"] }}</td>
+              <td>{{ row["Taste"] }}</td>
+              <td>{{ row["Odor"] }}</td>
+              <td>{{ row["Fat_Content"] }}</td>
+              <td>{{ row["Titratable_Acidity"] }}</td>
+              <td>{{ row["Protein_Content"] }}</td>
+              <td>{{ row["Lactose_Content"] }}</td>
+              <td>{{ row["TPC"] }}</td>
+              <td>{{ row["SCC"] }}</td>
+              <td>{{ row["Color"] }}</td>
               <td>
                 {% if row["Prediction"] == "High" %}
                 <span class="quality-badge badge-high">High Quality</span>
@@ -756,6 +781,13 @@
                 <span class="quality-badge badge-low">Low Quality</span>
                 {% endif %}
               </td>
+              <td>
+                {% if row["Confidence"] != "" %}
+                {{ "%.2f"|format(row["Confidence"] * 100) }}%
+                {% endif %}
+              </td>
+              <td>{{ row["Model Version"] }}</td>
+              <td>{{ row["Dataset Version"] }}</td>
             </tr>
             {% endfor %}
           </tbody>

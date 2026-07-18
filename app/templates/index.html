@@ -186,7 +186,8 @@
         color: var(--dark);
       }
 
-      .form-group input {
+      .form-group input,
+      .form-group select {
         width: 100%;
         padding: 12px 15px;
         border: 1px solid #ddd;
@@ -195,7 +196,8 @@
         transition: var(--transition);
       }
 
-      .form-group input:focus {
+      .form-group input:focus,
+      .form-group select:focus {
         outline: none;
         border-color: var(--secondary);
         box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
@@ -865,14 +867,12 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label for="snf">SNF (Solids-not-fat)</label>
-                  <input
-                    type="number"
-                    step="any"
-                    name="snf"
-                    placeholder="Enter SNF value"
-                    required
-                  />
+                  <label for="taste">Taste</label>
+                  <select name="taste" id="taste" required>
+                    <option value="">Select taste assessment</option>
+                    <option value="normal">Normal / acceptable</option>
+                    <option value="abnormal">Abnormal / off-taste</option>
+                  </select>
                 </div>
               </div>
 
@@ -931,6 +931,25 @@
                   placeholder="Enter SCC value"
                   required
                 />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="odor">Odor</label>
+                  <select name="odor" id="odor" required>
+                    <option value="">Select odor assessment</option>
+                    <option value="fresh">Fresh / normal</option>
+                    <option value="abnormal">Abnormal / objectionable</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="color">Color</label>
+                  <select name="color" id="color" required>
+                    <option value="">Select color assessment</option>
+                    <option value="normal">Normal / creamy-white</option>
+                    <option value="abnormal">Abnormal appearance</option>
+                  </select>
+                </div>
               </div>
 
               <div class="btn-group">
@@ -1105,15 +1124,15 @@
       // ✅ Validate Testing Parameters before submitting form
       milkForm.addEventListener("submit", function (e) {
         const predictorInputs =
-          predictorForm.querySelectorAll("input[required]");
+          predictorForm.querySelectorAll("input[required], select[required]");
         let isValid = true;
 
-        predictorInputs.forEach((input) => {
-          if (!input.value.trim()) {
-            input.style.borderColor = "red";
+        predictorInputs.forEach((field) => {
+          if (!field.value.trim()) {
+            field.style.borderColor = "red";
             isValid = false;
           } else {
-            input.style.borderColor = "#ddd";
+            field.style.borderColor = "#ddd";
           }
         });
 

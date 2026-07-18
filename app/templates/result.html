@@ -568,11 +568,24 @@
 
         <!-- Suggestions -->
         <div class="card suggestions">
-          <h4><i class="fas fa-lightbulb"></i> Suggestions</h4>
+          <h4><i class="fas fa-lightbulb"></i> Standards Observations</h4>
           <ul>
             {% for item in suggestions %}
             <li>{{ item }}</li>
             {% endfor %}
+          </ul>
+        </div>
+
+        <div class="card batch-info">
+          <h4><i class="fas fa-chart-pie"></i> Prediction Metadata</h4>
+          <ul>
+            <li>Confidence: <span>{{ "%.2f"|format((confidence or 0) * 100) }}%</span></li>
+            {% for label, probability in probabilities.items() %}
+            <li>{{ label }} Probability: <span>{{ "%.2f"|format(probability * 100) }}%</span></li>
+            {% endfor %}
+            <li>Model Version: <span>{{ model_metadata.get("model_version", "") }}</span></li>
+            <li>Dataset Version: <span>{{ model_metadata.get("dataset_version", "") }}</span></li>
+            <li>Label Policy Version: <span>{{ model_metadata.get("label_policy_version", "") }}</span></li>
           </ul>
         </div>
 

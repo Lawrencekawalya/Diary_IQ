@@ -16,6 +16,12 @@ import json
 import time
 import logging
 import google.api_core.exceptions
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+if PROJECT_ROOT not in os.sys.path:
+    os.sys.path.insert(0, PROJECT_ROOT)
+
 from model_contract import (
     APPROVED_MODEL_FEATURES,
     QUALITY_LABELS,
@@ -32,9 +38,6 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-# Load standards.json
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 CONFIG_PATH = os.path.join(PROJECT_ROOT, "config", "standards.json")
 
 try:
@@ -136,6 +139,9 @@ def history():
     chart_data = []
     for batch in batches:
         d = batch.to_dict()
+        confidence = d.get("confidence")
+        if not isinstance(confidence, (int, float)):
+            confidence = ""
         history_data.append({
             "Batch Number": d.get("Batch Number"),
             "Number of Liters Collected": d.get("Number of Liters Collected", 0),
@@ -145,6 +151,10 @@ def history():
             "Tested By": d.get("Tested By"),
             "Time of Collection": d.get("Time of Collection"),
             "Prediction": normalize_quality_label(d.get("prediction")),
+            **{feature: d.get(feature, "") for feature in APPROVED_MODEL_FEATURES},
+            "Confidence": confidence,
+            "Model Version": d.get("model_metadata", {}).get("model_version", ""),
+            "Dataset Version": d.get("model_metadata", {}).get("dataset_version", ""),
         })
 
         # Build chart data too
@@ -312,8 +322,8 @@ def show_result(batch_id):
         raw={k: data.get(k) for k in visible_fields},
         suggestions=data.get("standards_observations", data.get("suggestions", [])),
         confidence=data.get("confidence"),
-        probabilities=data.get("probabilities", {}),
-        model_metadata=data.get("model_metadata", {}),
+        probabilities=data.get("probabilities") or {},
+        model_metadata=data.get("model_metadata") or {},
         batch_info = {
         "Collection Center": data.get("Collection Center"),
         "Contact": data.get("Contact"),

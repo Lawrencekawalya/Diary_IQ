@@ -194,15 +194,15 @@ The implementation is complete only when:
 
 ## Phase 8: User Interface
 
-- [ ] Update the testing form to collect the 11 approved inputs.
-- [ ] Remove `SNF` from the prediction form or move it to non-model metadata.
-- [ ] Add controlled inputs for `Taste`, `Odor`, and `Color`.
-- [ ] Update labels and help text to match the thesis and standards.
-- [ ] Update result page to display all 11 inputs.
-- [ ] Update charts to use `Low`, `Medium`, and `High`.
-- [ ] Update history tables and exports to include the 11 inputs and model
+- [x] Update the testing form to collect the 11 approved inputs.
+- [x] Remove `SNF` from the prediction form or move it to non-model metadata.
+- [x] Add controlled inputs for `Taste`, `Odor`, and `Color`.
+- [x] Update labels and help text to match the thesis and standards.
+- [x] Update result page to display all 11 inputs.
+- [x] Update charts to use `Low`, `Medium`, and `High`.
+- [x] Update history tables and exports to include the 11 inputs and model
       metadata.
-- [ ] Ensure old Firestore records with `Moderate` or missing sensory fields do
+- [x] Ensure old Firestore records with `Moderate` or missing sensory fields do
       not break history views.
 
 ## Phase 9: Database and Records
