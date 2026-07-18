@@ -125,6 +125,17 @@ def build_models() -> dict[str, object]:
     return models
 
 
+def optional_dependency_versions() -> dict[str, str]:
+    versions = {}
+    try:
+        import xgboost  # type: ignore
+
+        versions["xgboost"] = xgboost.__version__
+    except Exception:
+        versions["xgboost"] = "not installed"
+    return versions
+
+
 def score_predictions(y_true: pd.Series, y_pred: pd.Series | list[str]) -> dict[str, float]:
     precision, recall, f1, _ = precision_recall_fscore_support(
         y_true,
@@ -300,6 +311,7 @@ def main() -> None:
             "python": sys.version.split()[0],
             "pandas": pd.__version__,
             "scikit_learn": sklearn.__version__,
+            **optional_dependency_versions(),
         },
         "models_evaluated": [item["model"] for item in results],
         "xgboost_status": "evaluated" if any(item["model"] == "XGBoost" for item in results) else "not installed; optional comparison skipped",

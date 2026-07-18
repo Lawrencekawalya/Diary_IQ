@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-18T08:30:19.578359+00:00",
+  "generated_at": "2026-07-18T08:55:38.489456+00:00",
   "dataset_path": "data/milk_quality_eas67_2023_synth_1500.csv",
   "dataset_version": "milk_quality_eas67_2023_synth_1500_v1",
   "label_policy_version": "eas67_codex_fao_policy_v1",
@@ -31,14 +31,16 @@
   "dependencies": {
     "python": "3.14.4",
     "pandas": "3.0.3",
-    "scikit_learn": "1.6.1"
+    "scikit_learn": "1.6.1",
+    "xgboost": "3.3.0"
   },
   "models_evaluated": [
     "Random Forest",
     "SVM",
-    "ANN"
+    "ANN",
+    "XGBoost"
   ],
-  "xgboost_status": "not installed; optional comparison skipped",
+  "xgboost_status": "evaluated",
   "random_forest": {
     "model": "Random Forest",
     "test_metrics": {
@@ -318,6 +320,76 @@
         "accuracy_mean": 0.99,
         "balanced_accuracy_mean": 0.99,
         "macro_f1_mean": 0.9899956478300929
+      }
+    },
+    {
+      "model": "XGBoost",
+      "test_metrics": {
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "macro_precision": 1.0,
+        "macro_recall": 1.0,
+        "macro_f1": 1.0
+      },
+      "classification_report": {
+        "Low": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "Medium": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "High": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 300.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 300.0
+        }
+      },
+      "cross_validation": {
+        "folds": 5,
+        "accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "balanced_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "macro_f1": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "accuracy_mean": 1.0,
+        "balanced_accuracy_mean": 1.0,
+        "macro_f1_mean": 1.0
       }
     }
   ],

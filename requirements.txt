@@ -5,3 +5,4 @@ pandas==2.2.2
 joblib==1.4.2
 scikit-learn==1.6.1
 python-dotenv==1.0.1
+xgboost==3.3.0

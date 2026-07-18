@@ -156,8 +156,7 @@ The implementation is complete only when:
 - [x] Reproduce comparative models available in the current environment:
       - SVM;
       - ANN;
-      - XGBoost optional hook added, but skipped because `xgboost` is not
-        installed.
+      - XGBoost.
 - [x] Confirm whether the thesis-reported 99.5% Random Forest accuracy is
       reproducible. If not, report the actual value honestly.
 

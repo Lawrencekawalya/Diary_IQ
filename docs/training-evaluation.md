@@ -93,7 +93,15 @@ The current environment evaluated:
 - Random Forest
 - SVM
 - ANN using scikit-learn `MLPClassifier`
+- XGBoost
 
-XGBoost is supported by the script as an optional comparison, but it was not
-run because `xgboost` is not installed in the current environment and is not
-listed in `requirements.txt`.
+Current comparison results:
+
+| Model | Accuracy | Macro F1 | CV accuracy mean |
+| --- | ---: | ---: | ---: |
+| Random Forest | `1.0000` | `1.0000` | `1.0000` |
+| SVM | `1.0000` | `1.0000` | `1.0000` |
+| ANN | `0.9933` | `0.9933` | `0.9900` |
+| XGBoost | `1.0000` | `1.0000` | `1.0000` |
+
+`xgboost==3.3.0` is now listed in `requirements.txt` for reproducibility.
