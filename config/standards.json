@@ -1,114 +1,123 @@
 [
   {
     "Parameter": "pH",
-    "NormalRange": "6.6 – 6.8",
+    "DisplayName": "pH",
+    "Type": "numeric",
+    "Unit": "pH",
+    "NormalRange": "6.6 - 6.8",
     "Min": 6.6,
     "Max": 6.8,
-    "Remarks": "Abnormal pH may indicate contamination, adulteration, or spoilage."
+    "Source": "US EAS 67:2023",
+    "Remarks": "pH outside this range may indicate spoilage, adulteration, or poor handling."
   },
   {
     "Parameter": "Temperature",
-    "NormalRange": "≤ 4°C (ideal), ≤ 8°C (daily collection), ≤ 6°C (if not daily)",
+    "DisplayName": "Temperature",
+    "Type": "numeric",
+    "Unit": "deg C",
+    "NormalRange": "<= 8 deg C for collected milk; <= 6 deg C if collection is not daily; <= 4 deg C ideal",
     "Min": null,
-    "Max": 4.0,
-    "Remarks": "Higher temperatures promote bacterial growth; check cooling/storage."
+    "Max": 8.0,
+    "Source": "Codex CXC 57-2004 / CAC/RCP 57 supplementary milk hygiene guidance",
+    "Remarks": "Elevated temperature supports bacterial growth; check cooling, storage, and transport."
   },
   {
-    "Parameter": "Density (20°C)",
-    "NormalRange": "1.026 – 1.034 g/cm³",
-    "Min": 1.026,
-    "Max": 1.034,
-    "Remarks": "Low density may indicate adulteration with water."
+    "Parameter": "Taste",
+    "DisplayName": "Taste",
+    "Type": "sensory",
+    "Unit": "encoded",
+    "NormalRange": "normal or acceptable = 1; abnormal or off-taste = 0",
+    "Min": 1,
+    "Max": 1,
+    "Source": "US EAS 67:2023 organoleptic requirement, encoded for the approved thesis model",
+    "Remarks": "Abnormal taste indicates an organoleptic defect. Assessment must follow a safe approved protocol."
+  },
+  {
+    "Parameter": "Odor",
+    "DisplayName": "Odor",
+    "Type": "sensory",
+    "Unit": "encoded",
+    "NormalRange": "fresh or normal = 1; abnormal or objectionable = 0",
+    "Min": 1,
+    "Max": 1,
+    "Source": "US EAS 67:2023 organoleptic requirement, encoded for the approved thesis model",
+    "Remarks": "Abnormal odor may indicate spoilage, contamination, or handling defects."
   },
   {
     "Parameter": "Fat_Content",
-    "NormalRange": "3.2 – 4.5 (up to 6.0 depending on breed)",
-    "Min": 3.2,
-    "Max": 4.5,
-    "Remarks": "Low fat may suggest poor feeding/adulteration; higher in buffalo milk."
-  },
-  {
-    "Parameter": "SNF",
-    "NormalRange": "8.3 – 9.0",
-    "Min": 8.3,
-    "Max": 9.0,
-    "Remarks": "Low SNF suggests watering or poor nutrition."
-  },
-  {
-    "Parameter": "Total Solids",
-    "NormalRange": "12 – 15",
-    "Min": 12.0,
-    "Max": 15.0,
-    "Remarks": "Represents Fat + SNF; low values may indicate dilution."
+    "DisplayName": "Fat Content",
+    "Type": "numeric",
+    "Unit": "%",
+    "NormalRange": ">= 3.25%",
+    "Min": 3.25,
+    "Max": null,
+    "Source": "US EAS 67:2023",
+    "Remarks": "Fat below the minimum may indicate adulteration, poor feeding, or unsuitable milk composition."
   },
   {
     "Parameter": "Titratable_Acidity",
-    "NormalRange": "0.14 – 0.17 % lactic acid",
-    "Min": 0.14,
+    "DisplayName": "Titratable Acidity",
+    "Type": "numeric",
+    "Unit": "% lactic acid",
+    "NormalRange": "<= 0.17% lactic acid",
+    "Min": null,
     "Max": 0.17,
-    "Remarks": "Acidity >0.18 indicates sour milk; low acidity may mean neutralization."
+    "Source": "US EAS 67:2023",
+    "Remarks": "Acidity above the maximum may indicate souring or microbial activity."
   },
   {
     "Parameter": "Protein_Content",
-    "NormalRange": "3.0 – 3.5",
+    "DisplayName": "Protein Content",
+    "Type": "numeric",
+    "Unit": "%",
+    "NormalRange": "3.0 - 3.5%",
     "Min": 3.0,
     "Max": 3.5,
-    "Remarks": "Low protein linked to poor feeding/health; high may affect processing."
+    "Source": "FAO supplementary milk composition reference range",
+    "Remarks": "Protein is a composition reference range, not a direct US EAS 67:2023 acceptance limit."
   },
   {
     "Parameter": "Lactose_Content",
-    "NormalRange": "4.5 – 5.2",
+    "DisplayName": "Lactose Content",
+    "Type": "numeric",
+    "Unit": "%",
+    "NormalRange": "4.5 - 5.2%",
     "Min": 4.5,
     "Max": 5.2,
-    "Remarks": "Low lactose may signal mastitis/adulteration; high may be lab error."
+    "Source": "FAO supplementary milk composition reference range",
+    "Remarks": "Lactose is a composition reference range, not a direct US EAS 67:2023 acceptance limit."
   },
   {
     "Parameter": "TPC",
-    "NormalRange": "≤ 100,000 cfu/ml",
+    "DisplayName": "Total Plate Count",
+    "Type": "numeric",
+    "Unit": "CFU/ml",
+    "NormalRange": "<= 2,000,000 CFU/ml",
     "Min": null,
-    "Max": 100000,
-    "Remarks": "High bacterial count suggests poor hygiene or storage."
+    "Max": 2000000,
+    "Source": "US EAS 67:2023",
+    "Remarks": "TPC above the maximum indicates poor hygiene, delayed cooling, or microbial contamination risk."
   },
   {
     "Parameter": "SCC",
-    "NormalRange": "≤ 400,000 cells/ml",
+    "DisplayName": "Somatic Cell Count",
+    "Type": "numeric",
+    "Unit": "cells/ml",
+    "NormalRange": "<= 300,000 cells/ml",
     "Min": null,
-    "Max": 400000,
-    "Remarks": "High SCC may indicate mastitis and poor udder health."
-  },
-  {
-    "Parameter": "Resazurin Test (RRT)",
-    "NormalRange": "Excellent: ≥ 5–6 hrs, Good: 3–4 hrs, Fair: 1–2 hrs, Poor: ≤ 30–60 min",
-    "Min": null,
-    "Max": null,
-    "Remarks": "Indicates bacterial load through reduction time."
-  },
-  {
-    "Parameter": "OGT (Oxidation-Reduction Test)",
-    "NormalRange": "Good: > 5 hrs, Poor: < 1 hr",
-    "Min": null,
-    "Max": null,
-    "Remarks": "Measures bacterial activity; short times = high bacterial presence."
+    "Max": 300000,
+    "Source": "US EAS 67:2023",
+    "Remarks": "SCC above the maximum may indicate mastitis or udder health problems."
   },
   {
     "Parameter": "Color",
-    "NormalRange": "White to creamy white (uniform)",
-    "Min": null,
-    "Max": null,
-    "Remarks": "Abnormal tints indicate defects or contamination."
-  },
-  {
-    "Parameter": "Odour",
-    "NormalRange": "Fresh, slightly sweet, clean",
-    "Min": null,
-    "Max": null,
-    "Remarks": "Rancid, sour, or medicinal odour indicates spoilage/defects."
-  },
-  {
-    "Parameter": "Keeping Temperature",
-    "NormalRange": "≤ 8°C (daily), ≤ 6°C (non-daily), ideally ≤ 4°C",
-    "Min": null,
-    "Max": 8.0,
-    "Remarks": "Storage temperature guideline to prevent bacterial growth."
+    "DisplayName": "Color",
+    "Type": "sensory",
+    "Unit": "encoded",
+    "NormalRange": "normal creamy-white appearance = 1; abnormal appearance = 0",
+    "Min": 1,
+    "Max": 1,
+    "Source": "US EAS 67:2023 organoleptic requirement, encoded for the approved thesis model",
+    "Remarks": "Abnormal color may indicate defects, contamination, or adulteration."
   }
 ]

@@ -108,15 +108,15 @@ The implementation is complete only when:
 
 ## Phase 3: Standards Configuration
 
-- [ ] Replace existing standards with `US EAS 67:2023` values where available.
-- [ ] Update TPC maximum to `2_000_000`.
-- [ ] Update SCC maximum to `300_000`.
-- [ ] Keep pH at `6.6 - 6.8`.
-- [ ] Keep fat minimum at `3.25`.
-- [ ] Keep titratable acidity maximum at `0.17`.
-- [ ] Add organoleptic rules for taste, odor, and color.
-- [ ] Add documented supplementary ranges for temperature, protein, and lactose.
-- [ ] Make standards warnings separate from ML predictions.
+- [x] Replace existing standards with `US EAS 67:2023` values where available.
+- [x] Update TPC maximum to `2_000_000`.
+- [x] Update SCC maximum to `300_000`.
+- [x] Keep pH at `6.6 - 6.8`.
+- [x] Keep fat minimum at `3.25`.
+- [x] Keep titratable acidity maximum at `0.17`.
+- [x] Add organoleptic rules for taste, odor, and color.
+- [x] Add documented supplementary ranges for temperature, protein, and lactose.
+- [x] Make standards warnings separate from ML predictions.
 
 ## Phase 4: Dataset Generation
 

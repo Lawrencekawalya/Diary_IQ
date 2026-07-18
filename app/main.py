@@ -230,9 +230,9 @@ def predict():
     df = pd.DataFrame([list(raw.values())], columns=list(raw.keys()))
     prediction = normalize_quality_label(model.predict(df)[0])
 
-    # 4) Build colors + suggestions dynamically from STANDARDS
+    # 4) Build standards observations separately from the ML prediction.
     colors = []
-    suggestions = []
+    standards_observations = []
 
     for feat, val in raw.items():
         rule = STANDARDS.get(feat)
@@ -245,18 +245,18 @@ def predict():
 
         if low is not None and val < low:
             in_range = False
-            suggestions.append(f"⚠ {feat}: below normal ({val}) – {rule['Remarks']}")
+            standards_observations.append(f"Warning: {feat}: below normal ({val}) - {rule['Remarks']}")
 
         if high is not None and val > high:
             in_range = False
-            suggestions.append(f"⚠ {feat}: above normal ({val}) – {rule['Remarks']}")
+            standards_observations.append(f"Warning: {feat}: above normal ({val}) - {rule['Remarks']}")
 
         colors.append('#2ecc71' if in_range else '#e67e22')
 
-    # 5) Default suggestions if all parameters normal
-    if not suggestions:
-        suggestions.append("✅ Milk meets quality standards.")
-        suggestions.append("✅ Maintain current handling procedures.")
+    # 5) Default observations if all configured parameters are normal.
+    if not standards_observations:
+        standards_observations.append("Milk meets the configured standards thresholds.")
+        standards_observations.append("Maintain current handling procedures.")
 
     # 6) Save to Firestore
     batch_doc = {
@@ -264,7 +264,8 @@ def predict():
         **raw,
         "prediction": prediction,
         "colors": colors,
-        "suggestions": suggestions,
+        "standards_observations": standards_observations,
+        "suggestions": standards_observations,
         "created_at": firestore.SERVER_TIMESTAMP
     }
 
@@ -344,7 +345,7 @@ def show_result(batch_id):
         raw_values=[data.get(k) for k in visible_fields],
         colors=data.get("colors", []),
         raw={k: data.get(k) for k in visible_fields},
-        suggestions=data.get("suggestions", []),
+        suggestions=data.get("standards_observations", data.get("suggestions", [])),
         batch_info = {
         "Collection Center": data.get("Collection Center"),
         "Contact": data.get("Contact"),
