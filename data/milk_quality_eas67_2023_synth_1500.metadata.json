@@ -1,7 +1,7 @@
 {
   "dataset_version": "milk_quality_eas67_2023_synth_1500_v1",
   "label_policy_version": "eas67_codex_fao_policy_v1",
-  "generated_at": "2026-07-18T08:18:57.962017+00:00",
+  "generated_at": "2026-07-18T10:22:52.827460+00:00",
   "random_seed": 20260718,
   "row_count": 1500,
   "rows_per_class": 500,

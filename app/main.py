@@ -55,7 +55,11 @@ except FileNotFoundError:
 
 
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 if not app.secret_key:
     raise RuntimeError("FLASK_SECRET_KEY must be set in the environment.")

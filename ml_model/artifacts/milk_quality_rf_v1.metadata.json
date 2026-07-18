@@ -121,9 +121,9 @@
     "xgboost": "3.3.0",
     "joblib": "1.4.2"
   },
-  "training_timestamp": "2026-07-18T09:09:32.043111+00:00",
+  "training_timestamp": "2026-07-18T10:23:41.404681+00:00",
   "random_state": 42,
   "artifact_payload_sha256": "7e1bd42ff645e6a07f3e5771e717e4a5e4126de663a5b13e8d5e45fcf0795995",
-  "artifact_file_sha256": "4f4836e4edfa3d78e7268ebb92a1791be28863b25668332f9b0b2e07bb91813f",
+  "artifact_file_sha256": "6903b37a1c3a1c0806bc44ae24a0a3a1cfd5ce3a67b6dd56461aa7dc5c4dd8c5",
   "artifact_path": "ml_model/artifacts/milk_quality_rf_v1.joblib"
 }

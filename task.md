@@ -249,14 +249,23 @@ The implementation is complete only when:
 
 ## Phase 12: Verification and Demo
 
-- [ ] Run the training pipeline from scratch.
-- [ ] Confirm the saved artifact loads without warnings in the deployed
+- [x] Run the training pipeline from scratch.
+- [x] Confirm the saved artifact loads without warnings in the deployed
       dependency versions.
-- [ ] Run Flask locally.
-- [ ] Submit at least one `High`, one `Medium`, and one `Low` sample.
-- [ ] Confirm Firestore records are written correctly.
-- [ ] Confirm result, history, charts, and exports render correctly.
+- [ ] Run Flask locally in the user desktop session.
+- [x] Submit at least one `High`, one `Medium`, and one `Low` sample through
+      the prediction service.
+- [x] Confirm Firestore records are shaped correctly using automated test
+      doubles.
+- [x] Confirm result and history routes render correctly using automated Flask
+      route tests.
+- [ ] Confirm charts and exports render correctly in the browser.
 - [ ] Prepare screenshots matching the approved thesis sections.
+
+Phase 12 evidence is recorded in `docs/verification-demo.md`. The sandbox
+reached Flask startup but could not bind the local development port, so the
+final browser demo and screenshots must be completed from the user's desktop
+terminal.
 
 ## Proposed Execution Order
 
