@@ -1,8 +1,15 @@
 import importlib.util
 from pathlib import Path
 
+import firebase_admin
+
 
 def load_main_module():
+    try:
+        firebase_admin.delete_app(firebase_admin.get_app())
+    except ValueError:
+        pass
+
     spec = importlib.util.spec_from_file_location("dairyiq_main_for_tests", Path("app/main.py"))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -22,9 +29,40 @@ class FakeCollection:
         return None, FakeDocument()
 
 
+class FakeHistoryDocument:
+    def __init__(self, record):
+        self.record = record
+
+    def to_dict(self):
+        return self.record
+
+
+class FakeHistoryCollection:
+    def __init__(self, records):
+        self.records = records
+        self.order_direction = None
+
+    def order_by(self, field, direction=None):
+        assert field == "created_at"
+        self.order_direction = direction
+        return self
+
+    def stream(self):
+        return [FakeHistoryDocument(record) for record in self.records]
+
+
 class FakeDB:
     def __init__(self):
         self.collection_obj = FakeCollection()
+
+    def collection(self, name):
+        assert name == "milk_batches"
+        return self.collection_obj
+
+
+class FakeHistoryDB:
+    def __init__(self, records):
+        self.collection_obj = FakeHistoryCollection(records)
 
     def collection(self, name):
         assert name == "milk_batches"
@@ -77,3 +115,45 @@ def test_predict_route_writes_record_with_test_double(monkeypatch):
     assert "probabilities" in saved
     assert "password" not in saved
     assert "idToken" not in saved
+
+
+def test_history_route_uses_latest_table_order_and_chronological_chart(monkeypatch):
+    main = load_main_module()
+    records = [
+        {
+            "Batch Number": "LATEST",
+            "Time of Collection": "2026-07-18 12:00:00",
+            "prediction": "High",
+            "created_at": "latest",
+        },
+        {
+            "Batch Number": "OLDER",
+            "Time of Collection": "2026-07-18 11:00:00",
+            "prediction": "Low",
+            "created_at": "older",
+        },
+    ]
+    fake_db = FakeHistoryDB(records)
+    captured = {}
+
+    def fake_render_template(template, **context):
+        captured["template"] = template
+        captured.update(context)
+        return "OK"
+
+    monkeypatch.setattr(main, "db", fake_db)
+    monkeypatch.setattr(main, "render_template", fake_render_template)
+    main.app.config.update(TESTING=True)
+
+    client = main.app.test_client()
+    with client.session_transaction() as session:
+        session["user"] = "tester@example.com"
+
+    response = client.get("/history")
+
+    assert response.status_code == 200
+    assert fake_db.collection_obj.order_direction == main.firestore.Query.DESCENDING
+    assert captured["template"] == "history.html"
+    assert captured["history_data"][0]["Batch Number"] == "LATEST"
+    assert captured["chart_data"][0]["date"] == "2026-07-18 11:00:00"
+    assert captured["chart_data"][-1]["date"] == "2026-07-18 12:00:00"

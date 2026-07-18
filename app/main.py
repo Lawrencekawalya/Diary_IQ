@@ -153,6 +153,8 @@ def history():
         if chart_point:
             chart_data.append(chart_point)
 
+    chart_data.reverse()
+
     return render_template("history.html", history_data=history_data, chart_data=chart_data)
 
 
