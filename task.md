@@ -223,17 +223,17 @@ The implementation is complete only when:
 
 ## Phase 10: Testing
 
-- [ ] Dataset schema test.
-- [ ] Dataset class-balance test.
-- [ ] Sensory encoding test.
-- [ ] Standards configuration test.
-- [ ] Model artifact compatibility test.
-- [ ] Known-sample prediction test.
-- [ ] Invalid numeric input test.
-- [ ] Missing sensory input test.
-- [ ] Flask route test.
-- [ ] Firestore record-shape test using test doubles.
-- [ ] History page legacy-record test.
+- [x] Dataset schema test.
+- [x] Dataset class-balance test.
+- [x] Sensory encoding test.
+- [x] Standards configuration test.
+- [x] Model artifact compatibility test.
+- [x] Known-sample prediction test.
+- [x] Invalid numeric input test.
+- [x] Missing sensory input test.
+- [x] Flask route test.
+- [x] Firestore record-shape test using test doubles.
+- [x] History page legacy-record test.
 
 ## Phase 11: Documentation
 
