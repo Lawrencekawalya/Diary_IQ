@@ -100,10 +100,9 @@ from the final implementation.
 
 Scikit-learn pipelines will be used to keep preprocessing and classification
 operations together. This will reduce the risk of applying different
-transformations during model training and Flask inference. The existing
-nine-feature candidate and the expanded 11-feature candidate will be evaluated
-using identical data partitions to determine whether taste, odor, and color
-improve generalization and class-specific performance.
+transformations during model training and Flask inference. The approved
+11-feature model will be the final implementation target; the previous
+nine-feature model is retained only as baseline context.
 
 Joblib will be used to save the selected preprocessing pipeline and Random
 Forest classifier as a trusted, versioned model artifact. The artifact or its

@@ -237,15 +237,15 @@ The implementation is complete only when:
 
 ## Phase 11: Documentation
 
-- [ ] Update `README.md`.
-- [ ] Update model card.
-- [ ] Update dataset card.
-- [ ] Document all thresholds and sources.
-- [ ] Document that the system is a proof-of-concept decision-support tool.
-- [ ] Document that the synthesized dataset does not replace real plant
+- [x] Update `README.md`.
+- [x] Update model card.
+- [x] Update dataset card.
+- [x] Document all thresholds and sources.
+- [x] Document that the system is a proof-of-concept decision-support tool.
+- [x] Document that the synthesized dataset does not replace real plant
       validation.
-- [ ] Update any older planning docs that still mention 13 features,
-      `Turbidity`, `SNF` as a model input, or `Moderate`.
+- [x] Update older planning docs so they describe the approved 11-feature
+      contract and avoid stale model-input claims.
 
 ## Phase 12: Verification and Demo
 

@@ -231,7 +231,7 @@ stored alongside encoded values so that each prediction remains auditable.
 ## Revised Methodology: Expanded Dataset
 
 The authoritative dataset must contain all 11 target features for every sample.
-The four added parameters must contain meaningful, domain-valid variation and
+The three added sensory and appearance parameters must contain meaningful, domain-valid variation and
 must not be introduced as constant or arbitrarily populated columns.
 
 For taste, odor, and color, the study must
@@ -245,10 +245,9 @@ document:
 - inter-rater agreement where multiple assessors are used;
 - class distributions and feature distributions.
 
-The study will compare the existing nine-feature candidate with the expanded
-11-feature candidate using identical evaluation splits. This comparison will
-show whether the added parameters improve generalization, macro F1, and recall
-for `Low` and `Medium` quality classes.
+The study will report the approved 11-feature model results. Any reference to
+the previous nine-feature candidate must be treated only as baseline context,
+not as the final model contract.
 
 ## Revised Methodology: System Testing
 
