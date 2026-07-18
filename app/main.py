@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import firebase_admin
 from firebase_admin import auth
 from firebase_admin import credentials
-import joblib
-import pandas as pd
 from datetime import datetime, timedelta
 import os
 import requests
@@ -19,12 +17,13 @@ import time
 import logging
 import google.api_core.exceptions
 from model_contract import (
-    LEGACY_MODEL_FEATURES,
+    APPROVED_MODEL_FEATURES,
     QUALITY_LABELS,
     QUALITY_MAP,
     normalize_quality_label,
 )
 from model_artifact import load_model_bundle
+from prediction_service import predict_milk_quality
 
 # Configure logging
 logging.basicConfig(
@@ -35,7 +34,8 @@ logging.basicConfig(
 
 # Load standards.json
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_PATH = os.path.join(BASE_DIR, "..", "config", "standards.json")
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+CONFIG_PATH = os.path.join(PROJECT_ROOT, "config", "standards.json")
 
 try:
     with open(CONFIG_PATH) as f:
@@ -59,14 +59,10 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# Validate the thesis-aligned artifact at startup. Phase 7 switches prediction
-# to this model after the form and route use the approved 11-feature contract.
-model_bundle = load_model_bundle("ml_model/artifacts/milk_quality_rf_v1.joblib")
-thesis_model = model_bundle["model"]
+MODEL_ARTIFACT_PATH = os.path.join(PROJECT_ROOT, "ml_model", "artifacts", "milk_quality_rf_v1.joblib")
+model_bundle = load_model_bundle(MODEL_ARTIFACT_PATH)
+model = model_bundle["model"]
 model_metadata = model_bundle["metadata"]
-
-# Temporary legacy predictor kept until Phase 7 backend integration.
-model = joblib.load("ml_model/dairy_model_legacy_9feature.pkl")
 labels = QUALITY_LABELS
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
@@ -210,69 +206,31 @@ def predict():
     }
 
     try:
-        raw = {
-            'pH':                 safe_float(request.form['ph'], 'pH Level'),
-            'Temperature':        safe_float(request.form['temperature'], 'Temperature'),
-            'Fat_Content':        safe_float(request.form['fat'], 'Fat Content'),
-            'SNF':                safe_float(request.form['snf'], 'SNF'),
-            'Titratable_Acidity': safe_float(request.form['acidity'], 'Titratable Acidity'),
-            'Protein_Content':    safe_float(request.form['protein'], 'Protein Content'),
-            'Lactose_Content':    safe_float(request.form['lactose'], 'Lactose Content'),
-            'TPC':                safe_float(request.form['tpc'], 'Total Plate Count'),
-            'SCC':                safe_float(request.form['scc'], 'Somatic Cell Count'),
-        }
+        prediction_result = predict_milk_quality(request.form, model, model_metadata, STANDARDS)
     except ValueError as e:
         logging.error(f"❌ User input error: {e}")
 
         # Re-render form with previous user input and error message
         return render_template(
             "index.html",
-            error=f"⚠️ {e} Please enter only numeric values in all testing fields.",
+            error=f"⚠️ {e}",
             previous_inputs=request.form,      # pass all old values
             show_predictor=True                # signal to reopen the testing section
         )
 
-
-    # 3) Run ML prediction
-    df = pd.DataFrame([list(raw.values())], columns=list(raw.keys()))
-    prediction = normalize_quality_label(model.predict(df)[0])
-
-    # 4) Build standards observations separately from the ML prediction.
-    colors = []
-    standards_observations = []
-
-    for feat, val in raw.items():
-        rule = STANDARDS.get(feat)
-        if not rule:   # parameter not in standards.json
-            colors.append('#bdc3c7')  # neutral gray
-            continue
-
-        low, high = rule.get("Min"), rule.get("Max")
-        in_range = True
-
-        if low is not None and val < low:
-            in_range = False
-            standards_observations.append(f"Warning: {feat}: below normal ({val}) - {rule['Remarks']}")
-
-        if high is not None and val > high:
-            in_range = False
-            standards_observations.append(f"Warning: {feat}: above normal ({val}) - {rule['Remarks']}")
-
-        colors.append('#2ecc71' if in_range else '#e67e22')
-
-    # 5) Default observations if all configured parameters are normal.
-    if not standards_observations:
-        standards_observations.append("Milk meets the configured standards thresholds.")
-        standards_observations.append("Maintain current handling procedures.")
-
     # 6) Save to Firestore
     batch_doc = {
         **batch_info,
-        **raw,
-        "prediction": prediction,
-        "colors": colors,
-        "standards_observations": standards_observations,
-        "suggestions": standards_observations,
+        **prediction_result["raw"],
+        "sensory_inputs": prediction_result["sensory_inputs"],
+        "encoded_sensory_values": prediction_result["encoded_sensory_values"],
+        "prediction": prediction_result["prediction"],
+        "confidence": prediction_result["confidence"],
+        "probabilities": prediction_result["probabilities"],
+        "model_metadata": prediction_result["model_metadata"],
+        "colors": prediction_result["colors"],
+        "standards_observations": prediction_result["standards_observations"],
+        "suggestions": prediction_result["standards_observations"],
         "created_at": firestore.SERVER_TIMESTAMP
     }
 
@@ -342,7 +300,7 @@ def show_result(batch_id):
             "prediction_label": normalize_quality_label(d.get("prediction"))
         })
     # Only show parameters entered by user
-    visible_fields = LEGACY_MODEL_FEATURES
+    visible_fields = APPROVED_MODEL_FEATURES
 
     # Render template
     return render_template(
@@ -353,6 +311,9 @@ def show_result(batch_id):
         colors=data.get("colors", []),
         raw={k: data.get(k) for k in visible_fields},
         suggestions=data.get("standards_observations", data.get("suggestions", [])),
+        confidence=data.get("confidence"),
+        probabilities=data.get("probabilities", {}),
+        model_metadata=data.get("model_metadata", {}),
         batch_info = {
         "Collection Center": data.get("Collection Center"),
         "Contact": data.get("Contact"),

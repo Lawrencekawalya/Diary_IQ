@@ -181,16 +181,16 @@ The implementation is complete only when:
 
 ## Phase 7: Flask Backend Integration
 
-- [ ] Load the model using an absolute project-relative path.
-- [ ] Move prediction logic into a dedicated service module.
-- [ ] Parse and validate all 11 inputs server-side.
-- [ ] Encode `Taste`, `Odor`, and `Color` consistently with training.
-- [ ] Build the input DataFrame in the exact model feature order.
-- [ ] Call `predict()` and `predict_proba()`.
-- [ ] Map probabilities using `model.classes_`.
-- [ ] Return label, confidence, probabilities, model version, dataset version,
+- [x] Load the model using an absolute project-relative path.
+- [x] Move prediction logic into a dedicated service module.
+- [x] Parse and validate all 11 inputs server-side.
+- [x] Encode `Taste`, `Odor`, and `Color` consistently with training.
+- [x] Build the input DataFrame in the exact model feature order.
+- [x] Call `predict()` and `predict_proba()`.
+- [x] Map probabilities using `model.classes_`.
+- [x] Return label, confidence, probabilities, model version, dataset version,
       and label-policy version.
-- [ ] Store all prediction metadata with each Firestore record.
+- [x] Store all prediction metadata with each Firestore record.
 
 ## Phase 8: User Interface
 
