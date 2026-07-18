@@ -52,11 +52,21 @@ def sample_prediction_result():
             "Color": 1,
         },
         "prediction": "High",
+        "ml_prediction": "High",
         "confidence": 1.0,
         "probabilities": {
             "Low": 0.0,
             "Medium": 0.0,
             "High": 1.0,
+        },
+        "standards_quality_gate": {
+            "applied": False,
+            "ml_prediction": "High",
+            "final_prediction": "High",
+            "max_allowed_quality": "High",
+            "failed_features": [],
+            "critical_features": [],
+            "reason": "No standards gate downgrade was required.",
         },
         "model_metadata": {
             "model_version": "milk_quality_rf_v1",
@@ -80,6 +90,8 @@ def test_build_prediction_record_contains_phase9_shape():
     assert record["sensory_inputs"]["Taste"] == "normal"
     assert record["encoded_sensory_values"]["Taste"] == 1
     assert record["prediction"] == "High"
+    assert record["ml_prediction"] == "High"
+    assert record["standards_quality_gate"]["applied"] is False
     assert record["probabilities"]["High"] == 1.0
     assert record["confidence"] == 1.0
     assert record["model_metadata"]["model_version"] == "milk_quality_rf_v1"

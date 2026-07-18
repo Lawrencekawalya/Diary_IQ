@@ -271,6 +271,8 @@ def show_result(batch_id):
         suggestions=data.get("standards_observations", data.get("suggestions", [])),
         confidence=data.get("confidence"),
         probabilities=data.get("probabilities") or {},
+        ml_prediction=data.get("ml_prediction"),
+        standards_quality_gate=data.get("standards_quality_gate") or {},
         model_metadata=data.get("model_metadata") or {},
         batch_info = {
         "Collection Center": data.get("Collection Center"),

@@ -24,6 +24,31 @@ NUMERIC_FORM_FIELDS = {
     "SCC": ("scc", "Somatic Cell Count"),
 }
 
+QUALITY_RANK = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2,
+}
+
+RANKED_QUALITY = {
+    0: "Low",
+    1: "Medium",
+    2: "High",
+}
+
+# These limits identify values that are too far from the approved/supplementary
+# ranges to allow a High or Medium final decision, even if the RF vote is high.
+CRITICAL_FAILURE_LIMITS = {
+    "pH": {"Min": 6.30, "Max": 7.10},
+    "Temperature": {"Max": 10.0},
+    "Fat_Content": {"Min": 3.00},
+    "Titratable_Acidity": {"Max": 0.20},
+    "Protein_Content": {"Min": 2.80},
+    "Lactose_Content": {"Min": 4.20},
+    "TPC": {"Max": 2_000_000},
+    "SCC": {"Max": 600_000},
+}
+
 SENSORY_FORM_FIELDS = {
     "Taste": ("taste", "Taste"),
     "Odor": ("odor", "Odor"),
@@ -113,6 +138,81 @@ def build_standards_observations(
     return colors, observations
 
 
+def analyze_standard_failures(
+    raw: Mapping[str, float | int],
+    standards: Mapping[str, Mapping[str, Any]],
+) -> tuple[list[str], list[str]]:
+    failures = []
+    critical_failures = []
+
+    for feature in APPROVED_MODEL_FEATURES:
+        value = raw[feature]
+        rule = standards.get(feature)
+        if rule:
+            low, high = rule.get("Min"), rule.get("Max")
+            failed = False
+            if low is not None and value < low:
+                failed = True
+            if high is not None and value > high:
+                failed = True
+            if failed:
+                failures.append(feature)
+
+        if feature in SENSORY_FORM_FIELDS and value != 1:
+            critical_failures.append(feature)
+            continue
+
+        critical_rule = CRITICAL_FAILURE_LIMITS.get(feature)
+        if not critical_rule:
+            continue
+
+        critical_low = critical_rule.get("Min")
+        critical_high = critical_rule.get("Max")
+        if critical_low is not None and value < critical_low:
+            critical_failures.append(feature)
+        elif critical_high is not None and value > critical_high:
+            critical_failures.append(feature)
+
+    return failures, critical_failures
+
+
+def apply_standards_quality_gate(
+    ml_prediction: str,
+    raw: Mapping[str, float | int],
+    standards: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    failures, critical_failures = analyze_standard_failures(raw, standards)
+
+    if critical_failures or len(failures) >= 5:
+        max_allowed = "Low"
+        reason = (
+            "Critical standards failures detected; final quality cannot be "
+            "reported above Low."
+        )
+    elif failures:
+        max_allowed = "Medium"
+        reason = (
+            "Standards warnings detected; final quality cannot be reported as "
+            "High."
+        )
+    else:
+        max_allowed = "High"
+        reason = "No standards gate downgrade was required."
+
+    final_rank = min(QUALITY_RANK[ml_prediction], QUALITY_RANK[max_allowed])
+    final_prediction = RANKED_QUALITY[final_rank]
+
+    return {
+        "applied": final_prediction != ml_prediction,
+        "ml_prediction": ml_prediction,
+        "final_prediction": final_prediction,
+        "max_allowed_quality": max_allowed,
+        "failed_features": failures,
+        "critical_features": critical_failures,
+        "reason": reason,
+    }
+
+
 def predict_milk_quality(
     form: Mapping[str, Any],
     model: Any,
@@ -122,7 +222,7 @@ def predict_milk_quality(
     raw, sensory_labels, encoded_sensory_values = parse_model_inputs(form)
     feature_frame = build_feature_frame(raw)
 
-    prediction = normalize_quality_label(model.predict(feature_frame)[0])
+    ml_prediction = normalize_quality_label(model.predict(feature_frame)[0])
     probabilities = {}
     confidence = None
     if hasattr(model, "predict_proba"):
@@ -139,14 +239,17 @@ def predict_milk_quality(
         confidence = max(probabilities.values()) if probabilities else None
 
     colors, standards_observations = build_standards_observations(raw, standards)
+    standards_quality_gate = apply_standards_quality_gate(ml_prediction, raw, standards)
 
     return {
         "raw": raw,
         "sensory_inputs": sensory_labels,
         "encoded_sensory_values": encoded_sensory_values,
-        "prediction": prediction,
+        "ml_prediction": ml_prediction,
+        "prediction": standards_quality_gate["final_prediction"],
         "confidence": confidence,
         "probabilities": probabilities,
+        "standards_quality_gate": standards_quality_gate,
         "colors": colors,
         "standards_observations": standards_observations,
         "model_metadata": {

@@ -71,6 +71,8 @@ def test_predict_route_writes_record_with_test_double(monkeypatch):
     assert response.headers["Location"].endswith("/result/TESTDOC")
     saved = fake_db.collection_obj.saved[0]
     assert saved["prediction"] == "High"
+    assert saved["ml_prediction"] == "High"
+    assert saved["standards_quality_gate"]["applied"] is False
     assert saved["record_schema_version"] == "milk_batch_prediction_v1"
     assert "probabilities" in saved
     assert "password" not in saved

@@ -31,7 +31,9 @@ The service handles:
 - `predict_proba()` probability extraction
 - probability mapping using `model.classes_`
 - confidence calculation
-- standards observations separate from the ML prediction
+- standards observations separate from the raw ML prediction
+- standards safety gating so failed standards checks cannot be reported as
+  `High`, and critical failures are capped at `Low`
 - model metadata returned with every prediction
 
 ## Request Contract
@@ -62,7 +64,9 @@ New prediction records include:
 - all 11 encoded model inputs
 - original sensory selections
 - encoded sensory values
+- raw Random Forest vote
 - prediction label
+- standards quality gate details
 - class probabilities
 - confidence
 - model version

@@ -52,6 +52,33 @@ def test_known_sample_prediction_returns_metadata_and_probabilities():
     assert list(result["probabilities"]) == QUALITY_LABELS
     assert result["model_metadata"]["model_version"] == "milk_quality_rf_v1"
     assert result["model_metadata"]["dataset_version"] == "milk_quality_eas67_2023_synth_1500_v1"
+    assert result["ml_prediction"] == "High"
+    assert result["standards_quality_gate"]["applied"] is False
+
+
+def test_standards_gate_prevents_high_prediction_for_many_failures():
+    bundle = artifact_bundle()
+    form = {
+        "ph": "2.0",
+        "temperature": "2.0",
+        "taste": "abnormal",
+        "odor": "fresh",
+        "fat": "1.0",
+        "acidity": "2.0",
+        "protein": "1.0",
+        "lactose": "1.0",
+        "tpc": "1.0",
+        "scc": "2.0",
+        "color": "abnormal",
+    }
+
+    result = predict_milk_quality(form, bundle["model"], bundle["metadata"], standards())
+
+    assert result["prediction"] == "Low"
+    assert result["standards_quality_gate"]["applied"] is True
+    assert result["standards_quality_gate"]["max_allowed_quality"] == "Low"
+    assert "pH" in result["standards_quality_gate"]["critical_features"]
+    assert "Taste" in result["standards_quality_gate"]["critical_features"]
 
 
 def test_invalid_numeric_input_is_rejected():

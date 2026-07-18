@@ -75,6 +75,17 @@ Medium: predicted=Medium confidence=0.6167
 Low: predicted=Low confidence=1.0000
 ```
 
+An unsafe out-of-range sample was also checked to confirm the standards safety
+gate prevents contradictory `High` results:
+
+```text
+ml_prediction: High
+final_prediction: Low
+gate_applied: True
+max_allowed_quality: Low
+critical_features: pH, Taste, Fat_Content, Titratable_Acidity, Protein_Content, Lactose_Content, Color
+```
+
 ### Test Suite
 
 Command:
@@ -86,7 +97,7 @@ venv/bin/python -m pytest tests
 Result:
 
 ```text
-22 passed
+23 passed
 ```
 
 The test suite covers the model contract, dataset generation, standards

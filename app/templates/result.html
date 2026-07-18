@@ -530,6 +530,13 @@
             <h2 class="quality {{ prediction|lower|replace(' ', '-') }}">
               {{ prediction }}
             </h2>
+            {% if standards_quality_gate.get("applied") %}
+            <p>
+              Final decision downgraded from ML vote
+              <strong>{{ ml_prediction }}</strong> because standards checks
+              found unacceptable values.
+            </p>
+            {% endif %}
             <div class="features-snapshot">
               <p>
                 <strong
@@ -579,6 +586,13 @@
         <div class="card batch-info">
           <h4><i class="fas fa-chart-pie"></i> Prediction Metadata</h4>
           <ul>
+            {% if ml_prediction %}
+            <li>Random Forest Vote: <span>{{ ml_prediction }}</span></li>
+            {% endif %}
+            {% if standards_quality_gate %}
+            <li>Final Decision Rule: <span>{{ standards_quality_gate.get("reason", "") }}</span></li>
+            <li>Maximum Allowed Quality: <span>{{ standards_quality_gate.get("max_allowed_quality", "") }}</span></li>
+            {% endif %}
             <li>Confidence: <span>{{ "%.2f"|format((confidence or 0) * 100) }}%</span></li>
             {% for label, probability in probabilities.items() %}
             <li>{{ label }} Probability: <span>{{ "%.2f"|format(probability * 100) }}%</span></li>

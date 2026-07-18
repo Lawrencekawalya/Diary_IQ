@@ -23,6 +23,7 @@ The test suite covers:
 - model artifact compatibility validation
 - rejection of incompatible artifact classes
 - known-sample prediction
+- standards quality gate downgrade for unsafe out-of-range inputs
 - invalid numeric input rejection
 - missing sensory input rejection
 - Flask `/predict` route using a Firestore test double
@@ -35,5 +36,5 @@ The test suite covers:
 Current test result:
 
 ```text
-22 passed
+23 passed
 ```
