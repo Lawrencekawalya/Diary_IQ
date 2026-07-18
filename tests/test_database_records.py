@@ -8,6 +8,7 @@ from database_records import (
     chart_point_from_record,
     ensure_no_secret_fields,
     history_row_from_record,
+    parse_history_timestamp,
 )
 from model_contract import APPROVED_MODEL_FEATURES
 
@@ -111,9 +112,11 @@ def test_legacy_history_record_is_safe():
             "Batch Number": "OLD-1",
             "prediction": "Moderate",
             "Time of Collection": "2026-07-18 12:00:00",
-        }
+        },
+        document_id="LEGACYDOC",
     )
 
+    assert row["Document ID"] == "LEGACYDOC"
     assert row["Prediction"] == "Medium"
     assert row["Taste"] == ""
     assert row["Model Version"] == ""
@@ -130,3 +133,8 @@ def test_chart_point_supports_legacy_prediction_label():
 
     assert chart_point["prediction"] == 1
     assert chart_point["prediction_label"] == "Medium"
+    assert chart_point["sort_key"] == "2026-07-18T12:00:00"
+
+
+def test_parse_history_timestamp_handles_invalid_values():
+    assert parse_history_timestamp("not-a-date").year == 1

@@ -146,16 +146,35 @@ def history():
     chart_data = []
     for batch in batches:
         d = batch.to_dict()
-        history_data.append(history_row_from_record(d))
+        history_data.append(history_row_from_record(d, document_id=batch.id))
 
         # Build chart data too
         chart_point = chart_point_from_record(d, QUALITY_MAP)
         if chart_point:
             chart_data.append(chart_point)
 
-    chart_data.reverse()
+    chart_data.sort(key=lambda point: point.get("sort_key", ""))
 
-    return render_template("history.html", history_data=history_data, chart_data=chart_data)
+    total_samples = len(history_data)
+    quality_counts = {
+        label: sum(1 for row in history_data if row["Prediction"] == label)
+        for label in QUALITY_LABELS
+    }
+    quality_insights = {
+        label: {
+            "count": count,
+            "percentage": (count / total_samples * 100) if total_samples else 0,
+        }
+        for label, count in quality_counts.items()
+    }
+
+    return render_template(
+        "history.html",
+        history_data=history_data,
+        chart_data=chart_data,
+        total_samples=total_samples,
+        quality_insights=quality_insights,
+    )
 
 
 

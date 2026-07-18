@@ -30,8 +30,9 @@ class FakeCollection:
 
 
 class FakeHistoryDocument:
-    def __init__(self, record):
+    def __init__(self, record, document_id):
         self.record = record
+        self.id = document_id
 
     def to_dict(self):
         return self.record
@@ -48,7 +49,10 @@ class FakeHistoryCollection:
         return self
 
     def stream(self):
-        return [FakeHistoryDocument(record) for record in self.records]
+        return [
+            FakeHistoryDocument(record, f"DOC-{index}")
+            for index, record in enumerate(self.records, start=1)
+        ]
 
 
 class FakeDB:
@@ -155,5 +159,9 @@ def test_history_route_uses_latest_table_order_and_chronological_chart(monkeypat
     assert fake_db.collection_obj.order_direction == main.firestore.Query.DESCENDING
     assert captured["template"] == "history.html"
     assert captured["history_data"][0]["Batch Number"] == "LATEST"
+    assert captured["history_data"][0]["Document ID"] == "DOC-1"
     assert captured["chart_data"][0]["date"] == "2026-07-18 11:00:00"
     assert captured["chart_data"][-1]["date"] == "2026-07-18 12:00:00"
+    assert captured["total_samples"] == 2
+    assert captured["quality_insights"]["High"]["count"] == 1
+    assert captured["quality_insights"]["High"]["percentage"] == 50
