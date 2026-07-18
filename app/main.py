@@ -135,8 +135,12 @@ def history():
     if 'user' not in session:
         return redirect(url_for('login_page'))
 
-    # Fetch all batches ordered by created_at
-    batches = db.collection("milk_batches").order_by("created_at").stream()
+    # Fetch latest batches first for the records table.
+    batches = (
+        db.collection("milk_batches")
+        .order_by("created_at", direction=firestore.Query.DESCENDING)
+        .stream()
+    )
 
     history_data = []
     chart_data = []

@@ -817,12 +817,13 @@
       $(document).ready(function () {
           // Initialize DataTable
           $("#historyTable").DataTable({
-              pageLength: 10,
+              pageLength: 20,
               ordering: true,
               searching: true,
               lengthChange: true,
               info: true,
-              order: [[3, "desc"]],
+              order: [[6, "desc"]],
+              lengthMenu: [[20, 50, 100, -1], [20, 50, 100, "All"]],
               dom: "Bfrtip",
               buttons: [
                   { extend: 'copy', className: 'dt-button', text: '<i class="fas fa-copy"></i> Copy' },

@@ -630,3 +630,6 @@
 2026-07-18 14:37:47,853 - INFO - 127.0.0.1 - - [18/Jul/2026 14:37:47] "GET /static/favicon_white.png HTTP/1.1" 200 -
 2026-07-18 14:37:48,453 - INFO - 127.0.0.1 - - [18/Jul/2026 14:37:48] "GET /static/favicon.png HTTP/1.1" 200 -
 2026-07-18 14:37:49,954 - INFO - 127.0.0.1 - - [18/Jul/2026 14:37:49] "[36mGET /static/favicon_white.png HTTP/1.1[0m" 304 -
+2026-07-18 23:36:09,086 - INFO - 127.0.0.1 - - [18/Jul/2026 23:36:09] "GET /history HTTP/1.1" 200 -
+2026-07-18 23:36:13,049 - INFO - 127.0.0.1 - - [18/Jul/2026 23:36:13] "GET /static/favicon_white.png HTTP/1.1" 200 -
+2026-07-18 23:36:13,083 - INFO - 127.0.0.1 - - [18/Jul/2026 23:36:13] "GET /static/favicon.png HTTP/1.1" 200 -

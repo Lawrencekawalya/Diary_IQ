@@ -1084,6 +1084,7 @@
             const reportMlPrediction = {{ ml_prediction | tojson }};
             const reportSuggestions = {{ suggestions | tojson }};
             const reportProbabilities = {{ probabilities | tojson }};
+            const reportConfidence = {{ confidence | tojson }};
             const reportMetadata = {{ model_metadata | tojson }};
             const reportBatchInfo = {{ batch_info | tojson }};
             const reportGate = {{ standards_quality_gate | tojson }};
@@ -1135,9 +1136,30 @@
                     <td>${escapeHtml(rule.Unit || "")}</td>
                     <td>${escapeHtml(rule.NormalRange || "")}</td>
                     <td style="color: ${status.color}; font-weight: 700;">${status.label}</td>
+                    <td>${escapeHtml(rule.Source || "")}</td>
                   </tr>
                 `;
               })
+              .join("");
+
+            const executiveBatchFields = [
+              "Batch Number",
+              "Collection Center",
+              "District",
+              "Location",
+              "Tested By",
+              "Time of Collection",
+            ];
+            const executiveBatchRows = executiveBatchFields
+              .filter((key) => reportBatchInfo[key] !== undefined && reportBatchInfo[key] !== null)
+              .map(
+                (key) => `
+                  <tr>
+                    <td>${escapeHtml(key)}</td>
+                    <td>${escapeHtml(reportBatchInfo[key])}</td>
+                  </tr>
+                `
+              )
               .join("");
 
             const batchRows = Object.entries(reportBatchInfo)
@@ -1311,6 +1333,12 @@
                   standards checks found unacceptable values.
                 </div>`
               : "";
+            const finalRule = reportGate && reportGate.reason
+              ? reportGate.reason
+              : "No standards gate downgrade was required.";
+            const interpretation = reportGate && reportGate.applied
+              ? `The Random Forest model voted ${escapeHtml(reportMlPrediction)}, but the standards safety gate adjusted the final decision to ${escapeHtml(reportPrediction)} because the submitted measurements include unacceptable values.`
+              : `The Random Forest model and standards safety gate support the final ${escapeHtml(reportPrediction)} decision for this submitted sample.`;
 
             const reportHtml = `
               <style>
@@ -1320,9 +1348,13 @@
                   font-size: 11px;
                   line-height: 1.35;
                 }
+                .report-page {
+                  min-height: 10.45in;
+                  position: relative;
+                }
                 .report-header {
                   border-bottom: 4px solid #1f3a93;
-                  margin-bottom: 16px;
+                  margin-bottom: 14px;
                   padding-bottom: 12px;
                   text-align: center;
                 }
@@ -1349,6 +1381,12 @@
                   grid-template-columns: 1.1fr 0.9fr;
                   margin-bottom: 14px;
                 }
+                .executive-grid {
+                  display: grid;
+                  gap: 12px;
+                  grid-template-columns: 0.95fr 1.05fr;
+                  margin-bottom: 12px;
+                }
                 .summary-card,
                 .section {
                   border: 1px solid #dbeafe;
@@ -1356,6 +1394,9 @@
                   break-inside: avoid;
                   page-break-inside: avoid;
                   padding: 12px;
+                }
+                .decision-card {
+                  border-left: 8px solid ${statusColor};
                 }
                 .summary-label {
                   color: #4b5563;
@@ -1367,6 +1408,35 @@
                   font-size: 30px;
                   font-weight: 800;
                   margin-top: 6px;
+                }
+                .badge-row {
+                  display: grid;
+                  gap: 8px;
+                  grid-template-columns: repeat(3, 1fr);
+                  margin: 10px 0 12px;
+                }
+                .badge {
+                  background: #f8fafc;
+                  border: 1px solid #d1d5db;
+                  border-radius: 6px;
+                  padding: 8px;
+                }
+                .badge-label {
+                  color: #6b7280;
+                  font-size: 9px;
+                  text-transform: uppercase;
+                }
+                .badge-value {
+                  color: #111827;
+                  font-size: 13px;
+                  font-weight: 700;
+                  margin-top: 3px;
+                }
+                .interpretation {
+                  background: #eff6ff;
+                  border-left: 4px solid #1f3a93;
+                  margin-top: 10px;
+                  padding: 9px 10px;
                 }
                 .gate-note {
                   background: #fff7ed;
@@ -1433,7 +1503,6 @@
                   display: block;
                   gap: 8px;
                   margin-top: 0;
-                  page-break-before: always;
                 }
                 .chart-panel {
                   border: 1px solid #dbeafe;
@@ -1480,78 +1549,125 @@
                 }
               </style>
               <div class="pdf-report">
-                <div class="report-header">
-                  <div class="brand">DairyIQ Analytics</div>
-                  <h1 class="report-title">Milk Quality Prediction Report</h1>
-                  <p class="subtitle">
-                    US EAS 67:2023 Raw Cow Milk Specification | Generated:
-                    ${escapeHtml(dateStr)} ${escapeHtml(timeStr)}
-                  </p>
-                </div>
-
-                <div class="summary-grid">
-                  <div class="summary-card">
-                    <div class="summary-label">Final Quality Decision</div>
-                    <div class="summary-value">${escapeHtml(reportPrediction)}</div>
-                    ${gateNote}
+                <div class="report-page">
+                  <div class="report-header">
+                    <div class="brand">DairyIQ Analytics</div>
+                    <h1 class="report-title">Milk Quality Prediction Report</h1>
+                    <p class="subtitle">
+                      Executive Summary | US EAS 67:2023 Raw Cow Milk Specification |
+                      Generated: ${escapeHtml(dateStr)} ${escapeHtml(timeStr)}
+                    </p>
                   </div>
-                  <div class="summary-card">
-                    <h2>Model Summary</h2>
+
+                  <div class="executive-grid">
+                    <div class="summary-card decision-card">
+                      <div class="summary-label">Final Quality Decision</div>
+                      <div class="summary-value">${escapeHtml(reportPrediction)}</div>
+                      ${gateNote}
+                    </div>
+                    <div class="summary-card">
+                      <h2>Sample Identification</h2>
+                      <table>
+                        <tbody>${executiveBatchRows}</tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="badge-row">
+                    <div class="badge">
+                      <div class="badge-label">Random Forest Vote</div>
+                      <div class="badge-value">${escapeHtml(reportMlPrediction || reportPrediction)}</div>
+                    </div>
+                    <div class="badge">
+                      <div class="badge-label">Confidence</div>
+                      <div class="badge-value">${formatProbability(reportConfidence)}</div>
+                    </div>
+                    <div class="badge">
+                      <div class="badge-label">Final Rule</div>
+                      <div class="badge-value">${escapeHtml(reportGate && reportGate.applied ? "Standards gated" : "ML accepted")}</div>
+                    </div>
+                  </div>
+
+                  <div class="section">
+                    <h2>Decision Interpretation</h2>
+                    <p class="interpretation">${interpretation}</p>
                     <table>
-                      <tr><td>Random Forest Vote</td><td>${escapeHtml(reportMlPrediction || reportPrediction)}</td></tr>
+                      <tr><td>Decision Rule Detail</td><td>${escapeHtml(finalRule)}</td></tr>
                       <tr><td>Model Version</td><td>${escapeHtml(reportMetadata.model_version || "")}</td></tr>
                       <tr><td>Dataset Version</td><td>${escapeHtml(reportMetadata.dataset_version || "")}</td></tr>
                       <tr><td>Label Policy</td><td>${escapeHtml(reportMetadata.label_policy_version || "")}</td></tr>
                     </table>
                   </div>
-                </div>
 
-                <div class="section">
-                  <h2>Batch Information</h2>
-                  <table>
-                    <tbody>${batchRows}</tbody>
-                  </table>
+                  <div class="section">
+                    <h2>Batch Information</h2>
+                    <table>
+                      <tbody>${batchRows}</tbody>
+                    </table>
+                  </div>
                 </div>
 
                 <div class="page-break"></div>
 
-                <div class="section measured-section">
-                  <h2>Measured Inputs and Standards Status</h2>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Parameter</th>
-                        <th>Value</th>
-                        <th>Unit</th>
-                        <th>Normal Range</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>${tableRows}</tbody>
-                  </table>
-                </div>
+                <div class="report-page">
+                  <div class="report-header">
+                    <div class="brand">DairyIQ Analytics</div>
+                    <h1 class="report-title">Measured Inputs and Standards Status</h1>
+                    <p class="subtitle">
+                      Values compared against configured standards and approved supplementary references.
+                    </p>
+                  </div>
 
-                <div class="two-column">
-                  <div class="section">
-                    <h2>Class Probabilities</h2>
+                  <div class="section measured-section">
                     <table>
-                      <thead><tr><th>Class</th><th>Probability</th></tr></thead>
-                      <tbody>${probabilityRows}</tbody>
+                      <thead>
+                        <tr>
+                          <th>Parameter</th>
+                          <th>Value</th>
+                          <th>Unit</th>
+                          <th>Normal Range</th>
+                          <th>Status</th>
+                          <th>Source</th>
+                        </tr>
+                      </thead>
+                      <tbody>${tableRows}</tbody>
                     </table>
                   </div>
-                  <div class="section">
-                    <h2>Standards Observations</h2>
-                    <ul>${observationRows}</ul>
+                </div>
+
+                <div class="page-break"></div>
+
+                <div class="report-page">
+                  <div class="report-header">
+                    <div class="brand">DairyIQ Analytics</div>
+                    <h1 class="report-title">Model Evidence and Standards Observations</h1>
+                    <p class="subtitle">
+                      Class probabilities, standards observations, and visual decision evidence.
+                    </p>
                   </div>
-                </div>
 
-                <div class="chart-grid">
-                  ${chartSection}
-                </div>
+                  <div class="two-column">
+                    <div class="section">
+                      <h2>Class Probabilities</h2>
+                      <table>
+                        <thead><tr><th>Class</th><th>Probability</th></tr></thead>
+                        <tbody>${probabilityRows}</tbody>
+                      </table>
+                    </div>
+                    <div class="section">
+                      <h2>Standards Observations</h2>
+                      <ul>${observationRows}</ul>
+                    </div>
+                  </div>
 
-                <div class="footer">
-                  Exported ${escapeHtml(dateStr)} ${escapeHtml(timeStr)} |
-                  &copy; ${year} DairyIQ Analytics | Decision-support prototype
+                  <div class="chart-grid">
+                    ${chartSection}
+                  </div>
+
+                  <div class="footer">
+                    Exported ${escapeHtml(dateStr)} ${escapeHtml(timeStr)} |
+                    &copy; ${year} DairyIQ Analytics | Decision-support prototype
+                  </div>
                 </div>
               </div>
             `;
