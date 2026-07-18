@@ -1,0 +1,129 @@
+{
+  "artifact_schema_version": "1.0",
+  "model_version": "milk_quality_rf_v1",
+  "model_type": "sklearn.pipeline.Pipeline(RandomForestClassifier)",
+  "dataset_path": "data/milk_quality_eas67_2023_synth_1500.csv",
+  "dataset_version": "milk_quality_eas67_2023_synth_1500_v1",
+  "label_policy_version": "eas67_codex_fao_policy_v1",
+  "feature_order": [
+    "pH",
+    "Temperature",
+    "Taste",
+    "Odor",
+    "Fat_Content",
+    "Titratable_Acidity",
+    "Protein_Content",
+    "Lactose_Content",
+    "TPC",
+    "SCC",
+    "Color"
+  ],
+  "classes": [
+    "Low",
+    "Medium",
+    "High"
+  ],
+  "sensory_encoding": {
+    "Taste": {
+      "normal": 1,
+      "acceptable": 1,
+      "abnormal": 0,
+      "off": 0,
+      "off-taste": 0
+    },
+    "Odor": {
+      "fresh": 1,
+      "normal": 1,
+      "abnormal": 0,
+      "objectionable": 0
+    },
+    "Color": {
+      "normal": 1,
+      "creamy-white": 1,
+      "white": 1,
+      "abnormal": 0
+    }
+  },
+  "metrics": {
+    "model": "Random Forest",
+    "test_metrics": {
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0
+    },
+    "classification_report": {
+      "Low": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 100.0
+      },
+      "Medium": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 100.0
+      },
+      "High": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 100.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 300.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 300.0
+      }
+    },
+    "cross_validation": {
+      "folds": 5,
+      "accuracy": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "balanced_accuracy": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "macro_f1": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "accuracy_mean": 1.0,
+      "balanced_accuracy_mean": 1.0,
+      "macro_f1_mean": 1.0
+    }
+  },
+  "dependencies": {
+    "python": "3.14.4",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.6.1",
+    "xgboost": "3.3.0",
+    "joblib": "1.4.2"
+  },
+  "training_timestamp": "2026-07-18T09:09:32.043111+00:00",
+  "random_state": 42,
+  "artifact_payload_sha256": "7e1bd42ff645e6a07f3e5771e717e4a5e4126de663a5b13e8d5e45fcf0795995",
+  "artifact_file_sha256": "4f4836e4edfa3d78e7268ebb92a1791be28863b25668332f9b0b2e07bb91813f",
+  "artifact_path": "ml_model/artifacts/milk_quality_rf_v1.joblib"
+}

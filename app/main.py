@@ -24,6 +24,7 @@ from model_contract import (
     QUALITY_MAP,
     normalize_quality_label,
 )
+from model_artifact import load_model_bundle
 
 # Configure logging
 logging.basicConfig(
@@ -58,7 +59,13 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# Load legacy baseline model until the thesis-aligned artifact is trained.
+# Validate the thesis-aligned artifact at startup. Phase 7 switches prediction
+# to this model after the form and route use the approved 11-feature contract.
+model_bundle = load_model_bundle("ml_model/artifacts/milk_quality_rf_v1.joblib")
+thesis_model = model_bundle["model"]
+model_metadata = model_bundle["metadata"]
+
+# Temporary legacy predictor kept until Phase 7 backend integration.
 model = joblib.load("ml_model/dairy_model_legacy_9feature.pkl")
 labels = QUALITY_LABELS
 

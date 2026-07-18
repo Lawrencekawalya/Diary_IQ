@@ -16,6 +16,5 @@ __pycache__/
 .pytest_cache/
 
 # Generated artifacts for the thesis-aligned rebuild
-ml_model/artifacts/
 data/generated/
 docs/model-evaluation/

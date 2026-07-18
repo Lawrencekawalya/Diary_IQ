@@ -162,9 +162,9 @@ The implementation is complete only when:
 
 ## Phase 6: Model Artifact
 
-- [ ] Save a versioned model bundle, for example:
+- [x] Save a versioned model bundle, for example:
       `ml_model/artifacts/milk_quality_rf_v1.joblib`.
-- [ ] Include:
+- [x] Include:
       - fitted preprocessing/model pipeline;
       - ordered 11-feature list;
       - class list: `Low`, `Medium`, `High`;
@@ -176,7 +176,7 @@ The implementation is complete only when:
       - Python and scikit-learn versions;
       - training timestamp;
       - artifact checksum.
-- [ ] Make Flask fail startup if the artifact feature list or classes do not
+- [x] Make Flask fail startup if the artifact feature list or classes do not
       match the approved contract.
 
 ## Phase 7: Flask Backend Integration
