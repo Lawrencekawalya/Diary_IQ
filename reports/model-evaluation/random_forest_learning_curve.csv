@@ -1,0 +1,6 @@
+train_size,train_accuracy_mean,train_accuracy_std,validation_accuracy_mean,validation_accuracy_std
+240,1.0,0.0,1.0,0.0
+480,1.0,0.0,1.0,0.0
+720,1.0,0.0,1.0,0.0
+960,1.0,0.0,1.0,0.0
+1200,1.0,0.0,1.0,0.0

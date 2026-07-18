@@ -138,11 +138,11 @@ The implementation is complete only when:
 
 ## Phase 5: Training and Evaluation
 
-- [ ] Replace the ad hoc training script with a root-runnable command.
-- [ ] Use deterministic random seeds.
-- [ ] Use stratified 80/20 split: 1,200 training and 300 testing samples.
-- [ ] Train Random Forest on the 11-feature dataset.
-- [ ] Evaluate:
+- [x] Replace the ad hoc training script with a root-runnable command.
+- [x] Use deterministic random seeds.
+- [x] Use stratified 80/20 split: 1,200 training and 300 testing samples.
+- [x] Train Random Forest on the 11-feature dataset.
+- [x] Evaluate:
       - accuracy;
       - balanced accuracy;
       - macro precision;
@@ -153,11 +153,12 @@ The implementation is complete only when:
       - five-fold cross-validation;
       - learning curve;
       - feature importance.
-- [ ] Reproduce comparative models if required:
+- [x] Reproduce comparative models available in the current environment:
       - SVM;
       - ANN;
-      - XGBoost.
-- [ ] Confirm whether the thesis-reported 99.5% Random Forest accuracy is
+      - XGBoost optional hook added, but skipped because `xgboost` is not
+        installed.
+- [x] Confirm whether the thesis-reported 99.5% Random Forest accuracy is
       reproducible. If not, report the actual value honestly.
 
 ## Phase 6: Model Artifact

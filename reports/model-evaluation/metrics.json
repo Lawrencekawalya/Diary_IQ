@@ -1,0 +1,336 @@
+{
+  "generated_at": "2026-07-18T08:30:19.578359+00:00",
+  "dataset_path": "data/milk_quality_eas67_2023_synth_1500.csv",
+  "dataset_version": "milk_quality_eas67_2023_synth_1500_v1",
+  "label_policy_version": "eas67_codex_fao_policy_v1",
+  "feature_order": [
+    "pH",
+    "Temperature",
+    "Taste",
+    "Odor",
+    "Fat_Content",
+    "Titratable_Acidity",
+    "Protein_Content",
+    "Lactose_Content",
+    "TPC",
+    "SCC",
+    "Color"
+  ],
+  "classes": [
+    "Low",
+    "Medium",
+    "High"
+  ],
+  "random_state": 42,
+  "split": {
+    "strategy": "stratified",
+    "test_size": 0.2,
+    "train_rows": 1200,
+    "test_rows": 300
+  },
+  "dependencies": {
+    "python": "3.14.4",
+    "pandas": "3.0.3",
+    "scikit_learn": "1.6.1"
+  },
+  "models_evaluated": [
+    "Random Forest",
+    "SVM",
+    "ANN"
+  ],
+  "xgboost_status": "not installed; optional comparison skipped",
+  "random_forest": {
+    "model": "Random Forest",
+    "test_metrics": {
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0
+    },
+    "classification_report": {
+      "Low": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 100.0
+      },
+      "Medium": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 100.0
+      },
+      "High": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 100.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 300.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 300.0
+      }
+    },
+    "cross_validation": {
+      "folds": 5,
+      "accuracy": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "balanced_accuracy": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "macro_f1": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "accuracy_mean": 1.0,
+      "balanced_accuracy_mean": 1.0,
+      "macro_f1_mean": 1.0
+    }
+  },
+  "all_models": [
+    {
+      "model": "Random Forest",
+      "test_metrics": {
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "macro_precision": 1.0,
+        "macro_recall": 1.0,
+        "macro_f1": 1.0
+      },
+      "classification_report": {
+        "Low": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "Medium": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "High": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 300.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 300.0
+        }
+      },
+      "cross_validation": {
+        "folds": 5,
+        "accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "balanced_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "macro_f1": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "accuracy_mean": 1.0,
+        "balanced_accuracy_mean": 1.0,
+        "macro_f1_mean": 1.0
+      }
+    },
+    {
+      "model": "SVM",
+      "test_metrics": {
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "macro_precision": 1.0,
+        "macro_recall": 1.0,
+        "macro_f1": 1.0
+      },
+      "classification_report": {
+        "Low": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "Medium": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "High": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 300.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 300.0
+        }
+      },
+      "cross_validation": {
+        "folds": 5,
+        "accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "balanced_accuracy": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "macro_f1": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "accuracy_mean": 1.0,
+        "balanced_accuracy_mean": 1.0,
+        "macro_f1_mean": 1.0
+      }
+    },
+    {
+      "model": "ANN",
+      "test_metrics": {
+        "accuracy": 0.9933333333333333,
+        "balanced_accuracy": 0.9933333333333333,
+        "macro_precision": 0.9934640522875817,
+        "macro_recall": 0.9933333333333333,
+        "macro_f1": 0.9933326665999934
+      },
+      "classification_report": {
+        "Low": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 100.0
+        },
+        "Medium": {
+          "precision": 1.0,
+          "recall": 0.98,
+          "f1-score": 0.98989898989899,
+          "support": 100.0
+        },
+        "High": {
+          "precision": 0.9803921568627451,
+          "recall": 1.0,
+          "f1-score": 0.9900990099009901,
+          "support": 100.0
+        },
+        "accuracy": 0.9933333333333333,
+        "macro avg": {
+          "precision": 0.9934640522875817,
+          "recall": 0.9933333333333333,
+          "f1-score": 0.9933326665999934,
+          "support": 300.0
+        },
+        "weighted avg": {
+          "precision": 0.9934640522875816,
+          "recall": 0.9933333333333333,
+          "f1-score": 0.9933326665999933,
+          "support": 300.0
+        }
+      },
+      "cross_validation": {
+        "folds": 5,
+        "accuracy": [
+          0.9933333333333333,
+          0.9866666666666667,
+          0.9866666666666667,
+          1.0,
+          0.9833333333333333
+        ],
+        "balanced_accuracy": [
+          0.9933333333333333,
+          0.9866666666666667,
+          0.9866666666666667,
+          1.0,
+          0.9833333333333334
+        ],
+        "macro_f1": [
+          0.9933326665999934,
+          0.9866613311991465,
+          0.9866613311991465,
+          1.0,
+          0.9833229101521784
+        ],
+        "accuracy_mean": 0.99,
+        "balanced_accuracy_mean": 0.99,
+        "macro_f1_mean": 0.9899956478300929
+      }
+    }
+  ],
+  "thesis_99_5_accuracy_check": {
+    "reported_accuracy": 0.995,
+    "reproduced_accuracy": 1.0,
+    "matches_reported_accuracy": false
+  },
+  "outputs": {
+    "comparison": "reports/model-evaluation/model_comparison.csv",
+    "confusion_matrix": "reports/model-evaluation/random_forest_confusion_matrix.csv",
+    "feature_importance": "reports/model-evaluation/random_forest_feature_importance.csv",
+    "learning_curve": "reports/model-evaluation/random_forest_learning_curve.csv",
+    "phase5_candidate_model": "reports/model-evaluation/random_forest_phase5_candidate.joblib"
+  }
+}
