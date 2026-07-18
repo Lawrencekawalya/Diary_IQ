@@ -40,9 +40,9 @@ except FileNotFoundError:
 
 
 app = Flask(__name__)
-# generate a 16-byte random token (hex encoded)
-# print(secrets.token_hex(16))
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', '3e59e99addb9052eb7da6ab9935e49c3')
+app.secret_key = os.environ.get('FLASK_SECRET_KEY')
+if not app.secret_key:
+    raise RuntimeError("FLASK_SECRET_KEY must be set in the environment.")
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
@@ -52,8 +52,8 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# Load model
-model = joblib.load("ml_model/dairy_model_4class.pkl")
+# Load legacy baseline model until the thesis-aligned artifact is trained.
+model = joblib.load("ml_model/dairy_model_legacy_9feature.pkl")
 labels = ['Low', 'Moderate', 'High']
 
 # Quality mapping (used in charts)
@@ -64,7 +64,7 @@ FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 if not FIREBASE_API_KEY:
     print("API KEY is missing, please set FIREBASE_API_KEY")
 else:
-    print("API KEY loaded successfully")
+    print("Firebase API key is configured")
 
 
 def firebase_login(email, password):
@@ -102,12 +102,6 @@ def login():
     password = request.form['password']
 
     result = firebase_login(email, password)
-
-    # result = firebase_login(email, password)
-
-    print("================================")
-    print("Firebase response:", result)
-    print("================================")
 
     if "idToken" in result:
         session.permanent = True
@@ -179,12 +173,9 @@ def debug_firebase():
     except Exception as e:
         project_id = f"Error reading project_id: {e}"
 
-    # API Key from environment
-    api_key = os.environ.get("FIREBASE_API_KEY", "⚠️ Not Set")
-
     return {
         "firebase_admin_project_id": project_id,
-        "firebase_api_key": api_key
+        "firebase_api_key_configured": bool(FIREBASE_API_KEY)
     }
 ############################################################################
 # QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
