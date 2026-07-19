@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import { Building2, ClipboardList, FileText, FlaskConical, History, LayoutGrid } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -23,18 +23,33 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'New Prediction',
+        href: '/milk-batches/create',
+        icon: FlaskConical,
+    },
+    {
+        title: 'History',
+        href: '/milk-batches',
+        icon: History,
+    },
+    {
+        title: 'Reports',
+        href: '/reports',
+        icon: FileText,
+    },
+    {
+        title: 'Company Settings',
+        href: '/company/settings',
+        icon: Building2,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        title: 'Approved 11-feature contract',
+        href: '/milk-batches/create',
+        icon: ClipboardList,
     },
 ];
 </script>

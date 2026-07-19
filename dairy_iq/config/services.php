@@ -22,6 +22,12 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'ml_service' => [
+        'url' => env('ML_SERVICE_URL', 'http://127.0.0.1:5100'),
+        'token' => env('ML_SERVICE_TOKEN'),
+        'timeout' => env('ML_SERVICE_TIMEOUT', 10),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

@@ -33,20 +33,35 @@ application. Python should own ML inference.
 
 ## Phase 1: Baseline and Architecture Freeze
 
-- [ ] Keep the current Flask implementation as the working reference system.
-- [ ] Confirm the approved 11-feature model contract remains unchanged:
+- [x] Keep the current Flask implementation as the working reference system.
+- [x] Confirm the approved 11-feature model contract remains unchanged:
       `pH`, `Temperature`, `Taste`, `Odor`, `Fat_Content`,
       `Titratable_Acidity`, `Protein_Content`, `Lactose_Content`, `TPC`,
       `SCC`, and `Color`.
-- [ ] Confirm public labels remain `Low`, `Medium`, and `High`.
-- [ ] Confirm Laravel will replace Flask for screens, records, users, reports,
+- [x] Confirm public labels remain `Low`, `Medium`, and `High`.
+- [x] Confirm Laravel will replace Flask for screens, records, users, reports,
       and history.
-- [ ] Confirm Python remains responsible for prediction and model validation.
-- [ ] Define environment variables:
+- [x] Confirm Python remains responsible for prediction and model validation.
+- [x] Define environment variables:
       - `ML_SERVICE_URL`
       - `ML_SERVICE_TOKEN`
       - database connection values
       - mail/session/cache settings
+
+### Phase 1 Frozen Decisions
+
+- The Flask implementation remains the reference until Laravel reaches feature
+  parity.
+- Laravel will become the only user-facing application.
+- Python will expose prediction through an internal ML API and will remain the
+  owner of model loading, validation, Random Forest inference, and standards
+  checks.
+- The model contract is exactly the approved thesis 11-feature contract:
+  `pH`, `Temperature`, `Taste`, `Odor`, `Fat_Content`,
+  `Titratable_Acidity`, `Protein_Content`, `Lactose_Content`, `TPC`, `SCC`,
+  and `Color`.
+- Public prediction labels are frozen as `Low`, `Medium`, and `High`.
+- `SNF` and `Turbidity` are not model inputs in the Laravel switch.
 
 ## Phase 2: Laravel Domain Foundation
 
@@ -68,16 +83,16 @@ application. Python should own ML inference.
 
 ## Phase 3: Python ML Service Extraction
 
-- [ ] Keep existing training, dataset generation, and model artifact scripts in
+- [x] Keep existing training, dataset generation, and model artifact scripts in
       Python.
-- [ ] Create a lightweight Python API endpoint:
+- [x] Create a lightweight Python API endpoint:
 
 ```text
 POST /api/predict
 ```
 
-- [ ] Request body must contain the 11 approved inputs.
-- [ ] Response must include:
+- [x] Request body must contain the 11 approved inputs.
+- [x] Response must include:
       - `prediction`
       - `ml_prediction`
       - `confidence`
@@ -86,37 +101,37 @@ POST /api/predict
       - `standards_quality_gate`
       - `model_metadata`
       - feature status/colors
-- [ ] Add request validation and API-token protection.
-- [ ] Add Python tests for valid input, invalid input, and known High/Medium/Low
+- [x] Add request validation and API-token protection.
+- [x] Add Python tests for valid input, invalid input, and known High/Medium/Low
       samples.
 
 ## Phase 4: Laravel Prediction Integration
 
-- [ ] Create Laravel service class:
+- [x] Create Laravel service class:
 
 ```text
 App\Services\MilkQualityPredictionService
 ```
 
-- [ ] Laravel validates form input before calling Python.
-- [ ] Laravel sends prediction payload to Python using Laravel HTTP client.
-- [ ] Laravel handles ML service errors gracefully.
-- [ ] Laravel stores the prediction response in SQL.
-- [ ] Add feature tests using HTTP fakes so Laravel tests do not depend on the
+- [x] Laravel validates form input before calling Python.
+- [x] Laravel sends prediction payload to Python using Laravel HTTP client.
+- [x] Laravel handles ML service errors gracefully.
+- [x] Laravel stores the prediction response in SQL.
+- [x] Add feature tests using HTTP fakes so Laravel tests do not depend on the
       live Python service.
 
 ## Phase 5: Laravel User Interface
 
-- [ ] Replace starter dashboard with DairyIQ dashboard.
-- [ ] Build Inertia/Vue pages:
-      - prediction form
-      - result page
-      - history page
-      - report/export page
-      - company profile/settings page
-- [ ] Form must collect exactly the approved 11 inputs.
-- [ ] `SNF` and `Turbidity` must not be model inputs.
-- [ ] Result page must show:
+- [x] Replace starter dashboard with DairyIQ dashboard.
+- [x] Build Inertia/Vue pages:
+      - [x] prediction form
+      - [x] result page
+      - [x] history page
+      - [x] report/export entry page
+      - [x] company profile/settings page
+- [x] Form must collect exactly the approved 11 inputs.
+- [x] `SNF` and `Turbidity` must not be model inputs.
+- [x] Result page must show:
       - final prediction
       - raw Random Forest vote
       - confidence
@@ -124,8 +139,8 @@ App\Services\MilkQualityPredictionService
       - standards observations
       - standards safety gate explanation
       - model metadata
-- [ ] History page must show company-scoped records only.
-- [ ] Add pagination, filtering, sorting, and `View Details` links.
+- [x] History page must show company-scoped records only.
+- [x] Add pagination, filtering, sorting, and `View Details` links.
 
 ## Phase 6: Reporting and Export
 

@@ -24,6 +24,20 @@ NUMERIC_FORM_FIELDS = {
     "SCC": ("scc", "Somatic Cell Count"),
 }
 
+CANONICAL_TO_FORM_FIELDS = {
+    "pH": "ph",
+    "Temperature": "temperature",
+    "Taste": "taste",
+    "Odor": "odor",
+    "Fat_Content": "fat",
+    "Titratable_Acidity": "acidity",
+    "Protein_Content": "protein",
+    "Lactose_Content": "lactose",
+    "TPC": "tpc",
+    "SCC": "scc",
+    "Color": "color",
+}
+
 QUALITY_RANK = {
     "Low": 0,
     "Medium": 1,
@@ -54,6 +68,21 @@ SENSORY_FORM_FIELDS = {
     "Odor": ("odor", "Odor"),
     "Color": ("color", "Color"),
 }
+
+
+def normalize_api_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+    missing = [feature for feature in APPROVED_MODEL_FEATURES if feature not in payload]
+    if missing:
+        raise ValueError(f"Missing model features: {', '.join(missing)}")
+
+    unexpected = sorted(set(payload) - set(APPROVED_MODEL_FEATURES))
+    if unexpected:
+        raise ValueError(f"Unexpected model features: {', '.join(unexpected)}")
+
+    return {
+        form_field: payload[feature]
+        for feature, form_field in CANONICAL_TO_FORM_FIELDS.items()
+    }
 
 
 def parse_float(form: Mapping[str, Any], field_name: str, label: str) -> float:

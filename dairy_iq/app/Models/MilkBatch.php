@@ -109,8 +109,12 @@ class MilkBatch extends Model
      * @param  Builder<MilkBatch>  $query
      * @return Builder<MilkBatch>
      */
-    public function scopeForCompany(Builder $query, int $companyId): Builder
+    public function scopeForCompany(Builder $query, ?int $companyId): Builder
     {
+        if ($companyId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
         return $query->where('company_id', $companyId);
     }
 }
