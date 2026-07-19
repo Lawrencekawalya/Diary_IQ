@@ -200,7 +200,7 @@ php artisan dairyiq:import-firestore /path/to/firestore-milk-batches.json --comp
 
 ## Phase 9: Testing and Verification
 
-- [ ] Laravel feature tests:
+- [x] Laravel feature tests:
       - authenticated prediction form access
       - unauthenticated redirects
       - company-scoped history
@@ -208,20 +208,39 @@ php artisan dairyiq:import-firestore /path/to/firestore-milk-batches.json --comp
       - prediction request saves all required fields
       - ML service failure shows safe error
       - report route renders saved records
-- [ ] Python tests:
+      - admin role/access controls
+      - super-admin company/user management
+      - forced password-change flow
+      - admin company dashboard view
+- [x] Python tests:
       - model artifact compatibility
       - known High/Medium/Low predictions
       - invalid feature rejection
       - standards safety gate behavior
+- [x] Frontend verification:
+      - TypeScript check
+      - ESLint check
+      - production Vite build
 - [ ] End-to-end manual demo:
       - register/login
       - create company/user
+      - reset user password and complete forced password change
+      - verify super-admin admin dashboard
       - submit High sample
       - submit Medium sample
       - submit Low sample
       - view history
       - view details
       - export report
+
+### Phase 9 Verification Results
+
+- `php artisan test --compact`: passed, 79 tests and 460 assertions.
+- `python -m pytest tests -q`: passed, 32 tests.
+- `npm run types:check`: passed.
+- `npx eslint resources/js --ext .ts,.vue`: passed.
+- `npm run build`: passed. Vite reported only non-blocking warnings for the
+  optional `fontaine` package and large chart-related chunks.
 
 ## Phase 10: Rollout
 

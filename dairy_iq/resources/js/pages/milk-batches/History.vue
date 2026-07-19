@@ -60,6 +60,10 @@ const predictionClass = (prediction: string) => ({
     'bg-amber-100 text-amber-800': prediction === 'Medium',
     'bg-red-100 text-red-800': prediction === 'Low',
 });
+
+const paginationLabel = (label: string) => label
+    .replace('&laquo;', 'Previous')
+    .replace('&raquo;', 'Next');
 </script>
 
 <template>
@@ -147,8 +151,9 @@ const predictionClass = (prediction: string) => ({
                         :href="link.url ?? '#'"
                         class="rounded-md border px-3 py-1.5"
                         :class="{ 'bg-blue-800 text-white': link.active, 'pointer-events-none opacity-40': !link.url }"
-                        v-html="link.label"
-                    />
+                    >
+                        {{ paginationLabel(link.label) }}
+                    </Link>
                 </div>
             </div>
         </section>
