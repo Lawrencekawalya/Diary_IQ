@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StoreMilkBatchPredictionRequest extends FormRequest
@@ -14,6 +15,15 @@ class StoreMilkBatchPredictionRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user() !== null;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('district')) {
+            $this->merge([
+                'district' => $this->normalizeDistrict($this->input('district')),
+            ]);
+        }
     }
 
     /**
@@ -62,5 +72,20 @@ class StoreMilkBatchPredictionRequest extends FormRequest
             'SCC',
             'Color',
         ]);
+    }
+
+    private function normalizeDistrict(mixed $district): ?string
+    {
+        if (! is_string($district)) {
+            return null;
+        }
+
+        $normalized = Str::of($district)->trim()->squish();
+
+        if ($normalized->isEmpty()) {
+            return null;
+        }
+
+        return $normalized->lower()->title()->toString();
     }
 }

@@ -180,6 +180,14 @@ class ImportFirestoreRecordsCommand extends Command
         $odor = $this->sensoryValue($record, 'Odor', 'odor', 1);
         $color = $this->sensoryValue($record, 'Color', 'color', 1);
         $prediction = $this->qualityLabel($this->first($record, ['prediction', 'Prediction', 'quality']));
+        $ph = $this->floatInRange($this->requiredFloat($record, ['pH', 'ph'], 'pH'), 'pH', 0, 14);
+        $temperature = $this->floatInRange($this->requiredFloat($record, ['Temperature', 'temperature'], 'Temperature'), 'Temperature', 0, 100);
+        $fatContent = $this->floatInRange($this->requiredFloat($record, ['Fat_Content', 'fat_content'], 'Fat_Content'), 'Fat_Content', 0, 20);
+        $titratableAcidity = $this->floatInRange($this->requiredFloat($record, ['Titratable_Acidity', 'titratable_acidity'], 'Titratable_Acidity'), 'Titratable_Acidity', 0, 5);
+        $proteinContent = $this->floatInRange($this->requiredFloat($record, ['Protein_Content', 'protein_content'], 'Protein_Content'), 'Protein_Content', 0, 20);
+        $lactoseContent = $this->floatInRange($this->requiredFloat($record, ['Lactose_Content', 'lactose_content'], 'Lactose_Content'), 'Lactose_Content', 0, 20);
+        $tpc = $this->integerInRange($this->requiredInteger($record, ['TPC', 'tpc'], 'TPC'), 'TPC', 0);
+        $scc = $this->integerInRange($this->requiredInteger($record, ['SCC', 'scc'], 'SCC'), 'SCC', 0);
 
         if ($prediction === null) {
             throw new InvalidArgumentException('missing or invalid prediction');
@@ -190,20 +198,20 @@ class ImportFirestoreRecordsCommand extends Command
             'user_id' => $user?->id,
             'batch_number' => $this->batchNumber($record, $index),
             'collection_center' => $this->nullableString($this->first($record, ['Collection Center', 'collection_center'])),
-            'district' => $this->nullableString($this->first($record, ['District', 'district'])),
+            'district' => $this->normalizeDistrict($this->first($record, ['District', 'district'])),
             'tested_by' => $this->nullableString($this->first($record, ['Tested By', 'tested_by'])),
             'collected_at' => $this->timestamp($this->first($record, ['Time of Collection', 'collected_at', 'created_at'])),
             'liters_collected' => $this->nullableFloat($this->first($record, ['Number of Liters Collected', 'liters_collected'])),
-            'ph' => $this->requiredFloat($record, ['pH', 'ph'], 'pH'),
-            'temperature' => $this->requiredFloat($record, ['Temperature', 'temperature'], 'Temperature'),
+            'ph' => $ph,
+            'temperature' => $temperature,
             'taste' => $taste,
             'odor' => $odor,
-            'fat_content' => $this->requiredFloat($record, ['Fat_Content', 'fat_content'], 'Fat_Content'),
-            'titratable_acidity' => $this->requiredFloat($record, ['Titratable_Acidity', 'titratable_acidity'], 'Titratable_Acidity'),
-            'protein_content' => $this->requiredFloat($record, ['Protein_Content', 'protein_content'], 'Protein_Content'),
-            'lactose_content' => $this->requiredFloat($record, ['Lactose_Content', 'lactose_content'], 'Lactose_Content'),
-            'tpc' => $this->requiredInteger($record, ['TPC', 'tpc'], 'TPC'),
-            'scc' => $this->requiredInteger($record, ['SCC', 'scc'], 'SCC'),
+            'fat_content' => $fatContent,
+            'titratable_acidity' => $titratableAcidity,
+            'protein_content' => $proteinContent,
+            'lactose_content' => $lactoseContent,
+            'tpc' => $tpc,
+            'scc' => $scc,
             'color' => $color,
             'sensory_inputs' => $this->sensoryInputs($record, $taste, $odor, $color),
             'encoded_sensory_values' => [
@@ -310,6 +318,24 @@ class ImportFirestoreRecordsCommand extends Command
         return (int) $value;
     }
 
+    private function floatInRange(float $value, string $field, float $minimum, float $maximum): float
+    {
+        if ($value < $minimum || $value > $maximum) {
+            throw new InvalidArgumentException("{$field} out of supported range {$minimum}-{$maximum}");
+        }
+
+        return $value;
+    }
+
+    private function integerInRange(int $value, string $field, int $minimum): int
+    {
+        if ($value < $minimum) {
+            throw new InvalidArgumentException("{$field} below supported minimum {$minimum}");
+        }
+
+        return $value;
+    }
+
     private function nullableFloat(mixed $value): ?float
     {
         return is_numeric($value) ? (float) $value : null;
@@ -322,6 +348,23 @@ class ImportFirestoreRecordsCommand extends Command
         }
 
         return (string) $value;
+    }
+
+    private function normalizeDistrict(mixed $district): ?string
+    {
+        $value = $this->nullableString($district);
+
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = Str::of($value)->trim()->squish();
+
+        if ($normalized->isEmpty()) {
+            return null;
+        }
+
+        return $normalized->lower()->title()->toString();
     }
 
     private function qualityLabel(mixed $value): ?string

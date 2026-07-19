@@ -21,7 +21,7 @@ function predictionPayload(): array
     return [
         'batch_number' => 'BATCH-HIGH-001',
         'collection_center' => 'Main Collection Center',
-        'district' => 'Kampala',
+        'district' => ' kAzO ',
         'tested_by' => 'Quality Officer',
         'liters_collected' => 120.50,
         'pH' => 6.70,
@@ -149,6 +149,7 @@ test('authenticated company user can request prediction and store milk batch rec
 
     expect($batch->company_id)->toBe($company->id)
         ->and($batch->user_id)->toBe($user->id)
+        ->and($batch->district)->toBe('Kazo')
         ->and($batch->prediction)->toBe('High')
         ->and($batch->ml_prediction)->toBe('High')
         ->and($batch->taste)->toBe(1)

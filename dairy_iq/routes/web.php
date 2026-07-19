@@ -21,9 +21,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->limit(100)
             ->get();
         $qualityScores = [
-            'Low' => 1,
-            'Medium' => 2,
-            'High' => 3,
+            'Low' => 0,
+            'Medium' => 1,
+            'High' => 2,
         ];
 
         return Inertia::render('Dashboard', [

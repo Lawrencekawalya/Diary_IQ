@@ -23,7 +23,7 @@ test('it imports legacy firestore records into a selected company', function () 
                 'fields' => [
                     'Batch Number' => ['stringValue' => 'LEGACY-BATCH-001'],
                     'Collection Center' => ['stringValue' => 'Central Collection'],
-                    'District' => ['stringValue' => 'Kampala'],
+                    'District' => ['stringValue' => ' kampala '],
                     'Tested By' => ['stringValue' => 'Legacy Tester'],
                     'Time of Collection' => ['stringValue' => '2026-07-18 14:00:00'],
                     'Number of Liters Collected' => ['doubleValue' => 250.5],
@@ -63,6 +63,7 @@ test('it imports legacy firestore records into a selected company', function () 
 
     expect($batch->company_id)->toBe($company->id)
         ->and($batch->user_id)->toBe($user->id)
+        ->and($batch->district)->toBe('Kampala')
         ->and($batch->prediction)->toBe('Medium')
         ->and($batch->ml_prediction)->toBe('Medium')
         ->and($batch->source)->toBe('firestore_legacy')
@@ -129,4 +130,35 @@ test('it skips records missing required approved features', function () {
         ->assertExitCode(2);
 
     expect(MilkBatch::query()->where('batch_number', 'INVALID-LEGACY-001')->exists())->toBeFalse();
+});
+
+test('it skips legacy records with out of range model inputs', function () {
+    $company = Company::factory()->create();
+    $path = legacyImportFile([
+        [
+            'Batch Number' => 'OUT-OF-RANGE-LEGACY-001',
+            'pH' => 6.7,
+            'Temperature' => 4,
+            'Taste' => 1,
+            'Odor' => 1,
+            'Fat_Content' => 5000,
+            'Titratable_Acidity' => 0.15,
+            'Protein_Content' => 3.3,
+            'Lactose_Content' => 4.8,
+            'TPC' => 50000,
+            'SCC' => 200000,
+            'Color' => 1,
+            'prediction' => 'High',
+        ],
+    ]);
+
+    $this->artisan('dairyiq:import-firestore', [
+        'path' => $path,
+        '--company-id' => $company->id,
+    ])
+        ->expectsOutputToContain('Skipping record 0: Fat_Content out of supported range 0-20')
+        ->expectsOutputToContain('Firestore legacy import imported: 0; skipped: 1')
+        ->assertExitCode(2);
+
+    expect(MilkBatch::query()->where('batch_number', 'OUT-OF-RANGE-LEGACY-001')->exists())->toBeFalse();
 });

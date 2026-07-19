@@ -60,11 +60,12 @@ test('dashboard shows company scoped analytics data', function () {
             ->where('summary.Low', 1)
             ->has('qualityTrend', 3)
             ->where('qualityTrend.0.batch_number', 'DASH-HIGH-001')
-            ->where('qualityTrend.0.score', 3)
+            ->where('qualityTrend.0.score', 2)
             ->has('districtAnalytics', 2)
             ->where('districtAnalytics.0.district', 'Mbarara')
             ->where('districtAnalytics.0.total', 2)
             ->where('districtAnalytics.0.liters', 150)
+            ->where('districtAnalytics.0.average_quality_score', 1.5)
             ->has('latestBatches', 3)
             ->where('latestBatches.0.batch_number', 'DASH-LOW-001')
         );
