@@ -280,12 +280,36 @@ php artisan dairyiq:import-firestore /path/to/firestore-milk-batches.json --comp
 
 The switch is complete when:
 
-- [ ] Laravel is the only user-facing web application.
-- [ ] Python serves predictions through an internal ML API.
-- [ ] The 11-feature approved thesis contract is preserved.
-- [ ] Records are stored in Laravel SQL tables with company isolation.
-- [ ] History and reports use Laravel database records.
-- [ ] Users can only access their own company's data.
-- [ ] Prediction results match the current Flask/Python behavior.
-- [ ] Automated tests cover Laravel and Python integration boundaries.
-- [ ] The final demo supports High, Medium, and Low prediction flows.
+- [x] Laravel is the only user-facing web application.
+- [x] Python serves predictions through an internal ML API.
+- [x] The 11-feature approved thesis contract is preserved.
+- [x] Records are stored in Laravel SQL tables with company isolation.
+- [x] History and reports use Laravel database records.
+- [x] Users can only access their own company's data.
+- [x] Prediction results match the current Flask/Python behavior.
+- [x] Automated tests cover Laravel and Python integration boundaries.
+- [x] The final demo supports High, Medium, and Low prediction flows.
+
+### Definition of Done Acceptance Notes
+
+- Laravel now owns authentication, roles, companies, prediction entry, result
+  pages, history, dashboards, reports, exports, admin tools, and documentation.
+- The old Flask web UI is no longer part of the active user-facing workflow.
+  It remains only as a reference implementation.
+- Python remains active as the internal Random Forest ML service through
+  `POST /api/predict` and health reporting through `GET /api/health`.
+- Laravel connects to Python through `ML_SERVICE_URL`, `ML_SERVICE_TOKEN`, and
+  `ML_SERVICE_TIMEOUT`.
+- The approved 11-feature contract is preserved:
+  `pH`, `Temperature`, `Taste`, `Odor`, `Fat_Content`,
+  `Titratable_Acidity`, `Protein_Content`, `Lactose_Content`, `TPC`, `SCC`,
+  and `Color`.
+- `SNF` and `Turbidity` remain excluded from the active model contract.
+- SQL records are stored in `milk_batches` with `company_id`, and all active
+  history, report, dashboard, and result reads are company-scoped.
+- Super-admins manage companies and users, while company users remain isolated
+  to their assigned company.
+- The final rollout guide is documented in `docs/laravel-rollout.md`.
+- Automated verification covers Laravel feature behavior, Python model/service
+  behavior, frontend typing/build, and the Laravel-to-Python integration
+  boundary.
