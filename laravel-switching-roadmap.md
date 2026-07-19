@@ -144,29 +144,33 @@ App\Services\MilkQualityPredictionService
 
 ## Phase 6: Reporting and Export
 
-- [ ] Rebuild the current executive-summary PDF layout in Laravel.
-- [ ] Report pages should follow:
+- [x] Rebuild the current executive-summary PDF layout in Laravel.
+- [x] Report pages should follow:
       - Page 1: executive summary and batch details
       - Page 2: measured inputs and standards status
       - Page 3: probabilities, observations, and charts
-- [ ] Ensure reports include company name and user/tester.
-- [ ] Ensure exported reports are generated from saved database records, not
+- [x] Ensure reports include company name and user/tester.
+- [x] Ensure exported reports are generated from saved database records, not
       unsaved browser-only state.
-- [ ] Add tests for report routes and authorization.
+- [x] Add tests for report routes and authorization.
 
 ## Phase 7: Data Migration
 
-- [ ] Decide whether old Firestore records must be imported.
-- [ ] If yes, write an import command:
+- [x] Decide whether old Firestore records must be imported.
+- [x] Write an import command:
 
 ```text
-php artisan dairyiq:import-firestore
+php artisan dairyiq:import-firestore /path/to/firestore-milk-batches.json --company-id=1
 ```
 
-- [ ] Map legacy `Moderate` to `Medium`.
-- [ ] Handle missing sensory fields safely.
-- [ ] Attach imported records to a default company.
-- [ ] Mark imported records with `source = firestore_legacy`.
+- [x] Map legacy `Moderate` to `Medium`.
+- [x] Handle missing sensory fields safely.
+- [x] Attach imported records to a selected company, or create the default
+      `Legacy Firestore Imports` company when no company is supplied.
+- [x] Mark imported records with `source = firestore_legacy`.
+- [x] Support `--dry-run` validation before writing records.
+- [x] Add importer tests for successful import, dry-run, skipped invalid rows,
+      legacy Firestore typed JSON, label mapping, and missing sensory defaults.
 
 ## Phase 8: Security and Multi-Company Access
 

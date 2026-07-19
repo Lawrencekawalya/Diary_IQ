@@ -47,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('milk-batches.show');
     Route::get('reports', [ReportController::class, 'index'])
         ->name('reports.index');
+    Route::get('reports/{milkBatch}', [ReportController::class, 'show'])
+        ->name('reports.show');
+    Route::get('reports/{milkBatch}/preview', [ReportController::class, 'preview'])
+        ->name('reports.preview');
     Route::get('company/settings', [CompanySettingsController::class, 'edit'])
         ->name('company.settings.edit');
     Route::put('company/settings', [CompanySettingsController::class, 'update'])

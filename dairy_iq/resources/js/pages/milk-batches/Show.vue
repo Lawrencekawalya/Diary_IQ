@@ -114,7 +114,11 @@ const predictionClass = (prediction: string) => ({
 
         <div class="flex justify-between">
             <Link href="/milk-batches" class="rounded-lg border px-4 py-2 text-sm font-semibold">Back to History</Link>
-            <Link href="/milk-batches/create" class="rounded-lg bg-blue-800 px-4 py-2 text-sm font-semibold text-white">New Prediction</Link>
+            <div class="flex gap-3">
+                <a :href="`/reports/${batch.id}/preview`" target="_blank" rel="noopener" class="rounded-lg border px-4 py-2 text-sm font-semibold">Preview Report</a>
+                <a :href="`/reports/${batch.id}`" class="rounded-lg border px-4 py-2 text-sm font-semibold">Download PDF</a>
+                <Link href="/milk-batches/create" class="rounded-lg bg-blue-800 px-4 py-2 text-sm font-semibold text-white">New Prediction</Link>
+            </div>
         </div>
     </div>
 </template>

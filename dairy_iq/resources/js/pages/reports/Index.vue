@@ -5,6 +5,8 @@ type Batch = {
     id: number;
     batch_number: string;
     prediction: string;
+    ml_prediction: string | null;
+    confidence: string | null;
     tested_by: string | null;
     created_at: string | null;
 };
@@ -39,6 +41,8 @@ defineOptions({
                     <tr>
                         <th class="px-5 py-3">Batch</th>
                         <th class="px-5 py-3">Prediction</th>
+                        <th class="px-5 py-3">Raw ML Vote</th>
+                        <th class="px-5 py-3">Confidence</th>
                         <th class="px-5 py-3">Tested By</th>
                         <th class="px-5 py-3">Created</th>
                         <th class="px-5 py-3"></th>
@@ -46,17 +50,25 @@ defineOptions({
                 </thead>
                 <tbody>
                     <tr v-if="batches.length === 0">
-                        <td colspan="5" class="px-5 py-8 text-center text-muted-foreground">No saved records are available for reports yet.</td>
+                        <td colspan="7" class="px-5 py-8 text-center text-muted-foreground">No saved records are available for reports yet.</td>
                     </tr>
                     <tr v-for="batch in batches" :key="batch.id" class="border-t">
                         <td class="px-5 py-3 font-medium">{{ batch.batch_number }}</td>
                         <td class="px-5 py-3">{{ batch.prediction }}</td>
+                        <td class="px-5 py-3">{{ batch.ml_prediction ?? 'N/A' }}</td>
+                        <td class="px-5 py-3">{{ batch.confidence ?? 'N/A' }}</td>
                         <td class="px-5 py-3">{{ batch.tested_by ?? 'N/A' }}</td>
                         <td class="px-5 py-3">{{ batch.created_at ?? 'N/A' }}</td>
-                        <td class="px-5 py-3 text-right">
+                        <td class="space-x-3 px-5 py-3 text-right">
                             <Link :href="`/milk-batches/${batch.id}`" class="font-semibold text-blue-700 hover:underline">
-                                View Report Source
+                                Details
                             </Link>
+                            <a :href="`/reports/${batch.id}/preview`" target="_blank" rel="noopener" class="font-semibold text-blue-700 hover:underline">
+                                Preview
+                            </a>
+                            <a :href="`/reports/${batch.id}`" class="font-semibold text-blue-700 hover:underline">
+                                Download PDF
+                            </a>
                         </td>
                     </tr>
                 </tbody>
