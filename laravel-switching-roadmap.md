@@ -174,12 +174,29 @@ php artisan dairyiq:import-firestore /path/to/firestore-milk-batches.json --comp
 
 ## Phase 8: Security and Multi-Company Access
 
-- [ ] Remove Firebase dependency from the Laravel-facing app.
-- [ ] Use Laravel authentication and sessions.
-- [ ] Add company-level authorization checks.
-- [ ] Ensure users cannot access another company's batch result URL.
-- [ ] Protect Python ML service so it only accepts trusted Laravel requests.
-- [ ] Move secrets to `.env`; never commit service tokens or production keys.
+- [x] Remove Firebase dependency from the Laravel-facing app.
+- [x] Use Laravel authentication and sessions.
+- [x] Add role-based access:
+      - `super_admin` creates companies and company users.
+      - `company_admin` manages users and settings inside one company.
+      - `tester` can submit and view prediction records for the assigned
+        company.
+- [x] Add company-level authorization checks.
+- [x] Ensure users cannot access another company's batch result URL.
+- [x] Prevent users without a company from creating prediction records.
+- [x] Protect Python ML service so it only accepts trusted Laravel requests.
+- [x] Move Laravel/Python ML service configuration to `.env`.
+- [ ] Rotate any development or legacy secrets before production deployment.
+
+### Phase 8 Implementation Notes
+
+- Laravel is now the user-facing authentication and session layer.
+- Super-admin company administration is available at `/admin/companies`.
+- Company-admin user management is available at `/company/users`.
+- Direct URL access is blocked for unauthorized roles.
+- Prediction records remain scoped by `company_id`.
+- The old Flask/Firebase application may remain as a reference, but it is not
+  part of the Laravel-facing workflow.
 
 ## Phase 9: Testing and Verification
 

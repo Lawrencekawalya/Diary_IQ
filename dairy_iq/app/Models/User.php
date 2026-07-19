@@ -20,6 +20,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 /**
  * @property int $id
  * @property int|null $company_id
+ * @property string $role
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
@@ -31,7 +32,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['company_id', 'name', 'email', 'password'])]
+#[Fillable(['company_id', 'role', 'name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -66,6 +67,32 @@ class User extends Authenticatable implements PasskeyUser
     public function milkBatches(): HasMany
     {
         return $this->hasMany(MilkBatch::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isCompanyAdmin(): bool
+    {
+        return $this->role === 'company_admin';
+    }
+
+    public function isTester(): bool
+    {
+        return $this->role === 'tester';
+    }
+
+    public function canManageCompanyUsers(?int $companyId = null): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->isCompanyAdmin()
+            && $this->company_id !== null
+            && ($companyId === null || $this->company_id === $companyId);
     }
 
     public function ensureCompany(): Company

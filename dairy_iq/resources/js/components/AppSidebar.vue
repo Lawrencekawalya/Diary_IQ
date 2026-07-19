@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { Building2, ClipboardList, FileText, FlaskConical, History, LayoutGrid } from '@lucide/vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { Building2, ClipboardList, FileText, FlaskConical, History, LayoutGrid, ShieldCheck, Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
+
+const page = usePage();
+const user = page.props.auth.user;
 
 const mainNavItems: NavItem[] = [
     {
@@ -43,7 +46,25 @@ const mainNavItems: NavItem[] = [
         href: '/company/settings',
         icon: Building2,
     },
-];
+    ...(user.role === 'company_admin'
+        ? [
+            {
+                title: 'Company Users',
+                href: '/company/users',
+                icon: Users,
+            },
+        ]
+        : []),
+    ...(user.role === 'super_admin'
+        ? [
+            {
+                title: 'Admin Companies',
+                href: '/admin/companies',
+                icon: ShieldCheck,
+            },
+        ]
+        : []),
+].filter((item) => user.role !== 'super_admin' || !['New Prediction', 'History', 'Reports', 'Company Settings'].includes(item.title));
 
 const footerNavItems: NavItem[] = [
     {

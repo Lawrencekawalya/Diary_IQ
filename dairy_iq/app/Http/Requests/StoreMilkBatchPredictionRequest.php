@@ -14,7 +14,8 @@ class StoreMilkBatchPredictionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user()?->company_id !== null
+            && ! $this->user()->isSuperAdmin();
     }
 
     protected function prepareForValidation(): void

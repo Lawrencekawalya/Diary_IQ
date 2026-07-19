@@ -34,6 +34,7 @@ class CreateNewUser implements CreatesNewUsers
 
         return User::create([
             'company_id' => $company->id,
+            'role' => 'company_admin',
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],

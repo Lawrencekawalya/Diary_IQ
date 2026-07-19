@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\CompanySettingsController;
+use App\Http\Controllers\CompanyUserController;
 use App\Http\Controllers\MilkBatchPredictionController;
 use App\Http\Controllers\ReportController;
 use App\Models\MilkBatch;
@@ -104,6 +106,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('company.settings.edit');
     Route::put('company/settings', [CompanySettingsController::class, 'update'])
         ->name('company.settings.update');
+    Route::get('company/users', [CompanyUserController::class, 'index'])
+        ->name('company.users.index');
+    Route::post('company/users', [CompanyUserController::class, 'store'])
+        ->name('company.users.store');
+    Route::get('admin/companies', [AdminCompanyController::class, 'index'])
+        ->name('admin.companies.index');
+    Route::post('admin/companies', [AdminCompanyController::class, 'store'])
+        ->name('admin.companies.store');
+    Route::post('admin/companies/{company}/users', [AdminCompanyController::class, 'storeUser'])
+        ->name('admin.companies.users.store');
 });
 
 require __DIR__.'/settings.php';

@@ -89,11 +89,10 @@ class MilkBatchPredictionController extends Controller
         }
 
         $user = $request->user();
-        $company = $user->ensureCompany();
         $data = $request->validated();
 
         $batch = MilkBatch::create([
-            'company_id' => $company->id,
+            'company_id' => $user->company_id,
             'user_id' => $user->id,
             'batch_number' => $data['batch_number'] ?? $this->generateBatchNumber(),
             'collection_center' => $data['collection_center'] ?? null,

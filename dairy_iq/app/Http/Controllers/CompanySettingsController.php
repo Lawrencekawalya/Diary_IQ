@@ -11,7 +11,10 @@ class CompanySettingsController extends Controller
 {
     public function edit(): Response
     {
-        $company = request()->user()->company;
+        $user = request()->user();
+        abort_unless($user?->isCompanyAdmin() && $user->company_id !== null, 403);
+
+        $company = $user->company;
 
         return Inertia::render('company/Settings', [
             'company' => [

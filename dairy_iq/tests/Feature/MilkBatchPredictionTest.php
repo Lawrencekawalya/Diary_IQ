@@ -316,19 +316,17 @@ test('laravel validation rejects districts outside the configured uganda list', 
     Http::assertNothingSent();
 });
 
-test('existing users without a company get a company before creating prediction records', function () {
+test('users without a company cannot create prediction records', function () {
     $user = User::factory()->create(['company_id' => null]);
 
-    Http::fake([
-        'http://ml.test/api/predict' => Http::response(mlPredictionResponse()),
-    ]);
+    Http::fake();
 
     $this->actingAs($user)
         ->postJson(route('milk-batches.predictions.store'), predictionPayload())
-        ->assertCreated();
+        ->assertForbidden();
 
-    expect($user->refresh()->company_id)->not->toBeNull()
-        ->and(MilkBatch::firstOrFail()->company_id)->toBe($user->company_id);
+    expect(MilkBatch::count())->toBe(0);
+    Http::assertNothingSent();
 });
 
 test('ml service errors are returned safely and do not create records', function () {

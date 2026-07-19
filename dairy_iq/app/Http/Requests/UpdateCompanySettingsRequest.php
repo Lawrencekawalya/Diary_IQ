@@ -12,7 +12,8 @@ class UpdateCompanySettingsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->company_id !== null;
+        return $this->user()?->isCompanyAdmin() === true
+            && $this->user()?->company_id !== null;
     }
 
     /**
