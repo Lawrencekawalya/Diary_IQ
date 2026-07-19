@@ -198,6 +198,9 @@ test('prediction form page is displayed to authenticated company users', functio
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('milk-batches/Create')
+            ->where('batchNumber', fn (string $batchNumber) => str_starts_with($batchNumber, 'BATCH-'))
+            ->where('districts.0', 'Abim')
+            ->where('districts.65', 'Kazo')
         );
 });
 
@@ -266,6 +269,49 @@ test('laravel validation rejects invalid input before calling ml service', funct
         ->postJson(route('milk-batches.predictions.store'), $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['pH']);
+
+    Http::assertNothingSent();
+});
+
+test('laravel validation requires every visible form field before calling ml service', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $payload = predictionPayload();
+
+    foreach (['batch_number', 'collection_center', 'district', 'tested_by', 'liters_collected'] as $field) {
+        unset($payload[$field]);
+    }
+
+    Http::fake();
+
+    $this->actingAs($user)
+        ->postJson(route('milk-batches.predictions.store'), $payload)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'batch_number',
+            'collection_center',
+            'district',
+            'tested_by',
+            'liters_collected',
+        ]);
+
+    Http::assertNothingSent();
+});
+
+test('laravel validation rejects districts outside the configured uganda list', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $payload = [
+        ...predictionPayload(),
+        'district' => 'Not A Uganda District',
+    ];
+
+    Http::fake();
+
+    $this->actingAs($user)
+        ->postJson(route('milk-batches.predictions.store'), $payload)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['district']);
 
     Http::assertNothingSent();
 });

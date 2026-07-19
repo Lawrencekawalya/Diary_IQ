@@ -34,12 +34,12 @@ class StoreMilkBatchPredictionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'batch_number' => ['nullable', 'string', 'max:100'],
-            'collection_center' => ['nullable', 'string', 'max:255'],
-            'district' => ['nullable', 'string', 'max:255'],
-            'tested_by' => ['nullable', 'string', 'max:255'],
+            'batch_number' => ['required', 'string', 'max:100'],
+            'collection_center' => ['required', 'string', 'max:255'],
+            'district' => ['required', 'string', 'max:255', Rule::in(config('dairyiq.uganda_districts', []))],
+            'tested_by' => ['required', 'string', 'max:255'],
             'collected_at' => ['nullable', 'date'],
-            'liters_collected' => ['nullable', 'numeric', 'min:0'],
+            'liters_collected' => ['required', 'numeric', 'min:0'],
             'pH' => ['required', 'numeric', 'between:0,14'],
             'Temperature' => ['required', 'numeric', 'min:0', 'max:100'],
             'Taste' => ['required', 'string', Rule::in(['normal', 'acceptable', 'abnormal', 'off', 'off-taste'])],

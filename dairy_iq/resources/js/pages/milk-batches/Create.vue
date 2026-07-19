@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { FlaskConical } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+
+const props = defineProps<{
+    batchNumber: string;
+    districts: string[];
+}>();
 
 defineOptions({
     layout: {
@@ -42,7 +47,7 @@ const numericFields = [
 ] as const;
 
 const form = useForm<PredictionForm>({
-    batch_number: '',
+    batch_number: props.batchNumber,
     collection_center: '',
     district: '',
     tested_by: '',
@@ -61,8 +66,47 @@ const form = useForm<PredictionForm>({
 });
 
 const predictionError = computed(() => (form.errors as Record<string, string>).prediction);
+const districtSearchOpen = ref(false);
+
+const normalizeTextInput = (value: string) => value.trim().replace(/\s+/g, ' ');
+
+const normalizeDistrict = () => {
+    const normalized = normalizeTextInput(form.district);
+
+    form.district = normalized
+        ? normalized
+            .toLocaleLowerCase()
+            .replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase())
+        : '';
+};
+
+const filteredDistricts = computed(() => {
+    const search = normalizeTextInput(form.district).toLocaleLowerCase();
+
+    if (!search) {
+        return props.districts.slice(0, 12);
+    }
+
+    return props.districts
+        .filter((district) => district.toLocaleLowerCase().includes(search))
+        .slice(0, 12);
+});
+
+const selectDistrict = (district: string) => {
+    form.district = district;
+    districtSearchOpen.value = false;
+};
+
+const closeDistrictSearch = () => {
+    normalizeDistrict();
+    window.setTimeout(() => {
+        districtSearchOpen.value = false;
+    }, 120);
+};
 
 const submit = () => {
+    normalizeDistrict();
+
     form.post('/milk-batches/predictions', {
         preserveScroll: true,
     });
@@ -97,23 +141,63 @@ const submit = () => {
                 <div class="mt-4 grid gap-4 md:grid-cols-3">
                     <label class="grid gap-2 text-sm">
                         Batch Number
-                        <input v-model="form.batch_number" class="rounded-md border bg-background px-3 py-2" placeholder="Auto-generated if empty">
+                        <input v-model="form.batch_number" required readonly class="cursor-not-allowed rounded-md border bg-muted px-3 py-2 text-muted-foreground" :aria-invalid="Boolean(form.errors.batch_number)">
+                        <span class="text-xs text-muted-foreground">Generated automatically for traceability.</span>
+                        <span v-if="form.errors.batch_number" class="text-xs text-red-600">{{ form.errors.batch_number }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         Collection Center
-                        <input v-model="form.collection_center" class="rounded-md border bg-background px-3 py-2">
+                        <input v-model="form.collection_center" required class="rounded-md border bg-background px-3 py-2" placeholder="Example: ADC Dairy" :aria-invalid="Boolean(form.errors.collection_center)">
+                        <span class="text-xs text-muted-foreground">Tell us where the milk was collected.</span>
+                        <span v-if="form.errors.collection_center" class="text-xs text-red-600">{{ form.errors.collection_center }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         District
-                        <input v-model="form.district" class="rounded-md border bg-background px-3 py-2">
+                        <div class="relative">
+                            <input
+                                v-model="form.district"
+                                required
+                                autocomplete="off"
+                                class="w-full rounded-md border bg-background px-3 py-2"
+                                list="uganda-districts"
+                                placeholder="Type to search, e.g. Kazo"
+                                :aria-expanded="districtSearchOpen"
+                                :aria-invalid="Boolean(form.errors.district)"
+                                role="combobox"
+                                @blur="closeDistrictSearch"
+                                @focus="districtSearchOpen = true"
+                                @input="districtSearchOpen = true"
+                            >
+                            <div
+                                v-if="districtSearchOpen && filteredDistricts.length > 0"
+                                class="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-md border bg-popover p-1 shadow-lg"
+                            >
+                                <button
+                                    v-for="district in filteredDistricts"
+                                    :key="district"
+                                    type="button"
+                                    class="block w-full rounded-sm px-3 py-2 text-left text-sm hover:bg-muted"
+                                    @mousedown.prevent="selectDistrict(district)"
+                                >
+                                    {{ district }}
+                                </button>
+                            </div>
+                        </div>
+                        <datalist id="uganda-districts">
+                            <option v-for="district in props.districts" :key="district" :value="district" />
+                        </datalist>
+                        <span class="text-xs text-muted-foreground">Select a Uganda district or city from the search list. Casing is normalized before saving.</span>
+                        <span v-if="form.errors.district" class="text-xs text-red-600">{{ form.errors.district }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         Tested By
-                        <input v-model="form.tested_by" class="rounded-md border bg-background px-3 py-2">
+                        <input v-model="form.tested_by" required class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors.tested_by)">
+                        <span v-if="form.errors.tested_by" class="text-xs text-red-600">{{ form.errors.tested_by }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         Liters Collected
-                        <input v-model="form.liters_collected" type="number" step="0.01" min="0" class="rounded-md border bg-background px-3 py-2">
+                        <input v-model="form.liters_collected" required type="number" step="0.01" min="0" class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors.liters_collected)">
+                        <span v-if="form.errors.liters_collected" class="text-xs text-red-600">{{ form.errors.liters_collected }}</span>
                     </label>
                 </div>
             </section>
@@ -123,30 +207,33 @@ const submit = () => {
                 <div class="mt-4 grid gap-4 md:grid-cols-3">
                     <label v-for="field in numericFields" :key="field" class="grid gap-2 text-sm">
                         {{ field }}
-                        <input v-model="form[field]" type="number" step="any" min="0" class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors[field])">
+                        <input v-model="form[field]" required type="number" step="any" min="0" class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors[field])">
                         <span v-if="form.errors[field]" class="text-xs text-red-600">{{ form.errors[field] }}</span>
                     </label>
 
                     <label class="grid gap-2 text-sm">
                         Taste
-                        <select v-model="form.Taste" class="rounded-md border bg-background px-3 py-2">
+                        <select v-model="form.Taste" required class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors.Taste)">
                             <option value="normal">Normal / acceptable</option>
                             <option value="abnormal">Abnormal / off-taste</option>
                         </select>
+                        <span v-if="form.errors.Taste" class="text-xs text-red-600">{{ form.errors.Taste }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         Odor
-                        <select v-model="form.Odor" class="rounded-md border bg-background px-3 py-2">
+                        <select v-model="form.Odor" required class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors.Odor)">
                             <option value="fresh">Fresh / normal</option>
                             <option value="abnormal">Abnormal / objectionable</option>
                         </select>
+                        <span v-if="form.errors.Odor" class="text-xs text-red-600">{{ form.errors.Odor }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         Color
-                        <select v-model="form.Color" class="rounded-md border bg-background px-3 py-2">
+                        <select v-model="form.Color" required class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors.Color)">
                             <option value="normal">Normal / creamy-white</option>
                             <option value="abnormal">Abnormal appearance</option>
                         </select>
+                        <span v-if="form.errors.Color" class="text-xs text-red-600">{{ form.errors.Color }}</span>
                     </label>
                 </div>
             </section>

@@ -111,8 +111,20 @@ const performanceColor = (value: number, maxValue: number) => {
     return '#e74c3c';
 };
 
-const districtCategories = computed(() => props.districtAnalytics.map((district) => district.district));
-const maxDistrictLiters = computed(() => Math.max(...props.districtAnalytics.map((district) => district.liters), 1));
+const sortedDistrictAnalytics = computed(() => [...props.districtAnalytics].sort((first, second) => {
+    if (districtView.value === 'quality') {
+        return second.average_quality_score - first.average_quality_score
+            || second.total - first.total
+            || first.district.localeCompare(second.district);
+    }
+
+    return second.liters - first.liters
+        || second.total - first.total
+        || first.district.localeCompare(second.district);
+}));
+
+const districtCategories = computed(() => sortedDistrictAnalytics.value.map((district) => district.district));
+const maxDistrictLiters = computed(() => Math.max(...sortedDistrictAnalytics.value.map((district) => district.liters), 1));
 const trendWindowStart = computed(() => Math.max(sortedTrend.value.length - visibleTrendPointCount, 0));
 const trendWindowEnd = computed(() => Math.max(sortedTrend.value.length - 1, 0));
 
@@ -253,7 +265,7 @@ const districtSeries = computed(() => {
         return [
             {
                 name: 'Average Quality Score',
-                data: props.districtAnalytics.map((district) => district.average_quality_score),
+                data: sortedDistrictAnalytics.value.map((district) => district.average_quality_score),
             },
         ];
     }
@@ -263,12 +275,12 @@ const districtSeries = computed(() => {
             {
                 name: 'Total Liters Collected',
                 type: 'column',
-                data: props.districtAnalytics.map((district) => district.liters),
+                data: sortedDistrictAnalytics.value.map((district) => district.liters),
             },
             {
                 name: 'Avg Quality Score',
                 type: 'line',
-                data: props.districtAnalytics.map((district) => district.average_quality_score),
+                data: sortedDistrictAnalytics.value.map((district) => district.average_quality_score),
             },
         ];
     }
@@ -276,21 +288,21 @@ const districtSeries = computed(() => {
     return [
         {
             name: 'Total Liters Collected',
-            data: props.districtAnalytics.map((district) => district.liters),
+            data: sortedDistrictAnalytics.value.map((district) => district.liters),
         },
     ];
 });
 
 const districtColors = computed(() => {
     if (districtView.value === 'quality') {
-        return props.districtAnalytics.map((district) => qualityColor(qualityScoreLabel(district.average_quality_score)));
+        return sortedDistrictAnalytics.value.map((district) => qualityColor(qualityScoreLabel(district.average_quality_score)));
     }
 
     if (districtView.value === 'combined') {
         return ['#3498db', '#1f3a93'];
     }
 
-    return props.districtAnalytics.map((district) => performanceColor(district.liters, maxDistrictLiters.value));
+    return sortedDistrictAnalytics.value.map((district) => performanceColor(district.liters, maxDistrictLiters.value));
 });
 
 const districtChartOptions = computed<ApexOptions>(() => ({
@@ -348,7 +360,7 @@ const districtChartOptions = computed<ApexOptions>(() => ({
             formatter: (value: number, options) => {
                 const dataPointIndex = options?.dataPointIndex ?? 0;
                 const seriesIndex = options?.seriesIndex ?? 0;
-                const district = props.districtAnalytics[dataPointIndex];
+                const district = sortedDistrictAnalytics.value[dataPointIndex];
 
                 if (districtView.value === 'quality' || seriesIndex === 1) {
                     return `${qualityScoreLabel(value)} (${value.toFixed(2)})`;
@@ -562,7 +574,7 @@ const predictionClass = (prediction: string) => ({
                 </div>
 
                 <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                    <div v-for="district in districtAnalytics" :key="district.district" class="rounded-lg border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md">
+                    <div v-for="district in sortedDistrictAnalytics" :key="district.district" class="rounded-lg border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <h3 class="text-sm font-semibold">{{ district.district }}</h3>

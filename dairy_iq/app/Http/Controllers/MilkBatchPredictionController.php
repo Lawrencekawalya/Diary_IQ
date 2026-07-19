@@ -54,7 +54,10 @@ class MilkBatchPredictionController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('milk-batches/Create');
+        return Inertia::render('milk-batches/Create', [
+            'batchNumber' => $this->generateBatchNumber(),
+            'districts' => config('dairyiq.uganda_districts', []),
+        ]);
     }
 
     public function show(MilkBatch $milkBatch): Response
