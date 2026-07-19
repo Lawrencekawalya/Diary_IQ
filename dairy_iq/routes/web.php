@@ -76,6 +76,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->values(),
         ]);
     })->name('dashboard');
+    Route::get('approved-features', function () {
+        $standardsPath = base_path('../config/standards.json');
+        $standards = is_file($standardsPath)
+            ? json_decode((string) file_get_contents($standardsPath), true, flags: JSON_THROW_ON_ERROR)
+            : [];
+
+        return Inertia::render('reference/ApprovedFeatures', [
+            'features' => $standards,
+        ]);
+    })->name('approved-features.index');
     Route::get('milk-batches', [MilkBatchPredictionController::class, 'index'])
         ->name('milk-batches.index');
     Route::get('milk-batches/create', [MilkBatchPredictionController::class, 'create'])

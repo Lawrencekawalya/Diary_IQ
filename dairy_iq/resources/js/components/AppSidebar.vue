@@ -48,7 +48,7 @@ const mainNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: 'Approved 11-feature contract',
-        href: '/milk-batches/create',
+        href: '/approved-features',
         icon: ClipboardList,
     },
 ];

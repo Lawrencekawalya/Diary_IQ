@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import type { ApexOptions } from 'apexcharts';
+import { computed } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
 type Batch = {
     id: number;
@@ -17,10 +20,93 @@ type Batch = {
     probabilities: Record<string, number> | null;
     standards_observations: string[] | null;
     standards_quality_gate: Record<string, unknown> | null;
+    feature_status: string[] | null;
     model_metadata: Record<string, unknown> | null;
 };
 
-defineProps<{ batch: Batch }>();
+const props = defineProps<{ batch: Batch }>();
+
+const featureSnapshotLabels = [
+    'pH',
+    'Temp',
+    'Taste',
+    'Odor',
+    'Fat',
+    'Acidity',
+    'Protein',
+    'Lactose',
+    'TPC',
+    'SCC',
+    'Color',
+];
+
+const featureSnapshotColors = computed(() => {
+    const colors = props.batch.feature_status ?? [];
+
+    return featureSnapshotLabels.map((_, index) => colors[index] ?? '#bdc3c7');
+});
+
+const featureSnapshotSeries = computed(() => [
+    {
+        name: 'Feature Status',
+        data: featureSnapshotLabels.map(() => 1),
+    },
+]);
+
+const featureSnapshotOptions = computed<ApexOptions>(() => ({
+    chart: {
+        animations: { enabled: true, easing: 'easeinout', speed: 700 },
+        fontFamily: 'inherit',
+        toolbar: { show: false },
+    },
+    colors: featureSnapshotColors.value,
+    dataLabels: { enabled: false },
+    grid: {
+        borderColor: '#e5edf7',
+        strokeDashArray: 3,
+    },
+    legend: { show: false },
+    plotOptions: {
+        bar: {
+            borderRadius: 3,
+            columnWidth: '72%',
+            distributed: true,
+        },
+    },
+    states: {
+        hover: {
+            filter: { type: 'none' },
+        },
+    },
+    title: {
+        align: 'center',
+        text: 'Parameters (Green = Normal, Red = Out of Range)',
+    },
+    tooltip: {
+        y: {
+            formatter: (_value: number, options) => {
+                const color = featureSnapshotColors.value[options?.dataPointIndex ?? 0];
+
+                return color === '#2ecc71' ? 'Normal' : 'Out of Range';
+            },
+        },
+    },
+    xaxis: {
+        categories: featureSnapshotLabels,
+        labels: {
+            rotate: 0,
+            trim: false,
+        },
+    },
+    yaxis: {
+        max: 1,
+        min: 0,
+        tickAmount: 1,
+        labels: {
+            formatter: (value: number) => value === 1 ? 'Present' : '',
+        },
+    },
+}));
 
 defineOptions({
     layout: {
@@ -51,6 +137,18 @@ const predictionClass = (prediction: string) => ({
                 Raw Random Forest vote: <strong>{{ batch.ml_prediction ?? 'N/A' }}</strong>
                 <span v-if="batch.confidence"> | Confidence: <strong>{{ batch.confidence }}</strong></span>
             </p>
+        </section>
+
+        <section class="rounded-xl border bg-card p-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-blue-900 dark:text-blue-200">Feature Standards Snapshot</h2>
+            <div class="mt-4">
+                <VueApexCharts
+                    height="300"
+                    type="bar"
+                    :options="featureSnapshotOptions"
+                    :series="featureSnapshotSeries"
+                />
+            </div>
         </section>
 
         <section class="grid gap-6 lg:grid-cols-2">

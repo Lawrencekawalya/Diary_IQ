@@ -3,6 +3,7 @@
 use App\Models\Company;
 use App\Models\MilkBatch;
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('a company owns users and milk batch records', function () {
     $company = Company::factory()->create();
@@ -103,4 +104,20 @@ test('milk batch query scope keeps company records isolated', function () {
 
     expect(MilkBatch::forCompany($company->id)->pluck('id')->all())
         ->toBe([$visibleBatch->id]);
+});
+
+test('approved feature contract reference page shows shared standards', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+
+    $this->actingAs($user)
+        ->get(route('approved-features.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('reference/ApprovedFeatures')
+            ->has('features', 11)
+            ->where('features.0.Parameter', 'pH')
+            ->where('features.0.Source', 'US EAS 67:2023')
+            ->where('features.10.Parameter', 'Color')
+        );
 });
