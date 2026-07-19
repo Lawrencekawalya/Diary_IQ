@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { BookOpen, CheckCircle2, ShieldCheck, Users } from '@lucide/vue';
+import { BookOpen, Building2, CheckCircle2, KeyRound, ScrollText, ShieldCheck, Users } from '@lucide/vue';
 
 const roles = [
     {
@@ -10,8 +10,14 @@ const roles = [
         purpose: 'Owns the DairyIQ platform setup and creates company workspaces.',
         allowed: [
             'Create dairy company workspaces.',
-            'Create company admins and testers under any company.',
-            'View company workspace counts and setup information.',
+            'Create super admins, company admins, and testers.',
+            'Edit user names, emails, roles, and company assignment.',
+            'Reset user passwords and require password change on next login.',
+            'Activate, deactivate, and safely delete users without prediction records.',
+            'Edit, archive, and restore company workspaces.',
+            'View one company’s dashboard in read-only admin mode.',
+            'Search, filter, and paginate company and user records.',
+            'Review recent audit log entries for admin actions.',
             'Read platform documentation and approved model reference pages.',
         ],
         restricted: [
@@ -53,6 +59,50 @@ const roles = [
             'Cannot edit company settings.',
             'Cannot create companies or assign users.',
             'Cannot access another company’s data.',
+        ],
+    },
+];
+
+const adminWorkflows = [
+    {
+        title: 'User Lifecycle Management',
+        icon: Users,
+        items: [
+            'Create platform users from the Create Platform User card.',
+            'Select super_admin for platform-wide administrators; no company is required for that role.',
+            'Select company_admin or tester when the user must belong to one dairy company.',
+            'Use Edit to change a user name, email, role, or company assignment.',
+            'Use Deactivate when a user should no longer access the system but their history must remain intact.',
+            'Use Delete only for users who have no prediction records.',
+        ],
+    },
+    {
+        title: 'Password Reset and Forced Change',
+        icon: KeyRound,
+        items: [
+            'Reset Password sets a temporary password for the selected user.',
+            'After reset, the user is forced to create a new password before accessing the dashboard.',
+            'This avoids long-term use of admin-issued temporary passwords.',
+        ],
+    },
+    {
+        title: 'Company Lifecycle Management',
+        icon: Building2,
+        items: [
+            'Create Company Workspace creates the company and its first company admin.',
+            'Edit updates company name, contact email, phone, and address.',
+            'Archive marks the company inactive and deactivates its users.',
+            'Restore reopens the company workspace; users can then be reactivated as needed.',
+            'Dashboard opens a read-only company analytics dashboard for super-admin review.',
+        ],
+    },
+    {
+        title: 'Audit and Oversight',
+        icon: ScrollText,
+        items: [
+            'Recent Audit Log records admin operations such as user updates, password resets, and company archive actions.',
+            'Company and user tables support search, filtering, and pagination for larger deployments.',
+            'Prediction records remain company-scoped and are not edited from the admin workspace.',
         ],
     },
 ];
@@ -108,6 +158,27 @@ defineOptions({
                     Every prediction record is tied to a company and the user who created it.
                 </p>
             </article>
+        </section>
+
+        <section class="rounded-xl border bg-card shadow-sm">
+            <div class="border-b p-5">
+                <h2 class="text-lg font-semibold">Super Admin Workflows</h2>
+                <p class="mt-1 text-sm text-muted-foreground">
+                    These are the active administration tools currently available on the Admin Companies screen.
+                </p>
+            </div>
+
+            <div class="grid gap-4 p-5 lg:grid-cols-2">
+                <article v-for="workflow in adminWorkflows" :key="workflow.title" class="rounded-xl border p-5">
+                    <div class="flex items-center gap-3">
+                        <component :is="workflow.icon" class="size-5 text-blue-800" />
+                        <h3 class="font-semibold">{{ workflow.title }}</h3>
+                    </div>
+                    <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+                        <li v-for="item in workflow.items" :key="item">{{ item }}</li>
+                    </ul>
+                </article>
+            </div>
         </section>
 
         <section class="rounded-xl border bg-card shadow-sm">
