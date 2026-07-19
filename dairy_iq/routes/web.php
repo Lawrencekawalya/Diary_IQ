@@ -16,6 +16,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->selectRaw('prediction, count(*) as total')
             ->groupBy('prediction')
             ->pluck('total', 'prediction');
+        $dashboardBatches = MilkBatch::forCompany($user->company_id)
+            ->latest()
+            ->limit(100)
+            ->get();
+        $qualityScores = [
+            'Low' => 1,
+            'Medium' => 2,
+            'High' => 3,
+        ];
 
         return Inertia::render('Dashboard', [
             'summary' => [
@@ -24,10 +33,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'Medium' => $counts->get('Medium', 0),
                 'Low' => $counts->get('Low', 0),
             ],
-            'latestBatches' => MilkBatch::forCompany($user->company_id)
-                ->latest()
-                ->limit(5)
-                ->get()
+            'latestBatches' => $dashboardBatches
+                ->take(5)
+                ->values()
                 ->map(fn (MilkBatch $batch) => [
                     'id' => $batch->id,
                     'batch_number' => $batch->batch_number,
@@ -35,6 +43,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'confidence' => $batch->confidence,
                     'created_at' => $batch->created_at?->toDayDateTimeString(),
                 ]),
+            'qualityTrend' => $dashboardBatches
+                ->sortBy('created_at')
+                ->values()
+                ->map(fn (MilkBatch $batch) => [
+                    'id' => $batch->id,
+                    'batch_number' => $batch->batch_number,
+                    'prediction' => $batch->prediction,
+                    'score' => $qualityScores[$batch->prediction] ?? 0,
+                    'label' => $batch->created_at?->format('M j, H:i'),
+                    'created_at' => $batch->created_at?->toDayDateTimeString(),
+                ]),
+            'districtAnalytics' => $dashboardBatches
+                ->groupBy(fn (MilkBatch $batch) => $batch->district ?: 'Unknown')
+                ->map(function ($batches, string $district) use ($qualityScores) {
+                    $total = $batches->count();
+
+                    return [
+                        'district' => $district,
+                        'total' => $total,
+                        'liters' => round((float) $batches->sum('liters_collected'), 2),
+                        'average_quality_score' => $total > 0
+                            ? round((float) $batches->avg(fn (MilkBatch $batch) => $qualityScores[$batch->prediction] ?? 0), 2)
+                            : 0,
+                        'High' => $batches->where('prediction', 'High')->count(),
+                        'Medium' => $batches->where('prediction', 'Medium')->count(),
+                        'Low' => $batches->where('prediction', 'Low')->count(),
+                    ];
+                })
+                ->sortByDesc('total')
+                ->take(8)
+                ->values(),
         ]);
     })->name('dashboard');
     Route::get('milk-batches', [MilkBatchPredictionController::class, 'index'])
