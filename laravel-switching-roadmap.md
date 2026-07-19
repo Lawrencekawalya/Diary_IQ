@@ -276,6 +276,26 @@ php artisan dairyiq:import-firestore /path/to/firestore-milk-batches.json --comp
   Laravel is now the user-facing application; Python remains the internal ML
   inference service.
 
+## Phase 11: Branding
+
+- [x] Reuse the old Flask DairyIQ image assets in the Laravel application.
+- [x] Replace the starter Laravel icon in the sidebar and auth layouts.
+- [x] Replace browser favicon/apple-touch-icon references with DairyIQ assets.
+- [x] Apply the old DairyIQ palette to Laravel theme variables:
+      - primary blue: `#1f3a93`
+      - secondary blue: `#3498db`
+      - success green: `#2ecc71`
+      - warning orange: `#f39c12`
+      - danger red: `#e74c3c`
+- [x] Verify the branded frontend compiles successfully.
+
+### Phase 11 Implementation Notes
+
+- Old Flask assets were copied into `dairy_iq/public/brand`.
+- The active Laravel logo now uses `/brand/dairyiq-logo-white.png`.
+- The active browser icon now uses `/brand/dairyiq-favicon.png`.
+- The old Flask assets remain in `app/static` as reference copies.
+
 ## Definition of Done
 
 The switch is complete when:

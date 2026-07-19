@@ -11,9 +11,12 @@ defineProps<{
 
 <template>
     <div
-        class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10"
+        class="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-cover bg-center bg-no-repeat p-6 md:p-10"
+        style="background-image: url('/brand/login-bg.webp')"
     >
-        <div class="w-full max-w-sm">
+        <div class="absolute inset-0 bg-slate-950/55 backdrop-blur-[1px]" />
+
+        <div class="relative z-10 w-full max-w-sm rounded-2xl border border-white/25 bg-white/90 p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-md dark:bg-slate-950/85">
             <div class="flex flex-col gap-8">
                 <div class="flex flex-col items-center gap-4">
                     <Link
@@ -21,17 +24,17 @@ defineProps<{
                         class="flex flex-col items-center gap-2 font-medium"
                     >
                         <div
-                            class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
+                            class="mb-1 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1f3a93] p-2 shadow-lg shadow-blue-900/30"
                         >
                             <AppLogoIcon
-                                class="size-9 fill-current text-[var(--foreground)] dark:text-white"
+                                class-name="size-full object-contain"
                             />
                         </div>
                         <span class="sr-only">{{ title }}</span>
                     </Link>
                     <div class="space-y-2 text-center">
-                        <h1 class="text-xl font-medium">{{ title }}</h1>
-                        <p class="text-center text-sm text-muted-foreground">
+                        <h1 class="text-xl font-semibold text-[#1f3a93] dark:text-white">{{ title }}</h1>
+                        <p class="text-center text-sm text-slate-600 dark:text-slate-300">
                             {{ description }}
                         </p>
                     </div>
