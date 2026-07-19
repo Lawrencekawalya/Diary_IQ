@@ -25,6 +25,13 @@ class StoreMilkBatchPredictionRequest extends FormRequest
                 'district' => $this->normalizeDistrict($this->input('district')),
             ]);
         }
+
+        if ($this->has('driver_name') || $this->has('vehicle_number')) {
+            $this->merge([
+                'driver_name' => $this->normalizeText($this->input('driver_name')),
+                'vehicle_number' => $this->normalizeVehicleNumber($this->input('vehicle_number')),
+            ]);
+        }
     }
 
     /**
@@ -39,6 +46,8 @@ class StoreMilkBatchPredictionRequest extends FormRequest
             'collection_center' => ['required', 'string', 'max:255'],
             'district' => ['required', 'string', 'max:255', Rule::in(config('dairyiq.uganda_districts', []))],
             'tested_by' => ['required', 'string', 'max:255'],
+            'driver_name' => ['required', 'string', 'max:255'],
+            'vehicle_number' => ['required', 'string', 'max:100'],
             'collected_at' => ['nullable', 'date'],
             'liters_collected' => ['required', 'numeric', 'min:0'],
             'pH' => ['required', 'numeric', 'between:0,14'],
@@ -88,5 +97,23 @@ class StoreMilkBatchPredictionRequest extends FormRequest
         }
 
         return $normalized->lower()->title()->toString();
+    }
+
+    private function normalizeText(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $normalized = Str::of($value)->trim()->squish();
+
+        return $normalized->isEmpty() ? null : $normalized->toString();
+    }
+
+    private function normalizeVehicleNumber(mixed $vehicleNumber): ?string
+    {
+        $normalized = $this->normalizeText($vehicleNumber);
+
+        return $normalized === null ? null : Str::of($normalized)->upper()->toString();
     }
 }

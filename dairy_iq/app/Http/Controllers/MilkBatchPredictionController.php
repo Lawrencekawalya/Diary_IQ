@@ -98,6 +98,8 @@ class MilkBatchPredictionController extends Controller
             'collection_center' => $data['collection_center'] ?? null,
             'district' => $data['district'] ?? null,
             'tested_by' => $data['tested_by'] ?? $user->name,
+            'driver_name' => $data['driver_name'],
+            'vehicle_number' => $data['vehicle_number'],
             'collected_at' => $data['collected_at'] ?? now(),
             'liters_collected' => $data['liters_collected'] ?? null,
             'ph' => $data['pH'],
@@ -154,6 +156,8 @@ class MilkBatchPredictionController extends Controller
             'confidence' => $batch->confidence,
             'collection_center' => $batch->collection_center,
             'tested_by' => $batch->tested_by,
+            'driver_name' => $batch->driver_name,
+            'vehicle_number' => $batch->vehicle_number,
             'created_at' => $batch->created_at?->toDayDateTimeString(),
         ];
     }

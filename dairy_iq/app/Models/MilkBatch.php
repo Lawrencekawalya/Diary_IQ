@@ -28,6 +28,8 @@ use Illuminate\Support\Carbon;
     'collection_center',
     'district',
     'tested_by',
+    'driver_name',
+    'vehicle_number',
     'collected_at',
     'liters_collected',
     'ph',

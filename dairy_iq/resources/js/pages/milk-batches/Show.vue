@@ -13,6 +13,8 @@ type Batch = {
     collection_center: string | null;
     district: string | null;
     tested_by: string | null;
+    driver_name: string | null;
+    vehicle_number: string | null;
     collected_at: string | null;
     liters_collected: string | null;
     measurements: Record<string, string | number | null>;
@@ -159,6 +161,8 @@ const predictionClass = (prediction: string) => ({
                     <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Collection Center</dt><dd>{{ batch.collection_center ?? 'N/A' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted-foreground">District</dt><dd>{{ batch.district ?? 'N/A' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Tested By</dt><dd>{{ batch.tested_by ?? 'N/A' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Driver Name</dt><dd>{{ batch.driver_name ?? 'N/A' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Vehicle Number</dt><dd>{{ batch.vehicle_number ?? 'N/A' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Collected At</dt><dd>{{ batch.collected_at ?? 'N/A' }}</dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Liters</dt><dd>{{ batch.liters_collected ?? 'N/A' }}</dd></div>
                 </dl>

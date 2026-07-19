@@ -25,6 +25,8 @@ class MilkBatchFactory extends Factory
             'collection_center' => fake()->city().' Collection Center',
             'district' => fake()->city(),
             'tested_by' => fake()->name(),
+            'driver_name' => fake()->name(),
+            'vehicle_number' => fake()->bothify('U?? ###?'),
             'collected_at' => fake()->dateTimeBetween('-30 days'),
             'liters_collected' => fake()->randomFloat(2, 10, 500),
             'ph' => 6.70,

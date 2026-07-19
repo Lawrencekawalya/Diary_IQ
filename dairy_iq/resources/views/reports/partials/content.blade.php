@@ -45,6 +45,8 @@
                     <tr><td>Collection Center</td><td>{{ $batch->collection_center ?? 'N/A' }}</td></tr>
                     <tr><td>District</td><td>{{ $batch->district ?? 'N/A' }}</td></tr>
                     <tr><td>Tested By</td><td>{{ $batch->tested_by ?? $batch->user?->name ?? 'N/A' }}</td></tr>
+                    <tr><td>Driver Name</td><td>{{ $batch->driver_name ?? 'N/A' }}</td></tr>
+                    <tr><td>Vehicle Number</td><td>{{ $batch->vehicle_number ?? 'N/A' }}</td></tr>
                     <tr><td>Collected At</td><td>{{ $batch->collected_at?->toDayDateTimeString() ?? 'N/A' }}</td></tr>
                     <tr><td>Liters Collected</td><td>{{ $batch->liters_collected ?? 'N/A' }}</td></tr>
                 </table>

@@ -23,6 +23,8 @@ function predictionPayload(): array
         'collection_center' => 'Main Collection Center',
         'district' => ' kAzO ',
         'tested_by' => 'Quality Officer',
+        'driver_name' => 'John Driver',
+        'vehicle_number' => 'UBA 123A',
         'liters_collected' => 120.50,
         'pH' => 6.70,
         'Temperature' => 4.0,
@@ -150,6 +152,8 @@ test('authenticated company user can request prediction and store milk batch rec
     expect($batch->company_id)->toBe($company->id)
         ->and($batch->user_id)->toBe($user->id)
         ->and($batch->district)->toBe('Kazo')
+        ->and($batch->driver_name)->toBe('John Driver')
+        ->and($batch->vehicle_number)->toBe('UBA 123A')
         ->and($batch->prediction)->toBe('High')
         ->and($batch->ml_prediction)->toBe('High')
         ->and($batch->taste)->toBe(1)
@@ -278,7 +282,7 @@ test('laravel validation requires every visible form field before calling ml ser
     $user = User::factory()->for($company)->create();
     $payload = predictionPayload();
 
-    foreach (['batch_number', 'collection_center', 'district', 'tested_by', 'liters_collected'] as $field) {
+    foreach (['batch_number', 'collection_center', 'district', 'tested_by', 'driver_name', 'vehicle_number', 'liters_collected'] as $field) {
         unset($payload[$field]);
     }
 
@@ -292,6 +296,8 @@ test('laravel validation requires every visible form field before calling ml ser
             'collection_center',
             'district',
             'tested_by',
+            'driver_name',
+            'vehicle_number',
             'liters_collected',
         ]);
 

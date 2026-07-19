@@ -21,6 +21,8 @@ type PredictionForm = {
     collection_center: string;
     district: string;
     tested_by: string;
+    driver_name: string;
+    vehicle_number: string;
     liters_collected: string;
     pH: string;
     Temperature: string;
@@ -51,6 +53,8 @@ const form = useForm<PredictionForm>({
     collection_center: '',
     district: '',
     tested_by: '',
+    driver_name: '',
+    vehicle_number: '',
     liters_collected: '',
     pH: '6.70',
     Temperature: '4.0',
@@ -193,6 +197,16 @@ const submit = () => {
                         Tested By
                         <input v-model="form.tested_by" required class="rounded-md border bg-background px-3 py-2" :aria-invalid="Boolean(form.errors.tested_by)">
                         <span v-if="form.errors.tested_by" class="text-xs text-red-600">{{ form.errors.tested_by }}</span>
+                    </label>
+                    <label class="grid gap-2 text-sm">
+                        Driver Name
+                        <input v-model="form.driver_name" required class="rounded-md border bg-background px-3 py-2" placeholder="Example: John Mukasa" :aria-invalid="Boolean(form.errors.driver_name)">
+                        <span v-if="form.errors.driver_name" class="text-xs text-red-600">{{ form.errors.driver_name }}</span>
+                    </label>
+                    <label class="grid gap-2 text-sm">
+                        Vehicle Number
+                        <input v-model="form.vehicle_number" required class="rounded-md border bg-background px-3 py-2 uppercase" placeholder="Example: UBA 123A" :aria-invalid="Boolean(form.errors.vehicle_number)">
+                        <span v-if="form.errors.vehicle_number" class="text-xs text-red-600">{{ form.errors.vehicle_number }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         Liters Collected
