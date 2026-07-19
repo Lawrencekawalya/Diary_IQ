@@ -244,16 +244,37 @@ php artisan dairyiq:import-firestore /path/to/firestore-milk-batches.json --comp
 
 ## Phase 10: Rollout
 
-- [ ] Run Laravel and Python services locally.
-- [ ] Document startup commands.
-- [ ] Prepare production deployment strategy.
-- [ ] Choose production database: MySQL or PostgreSQL.
-- [ ] Configure queue/session/cache storage.
-- [ ] Add health checks:
+- [x] Run Laravel and Python services locally.
+- [x] Document startup commands.
+- [x] Prepare production deployment strategy.
+- [x] Choose production database: MySQL or PostgreSQL.
+- [x] Configure queue/session/cache storage.
+- [x] Add health checks:
       - Laravel app health
       - Python ML service health
       - model artifact loaded status
-- [ ] Archive the Flask web UI after Laravel reaches feature parity.
+- [x] Archive the Flask web UI after Laravel reaches feature parity.
+
+### Phase 10 Implementation Notes
+
+- Local startup and rollout guidance is documented in
+  `docs/laravel-rollout.md`.
+- Laravel exposes the default `/up` route and the DairyIQ combined health route
+  at `/dairyiq/health`.
+- `/dairyiq/health` checks Laravel request handling, database connectivity,
+  Python ML service availability, model loaded state, model version, and the
+  11-feature artifact count.
+- MySQL remains the selected production database because the Laravel app already
+  uses relational company, user, audit, and milk-batch records.
+- Production environment guidance is:
+      - `APP_ENV=production`
+      - `APP_DEBUG=false`
+      - `SESSION_DRIVER=database`
+      - `CACHE_STORE=database`
+      - `QUEUE_CONNECTION=database`
+- The old Flask web UI is archived logically as a reference implementation.
+  Laravel is now the user-facing application; Python remains the internal ML
+  inference service.
 
 ## Definition of Done
 

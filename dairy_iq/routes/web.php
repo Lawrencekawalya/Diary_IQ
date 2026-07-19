@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\CompanyUserController;
 use App\Http\Controllers\ForcedPasswordChangeController;
+use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\MilkBatchPredictionController;
 use App\Http\Controllers\ReportController;
 use App\Models\Company;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::inertia('/', 'Welcome')->name('home');
+Route::get('dairyiq/health', HealthCheckController::class)->name('dairyiq.health');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('force-password-change', [ForcedPasswordChangeController::class, 'edit'])
