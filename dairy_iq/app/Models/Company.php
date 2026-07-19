@@ -16,14 +16,25 @@ use Illuminate\Support\Carbon;
  * @property string|null $contact_email
  * @property string|null $phone
  * @property string|null $address
+ * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'slug', 'contact_email', 'phone', 'address'])]
+#[Fillable(['name', 'slug', 'contact_email', 'phone', 'address', 'archived_at'])]
 class Company extends Model
 {
     /** @use HasFactory<CompanyFactory> */
     use HasFactory;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'archived_at' => 'datetime',
+        ];
+    }
 
     /**
      * @return HasMany<User, $this>

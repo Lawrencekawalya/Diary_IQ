@@ -45,6 +45,10 @@ const props = defineProps<{
     latestBatches: LatestBatch[];
     qualityTrend: QualityTrendPoint[];
     districtAnalytics: DistrictAnalytic[];
+    adminViewingCompany?: {
+        id: number;
+        name: string;
+    };
 }>();
 
 const districtView = ref<'volume' | 'quality' | 'combined'>('volume');
@@ -433,12 +437,17 @@ const predictionClass = (prediction: string) => ({
     <div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
         <section class="rounded-2xl border bg-gradient-to-br from-blue-950 to-blue-800 p-8 text-white shadow-sm">
             <p class="text-sm font-semibold uppercase tracking-wide text-blue-100">DairyIQ Analytics</p>
-            <h1 class="mt-3 text-3xl font-bold">Milk quality prediction dashboard</h1>
+            <h1 class="mt-3 text-3xl font-bold">
+                {{ adminViewingCompany ? `${adminViewingCompany.name} company dashboard` : 'Milk quality prediction dashboard' }}
+            </h1>
             <p class="mt-3 max-w-3xl text-blue-100">
-                Submit the approved 11 milk quality measurements, receive the Python Random Forest prediction,
-                and keep every saved batch record scoped to your company.
+                {{
+                    adminViewingCompany
+                        ? 'Super-admin read-only view of this company workspace analytics.'
+                        : 'Submit the approved 11 milk quality measurements, receive the Python Random Forest prediction, and keep every saved batch record scoped to your company.'
+                }}
             </p>
-            <div class="mt-6 flex flex-wrap gap-3">
+            <div v-if="!adminViewingCompany" class="mt-6 flex flex-wrap gap-3">
                 <Link href="/milk-batches/create" class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-blue-950 transition-colors hover:bg-blue-50">
                     <FlaskConical class="size-4" />
                     New Prediction
@@ -446,6 +455,11 @@ const predictionClass = (prediction: string) => ({
                 <Link href="/milk-batches" class="inline-flex items-center gap-2 rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10">
                     <History class="size-4" />
                     View History
+                </Link>
+            </div>
+            <div v-else class="mt-6">
+                <Link href="/admin/companies" class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-blue-950 transition-colors hover:bg-blue-50">
+                    Back to Admin Companies
                 </Link>
             </div>
         </section>
@@ -602,7 +616,7 @@ const predictionClass = (prediction: string) => ({
                     <h2 class="text-lg font-semibold">Latest Milk Batch Records</h2>
                     <p class="text-sm text-muted-foreground">Most recent predictions saved for your company.</p>
                 </div>
-                <Link href="/milk-batches" class="text-sm font-medium text-blue-700 hover:underline">
+                <Link v-if="!adminViewingCompany" href="/milk-batches" class="text-sm font-medium text-blue-700 hover:underline">
                     View All
                 </Link>
             </div>
@@ -614,12 +628,12 @@ const predictionClass = (prediction: string) => ({
                             <th class="px-5 py-3 font-semibold">Prediction</th>
                             <th class="px-5 py-3 font-semibold">Confidence</th>
                             <th class="px-5 py-3 font-semibold">Created</th>
-                            <th class="px-5 py-3 text-right font-semibold">Action</th>
+                            <th v-if="!adminViewingCompany" class="px-5 py-3 text-right font-semibold">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="latestBatches.length === 0">
-                            <td colspan="5" class="px-5 py-10 text-center text-muted-foreground">
+                            <td :colspan="adminViewingCompany ? 4 : 5" class="px-5 py-10 text-center text-muted-foreground">
                                 No records yet. Create your first milk quality prediction.
                             </td>
                         </tr>
@@ -632,7 +646,7 @@ const predictionClass = (prediction: string) => ({
                             </td>
                             <td class="px-5 py-3">{{ batch.confidence ?? 'N/A' }}</td>
                             <td class="px-5 py-3 text-muted-foreground">{{ batch.created_at ?? 'N/A' }}</td>
-                            <td class="px-5 py-3 text-right">
+                            <td v-if="!adminViewingCompany" class="px-5 py-3 text-right">
                                 <Link :href="`/milk-batches/${batch.id}`" class="font-semibold text-blue-700 hover:underline">
                                     View Details
                                 </Link>
