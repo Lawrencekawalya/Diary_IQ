@@ -23,7 +23,6 @@ type Batch = {
     standards_observations: string[] | null;
     standards_quality_gate: Record<string, unknown> | null;
     feature_status: string[] | null;
-    model_metadata: Record<string, unknown> | null;
 };
 
 const props = defineProps<{ batch: Batch }>();
@@ -143,6 +142,10 @@ const predictionClass = (prediction: string) => ({
 
         <section class="rounded-xl border bg-card p-6 shadow-sm">
             <h2 class="text-lg font-semibold text-blue-900 dark:text-blue-200">Feature Standards Snapshot</h2>
+            <p class="mt-2 text-sm text-muted-foreground">
+                This chart shows whether each input is within the configured standards range. The final quality class is
+                determined by the Random Forest model unless standards checks require a downgrade.
+            </p>
             <div class="mt-4">
                 <VueApexCharts
                     height="300"
@@ -207,11 +210,6 @@ const predictionClass = (prediction: string) => ({
                     <p><strong>Reason:</strong> {{ batch.standards_quality_gate.reason }}</p>
                 </div>
             </div>
-        </section>
-
-        <section class="rounded-xl border bg-card p-6 shadow-sm">
-            <h2 class="text-lg font-semibold">Model Metadata</h2>
-            <pre class="mt-4 overflow-x-auto rounded-lg bg-muted p-4 text-xs">{{ JSON.stringify(batch.model_metadata, null, 2) }}</pre>
         </section>
 
         <div class="flex justify-between">

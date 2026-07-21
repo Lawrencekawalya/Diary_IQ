@@ -139,13 +139,4 @@
         </ul>
     </div>
 
-    <div class="card">
-        <h2>Model Metadata</h2>
-        <table>
-            <tr><td>Model Version</td><td>{{ $batch->model_metadata['model_version'] ?? 'N/A' }}</td></tr>
-            <tr><td>Dataset Version</td><td>{{ $batch->model_metadata['dataset_version'] ?? 'N/A' }}</td></tr>
-            <tr><td>Label Policy</td><td>{{ $batch->model_metadata['label_policy_version'] ?? 'N/A' }}</td></tr>
-            <tr><td>Classes</td><td>{{ implode(', ', $batch->model_metadata['classes'] ?? []) }}</td></tr>
-        </table>
-    </div>
 </div>

@@ -107,6 +107,34 @@ const adminWorkflows = [
     },
 ];
 
+const modelReference = [
+    {
+        label: 'Model type',
+        value: 'Random Forest classifier',
+        explanation: 'The Python ML service uses the approved thesis model artifact to classify milk quality.',
+    },
+    {
+        label: 'Model version',
+        value: 'milk_quality_rf_v1',
+        explanation: 'This identifies the deployed Random Forest artifact used by the prediction service.',
+    },
+    {
+        label: 'Input contract',
+        value: 'Approved 11-feature contract',
+        explanation: 'Predictions use pH, temperature, taste, odor, fat, acidity, protein, lactose, TPC, SCC, and color.',
+    },
+    {
+        label: 'Output classes',
+        value: 'Low, Medium, High',
+        explanation: 'The model returns one class vote plus class probabilities and confidence.',
+    },
+    {
+        label: 'Standards gate',
+        value: 'US EAS 67:2023 and supplementary configured thresholds',
+        explanation: 'Standards checks can downgrade an unsafe result, but they do not upgrade a Medium model vote to High.',
+    },
+];
+
 defineOptions({
     layout: {
         breadcrumbs: [
@@ -222,6 +250,24 @@ defineOptions({
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <section class="rounded-xl border bg-card shadow-sm">
+            <div class="border-b p-5">
+                <h2 class="text-lg font-semibold">Technical Model Reference</h2>
+                <p class="mt-1 text-sm text-muted-foreground">
+                    This section keeps model details in the admin documentation instead of showing raw technical metadata
+                    on user result pages and exported reports.
+                </p>
+            </div>
+
+            <div class="grid gap-4 p-5 lg:grid-cols-2">
+                <article v-for="item in modelReference" :key="item.label" class="rounded-xl border p-5">
+                    <p class="text-sm font-semibold text-blue-800">{{ item.label }}</p>
+                    <h3 class="mt-2 text-lg font-bold">{{ item.value }}</h3>
+                    <p class="mt-2 text-sm text-muted-foreground">{{ item.explanation }}</p>
+                </article>
             </div>
         </section>
     </div>
