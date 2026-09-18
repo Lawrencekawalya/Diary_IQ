@@ -1,2 +1,22 @@
-# Ignore Firebase credentials
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Firebase credentials
 firebase/*.json
+
+# Logs
+*.log
+firestore_errors.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Generated artifacts for the thesis-aligned rebuild
+data/generated/
+docs/model-evaluation/
+
+codex resume 019ec0c1-de54-7771-987f-030b2bddef58

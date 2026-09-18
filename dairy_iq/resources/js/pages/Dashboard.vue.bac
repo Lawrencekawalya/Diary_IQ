@@ -1,0 +1,474 @@
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3';
+import { FlaskConical, History, TrendingUp } from '@lucide/vue';
+import { computed, ref } from 'vue';
+import { dashboard } from '@/routes';
+
+type Summary = {
+    total: number;
+    High: number;
+    Medium: number;
+    Low: number;
+};
+
+type LatestBatch = {
+    id: number;
+    batch_number: string;
+    prediction: string;
+    confidence: string | null;
+    created_at: string | null;
+};
+
+type QualityTrendPoint = {
+    id: number;
+    batch_number: string;
+    prediction: string;
+    score: number;
+    label: string | null;
+    created_at: string | null;
+};
+
+type DistrictAnalytic = {
+    district: string;
+    total: number;
+    liters: number;
+    average_quality_score: number;
+    High: number;
+    Medium: number;
+    Low: number;
+};
+
+const props = defineProps<{
+    summary: Summary;
+    latestBatches: LatestBatch[];
+    qualityTrend: QualityTrendPoint[];
+    districtAnalytics: DistrictAnalytic[];
+}>();
+
+const chartWidth = 760;
+const chartHeight = 220;
+const chartPadding = 36;
+const districtChartWidth = 760;
+const districtChartHeight = 300;
+const districtChartPadding = {
+    top: 34,
+    right: 54,
+    bottom: 70,
+    left: 64,
+};
+const districtView = ref<'volume' | 'quality' | 'combined'>('volume');
+
+const trendPoints = computed(() => {
+    const points = props.qualityTrend;
+
+    if (points.length === 0) {
+        return [];
+    }
+
+    return points.map((point, index) => {
+        const x = points.length === 1
+            ? chartWidth / 2
+            : chartPadding + (index * (chartWidth - chartPadding * 2)) / (points.length - 1);
+        const y = chartPadding + ((2 - point.score) * (chartHeight - chartPadding * 2)) / 2;
+
+        return {
+            ...point,
+            x,
+            y,
+        };
+    });
+});
+
+const trendPolyline = computed(() => trendPoints.value.map((point) => `${point.x},${point.y}`).join(' '));
+
+const maxDistrictLiters = computed(() => Math.max(...props.districtAnalytics.map((district) => district.liters), 1));
+const qualityLabels = ['High', 'Medium', 'Low'] as const;
+
+const summaryCount = (label: (typeof qualityLabels)[number]) => props.summary[label];
+
+const qualityColor = (prediction: string) => {
+    if (prediction === 'High') {
+        return '#16a34a';
+    }
+
+    if (prediction === 'Medium') {
+        return '#f59e0b';
+    }
+
+    return '#ef4444';
+};
+
+const districtBars = computed(() => {
+    const districts = props.districtAnalytics;
+    const plotHeight = districtChartHeight - districtChartPadding.top - districtChartPadding.bottom;
+    const plotWidth = districtChartWidth - districtChartPadding.left - districtChartPadding.right;
+    const slotWidth = districts.length > 0 ? plotWidth / districts.length : plotWidth;
+    const barWidth = Math.min(58, slotWidth * 0.58);
+
+    return districts.map((district, index) => {
+        const value = districtView.value === 'quality' ? district.average_quality_score : district.liters;
+        const maxValue = districtView.value === 'quality' ? 2 : maxDistrictLiters.value;
+        const height = (value / maxValue) * plotHeight;
+        const x = districtChartPadding.left + index * slotWidth + (slotWidth - barWidth) / 2;
+        const y = districtChartPadding.top + plotHeight - height;
+
+        return {
+            ...district,
+            x,
+            y,
+            width: barWidth,
+            height,
+            value,
+            color: districtView.value === 'quality' ? qualityScoreColor(district.average_quality_score) : performanceColor(district.liters, maxDistrictLiters.value),
+            label: district.district.length > 11 ? `${district.district.slice(0, 10)}…` : district.district,
+        };
+    });
+});
+
+const districtQualityPoints = computed(() => {
+    const plotHeight = districtChartHeight - districtChartPadding.top - districtChartPadding.bottom;
+
+    return districtBars.value.map((district) => ({
+        ...district,
+        cx: district.x + district.width / 2,
+        cy: districtChartPadding.top + ((2 - district.average_quality_score) * plotHeight) / 2,
+    }));
+});
+
+const districtQualityPolyline = computed(() => districtQualityPoints.value.map((point) => `${point.cx},${point.cy}`).join(' '));
+
+const districtAxisTitle = computed(() => {
+    if (districtView.value === 'quality') {
+        return 'Quality Score';
+    }
+
+    if (districtView.value === 'combined') {
+        return 'Liters Collected + Avg Quality Score';
+    }
+
+    return 'Liters Collected';
+});
+
+const districtChartTitle = computed(() => {
+    if (districtView.value === 'quality') {
+        return 'District Quality Performance';
+    }
+
+    if (districtView.value === 'combined') {
+        return 'District Performance: Volume vs. Quality';
+    }
+
+    return 'District Volume Performance';
+});
+
+const districtValueLabel = (value: number) => {
+    if (districtView.value === 'quality') {
+        return value.toFixed(2);
+    }
+
+    if (value >= 1000) {
+        return `${(value / 1000).toFixed(1)}k`;
+    }
+
+    return value.toLocaleString();
+};
+
+const qualityScoreColor = (score: number) => {
+    if (score >= 1.5) {
+        return '#2ecc71';
+    }
+
+    if (score >= 1) {
+        return '#f39c12';
+    }
+
+    return '#e74c3c';
+};
+
+const performanceColor = (value: number, maxValue: number) => {
+    const ratio = maxValue > 0 ? value / maxValue : 0;
+
+    if (ratio > 0.7) {
+        return '#27ae60';
+    }
+
+    if (ratio > 0.4) {
+        return '#f39c12';
+    }
+
+    return '#e74c3c';
+};
+
+defineOptions({
+    layout: {
+        breadcrumbs: [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+            },
+        ],
+    },
+});
+
+const predictionClass = (prediction: string) => ({
+    'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200': prediction === 'High',
+    'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200': prediction === 'Medium',
+    'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200': prediction === 'Low',
+});
+</script>
+
+<template>
+    <Head title="DairyIQ Dashboard" />
+
+    <div class="flex flex-1 flex-col gap-6 p-4">
+        <section class="rounded-2xl border bg-gradient-to-br from-blue-950 to-blue-800 p-8 text-white shadow-sm">
+            <p class="text-sm font-semibold uppercase tracking-wide text-blue-100">DairyIQ Analytics</p>
+            <h1 class="mt-3 text-3xl font-bold">Milk quality prediction dashboard</h1>
+            <p class="mt-3 max-w-3xl text-blue-100">
+                Submit the approved 11 milk quality measurements, receive the Python Random Forest prediction,
+                and keep every saved batch record scoped to your company.
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <Link href="/milk-batches/create" class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-blue-950">
+                    <FlaskConical class="size-4" />
+                    New Prediction
+                </Link>
+                <Link href="/milk-batches" class="inline-flex items-center gap-2 rounded-lg border border-white/40 px-4 py-2 text-sm font-semibold text-white">
+                    <History class="size-4" />
+                    View History
+                </Link>
+            </div>
+        </section>
+
+        <section class="grid gap-4 md:grid-cols-4">
+            <div class="rounded-xl border bg-card p-5 shadow-sm">
+                <p class="text-sm text-muted-foreground">Total Samples</p>
+                <p class="mt-2 text-3xl font-bold">{{ summary.total }}</p>
+            </div>
+            <div class="rounded-xl border border-green-200 bg-green-50 p-5 shadow-sm dark:bg-green-950/30">
+                <p class="text-sm text-green-700 dark:text-green-300">High Quality</p>
+                <p class="mt-2 text-3xl font-bold text-green-800 dark:text-green-200">{{ summary.High }}</p>
+            </div>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:bg-amber-950/30">
+                <p class="text-sm text-amber-700 dark:text-amber-300">Medium Quality</p>
+                <p class="mt-2 text-3xl font-bold text-amber-800 dark:text-amber-200">{{ summary.Medium }}</p>
+            </div>
+            <div class="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm dark:bg-red-950/30">
+                <p class="text-sm text-red-700 dark:text-red-300">Low Quality</p>
+                <p class="mt-2 text-3xl font-bold text-red-800 dark:text-red-200">{{ summary.Low }}</p>
+            </div>
+        </section>
+
+        <section class="grid gap-6 xl:grid-cols-[2fr_1fr]">
+            <div class="rounded-xl border bg-card p-5 shadow-sm">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-semibold">Milk Quality Over Time</h2>
+                        <p class="text-sm text-muted-foreground">Latest company predictions plotted from Low to High.</p>
+                    </div>
+                    <TrendingUp class="size-5 text-blue-700" />
+                </div>
+
+                <div v-if="trendPoints.length === 0" class="flex h-64 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                    No chart data yet. Create predictions to populate the trend.
+                </div>
+
+                <div v-else class="overflow-x-auto">
+                    <svg :viewBox="`0 0 ${chartWidth} ${chartHeight}`" class="min-w-[720px] rounded-lg bg-blue-50/40">
+                        <line :x1="chartPadding" :x2="chartWidth - chartPadding" :y1="chartPadding" :y2="chartPadding" stroke="#dbeafe" />
+                        <line :x1="chartPadding" :x2="chartWidth - chartPadding" :y1="chartHeight / 2" :y2="chartHeight / 2" stroke="#dbeafe" />
+                        <line :x1="chartPadding" :x2="chartWidth - chartPadding" :y1="chartHeight - chartPadding" :y2="chartHeight - chartPadding" stroke="#dbeafe" />
+                        <text x="8" :y="chartPadding + 4" class="fill-muted-foreground text-[11px]">High</text>
+                        <text x="8" :y="chartHeight / 2 + 4" class="fill-muted-foreground text-[11px]">Medium</text>
+                        <text x="8" :y="chartHeight - chartPadding + 4" class="fill-muted-foreground text-[11px]">Low</text>
+                        <polyline v-if="trendPoints.length > 1" :points="trendPolyline" fill="none" stroke="#2563eb" stroke-width="3" />
+                        <g v-for="point in trendPoints" :key="point.id">
+                            <circle :cx="point.x" :cy="point.y" r="5" :fill="qualityColor(point.prediction)" />
+                            <title>{{ point.batch_number }} - {{ point.prediction }} - {{ point.created_at ?? 'N/A' }}</title>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="rounded-xl border bg-card p-5 shadow-sm">
+                <div class="mb-4">
+                    <h2 class="text-lg font-semibold">Quality Insights</h2>
+                    <p class="text-sm text-muted-foreground">Same summary panel from the old history analytics.</p>
+                </div>
+
+                <ul class="space-y-3">
+                    <li class="flex items-center justify-between rounded-lg bg-muted/60 p-3">
+                        <span class="text-sm text-muted-foreground">Total Samples:</span>
+                        <span class="font-bold">{{ summary.total }}</span>
+                    </li>
+                    <li v-for="label in qualityLabels" :key="label" class="flex items-center justify-between rounded-lg p-3" :style="{ borderLeft: `4px solid ${qualityColor(label)}` }">
+                        <span class="text-sm">{{ label }} Quality:</span>
+                        <span class="font-bold">
+                            {{ summaryCount(label) }}
+                            ({{ summary.total > 0 ? ((summaryCount(label) / summary.total) * 100).toFixed(1) : '0.0' }}%)
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="rounded-xl border bg-card p-5 shadow-sm">
+            <div class="mb-4 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold">District Performance Analysis</h2>
+                    <p class="text-sm text-muted-foreground">Volume, quality, and combined district performance views from the old history page.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button
+                        v-for="view in ['volume', 'quality', 'combined'] as const"
+                        :key="view"
+                        type="button"
+                        class="rounded-lg border px-3 py-2 text-xs font-semibold capitalize"
+                        :class="districtView === view ? 'border-blue-800 bg-blue-800 text-white' : 'bg-background text-foreground'"
+                        @click="districtView = view"
+                    >
+                        {{ view }} View
+                    </button>
+                </div>
+            </div>
+            <div v-if="districtAnalytics.length === 0" class="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+                No district data yet.
+            </div>
+
+            <div v-else class="space-y-5">
+                <div class="overflow-x-auto">
+                    <svg :viewBox="`0 0 ${districtChartWidth} ${districtChartHeight}`" class="min-w-[760px] rounded-lg bg-blue-50/40">
+                        <text :x="districtChartWidth / 2" y="20" text-anchor="middle" class="fill-foreground text-[15px] font-bold">
+                            {{ districtChartTitle }}
+                        </text>
+                        <line
+                            :x1="districtChartPadding.left"
+                            :x2="districtChartWidth - districtChartPadding.right"
+                            :y1="districtChartHeight - districtChartPadding.bottom"
+                            :y2="districtChartHeight - districtChartPadding.bottom"
+                            stroke="#cbd5e1"
+                        />
+                        <line
+                            :x1="districtChartPadding.left"
+                            :x2="districtChartPadding.left"
+                            :y1="districtChartPadding.top"
+                            :y2="districtChartHeight - districtChartPadding.bottom"
+                            stroke="#cbd5e1"
+                        />
+                        <text x="8" :y="districtChartPadding.top + 10" class="fill-muted-foreground text-[11px]">{{ districtAxisTitle }}</text>
+                        <g v-for="district in districtBars" :key="district.district">
+                            <rect :x="district.x" :y="district.y" :width="district.width" :height="district.height" rx="5" :fill="district.color" />
+                            <text :x="district.x + district.width / 2" :y="district.y - 7" text-anchor="middle" class="fill-foreground text-[11px] font-semibold">
+                                {{ districtValueLabel(district.value) }}
+                            </text>
+                            <text
+                                :x="district.x + district.width / 2"
+                                :y="districtChartHeight - districtChartPadding.bottom + 22"
+                                text-anchor="middle"
+                                class="fill-muted-foreground text-[10px]"
+                            >
+                                {{ district.label }}
+                            </text>
+                            <title>
+                                {{ district.district }}: {{ district.total }} samples, {{ district.liters.toLocaleString() }} liters, avg quality score {{ district.average_quality_score }}
+                            </title>
+                        </g>
+                        <polyline
+                            v-if="districtView === 'combined' && districtQualityPoints.length > 1"
+                            :points="districtQualityPolyline"
+                            fill="none"
+                            stroke="#3498db"
+                            stroke-width="3"
+                        />
+                        <g v-if="districtView === 'combined'">
+                            <circle v-for="point in districtQualityPoints" :key="`quality-${point.district}`" :cx="point.cx" :cy="point.cy" r="5" :fill="qualityScoreColor(point.average_quality_score)" stroke="#fff" stroke-width="2" />
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                    <div class="flex items-center gap-2">
+                        <span class="size-3 rounded-sm bg-[#27ae60]" />
+                        <span>High Performance (&gt;70%)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="size-3 rounded-sm bg-[#f39c12]" />
+                        <span>Medium Performance (40-70%)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="size-3 rounded-sm bg-[#e74c3c]" />
+                        <span>Low Performance (&lt;40%)</span>
+                    </div>
+                    <div v-if="districtView === 'combined'" class="flex items-center gap-2">
+                        <span class="h-0.5 w-5 rounded-sm bg-[#3498db]" />
+                        <span>Average Quality Score</span>
+                    </div>
+                </div>
+
+                <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    <div v-for="district in districtAnalytics" :key="district.district" class="rounded-lg border p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="font-semibold">{{ district.district }}</h3>
+                                <p class="text-xs text-muted-foreground">
+                                    {{ district.liters.toLocaleString() }} liters · Avg score {{ district.average_quality_score }}
+                                </p>
+                            </div>
+                            <span class="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">{{ district.total }}</span>
+                        </div>
+                        <div class="mt-2 flex gap-3 text-xs text-muted-foreground">
+                            <span class="text-green-700">H: {{ district.High }}</span>
+                            <span class="text-amber-700">M: {{ district.Medium }}</span>
+                            <span class="text-red-700">L: {{ district.Low }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="rounded-xl border bg-card shadow-sm">
+            <div class="flex items-center justify-between border-b p-5">
+                <div>
+                    <h2 class="text-lg font-semibold">Latest Milk Batch Records</h2>
+                    <p class="text-sm text-muted-foreground">Most recent predictions saved for your company.</p>
+                </div>
+                <TrendingUp class="size-5 text-blue-700" />
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-muted/50 text-muted-foreground">
+                        <tr>
+                            <th class="px-5 py-3">Batch</th>
+                            <th class="px-5 py-3">Prediction</th>
+                            <th class="px-5 py-3">Confidence</th>
+                            <th class="px-5 py-3">Created</th>
+                            <th class="px-5 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="latestBatches.length === 0">
+                            <td colspan="5" class="px-5 py-8 text-center text-muted-foreground">
+                                No records yet. Create your first milk quality prediction.
+                            </td>
+                        </tr>
+                        <tr v-for="batch in latestBatches" :key="batch.id" class="border-t">
+                            <td class="px-5 py-3 font-medium">{{ batch.batch_number }}</td>
+                            <td class="px-5 py-3">
+                                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="predictionClass(batch.prediction)">
+                                    {{ batch.prediction }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3">{{ batch.confidence ?? 'N/A' }}</td>
+                            <td class="px-5 py-3">{{ batch.created_at ?? 'N/A' }}</td>
+                            <td class="px-5 py-3 text-right">
+                                <Link :href="`/milk-batches/${batch.id}`" class="font-semibold text-blue-700 hover:underline">
+                                    View Details
+                                </Link>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</template>

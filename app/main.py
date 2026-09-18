@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import firebase_admin
 from firebase_admin import auth
 from firebase_admin import credentials
-import joblib
-import pandas as pd
 from datetime import datetime, timedelta
 import os
 import requests
@@ -19,6 +17,26 @@ import time
 import logging
 import google.api_core.exceptions
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+if PROJECT_ROOT not in os.sys.path:
+    os.sys.path.insert(0, PROJECT_ROOT)
+
+from model_contract import (
+    APPROVED_MODEL_FEATURES,
+    QUALITY_LABELS,
+    QUALITY_MAP,
+    normalize_quality_label,
+)
+from model_artifact import load_model_bundle
+from prediction_service import predict_milk_quality
+from database_records import (
+    build_batch_info,
+    build_prediction_record,
+    chart_point_from_record,
+    history_row_from_record,
+)
+
 # Configure logging
 logging.basicConfig(
     filename="firestore_errors.log",
@@ -26,9 +44,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-# Load standards.json
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_PATH = os.path.join(BASE_DIR, "..", "config", "standards.json")
+CONFIG_PATH = os.path.join(PROJECT_ROOT, "config", "standards.json")
 
 try:
     with open(CONFIG_PATH) as f:
@@ -39,32 +55,35 @@ except FileNotFoundError:
 
 
 
-app = Flask(__name__)
-# generate a 16-byte random token (hex encoded)
-# print(secrets.token_hex(16))
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', '3e59e99addb9052eb7da6ab9935e49c3')
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+)
+app.secret_key = os.environ.get('FLASK_SECRET_KEY')
+if not app.secret_key:
+    raise RuntimeError("FLASK_SECRET_KEY must be set in the environment.")
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
 # cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
-cred = credentials.Certificate("firebase_key.json")
+cred = credentials.Certificate("firebase/firebase_key.json")
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# Load model
-model = joblib.load("ml_model/dairy_model_4class.pkl")
-labels = ['Low', 'Moderate', 'High']
-
-# Quality mapping (used in charts)
-QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
+MODEL_ARTIFACT_PATH = os.path.join(PROJECT_ROOT, "ml_model", "artifacts", "milk_quality_rf_v1.joblib")
+model_bundle = load_model_bundle(MODEL_ARTIFACT_PATH)
+model = model_bundle["model"]
+model_metadata = model_bundle["metadata"]
+labels = QUALITY_LABELS
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 
 if not FIREBASE_API_KEY:
     print("API KEY is missing, please set FIREBASE_API_KEY")
 else:
-    print("API KEY loaded successfully")
+    print("Firebase API key is configured")
 
 
 def firebase_login(email, password):
@@ -76,13 +95,6 @@ def firebase_login(email, password):
     }
     response = requests.post(url, json=payload)
     return response.json()
-
-def safe_float(value, field_name):
-    """Try to convert to float, return None or raise a friendly error."""
-    try:
-        return float(value)
-    except ValueError:
-        raise ValueError(f"Invalid entry for {field_name}. Please enter a numeric value.")
 
 # Show login form
 @app.route('/')
@@ -123,43 +135,46 @@ def history():
     if 'user' not in session:
         return redirect(url_for('login_page'))
 
-    # Fetch all batches ordered by created_at
-    batches = db.collection("milk_batches").order_by("created_at").stream()
+    # Fetch latest batches first for the records table.
+    batches = (
+        db.collection("milk_batches")
+        .order_by("created_at", direction=firestore.Query.DESCENDING)
+        .stream()
+    )
 
     history_data = []
     chart_data = []
     for batch in batches:
         d = batch.to_dict()
-        history_data.append({
-            "Batch Number": d.get("Batch Number"),
-            "Number of Liters Collected": d.get("Number of Liters Collected", 0),
-            "Collection Center": d.get("Collection Center"),
-            "District": d.get("District"),
-            "Location": d.get("Location"),
-            "Tested By": d.get("Tested By"),
-            "Time of Collection": d.get("Time of Collection"),
-            "Prediction": d.get("prediction"),
-        })
+        history_data.append(history_row_from_record(d, document_id=batch.id))
 
         # Build chart data too
-        if "Time of Collection" in d:
-            chart_data.append({
-                "date": d["Time of Collection"],
-                "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-                "collection_center": d.get("Collection Center"),
-                "prediction_label": d.get("prediction"),
-                "district": d.get("District"),
-                "liters_collected": d.get("Number of Liters Collected", 0)
-            })
+        chart_point = chart_point_from_record(d, QUALITY_MAP)
+        if chart_point:
+            chart_data.append(chart_point)
 
-            # chart_data.append({
-            #     "date": d["Time of Collection"],
-            #     "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-            #     "collection_center": d.get("Collection Center"),  # ✅ Fix here too
-            #     "prediction_label": d.get("prediction"),
-            # })
+    chart_data.sort(key=lambda point: point.get("sort_key", ""))
 
-    return render_template("history.html", history_data=history_data, chart_data=chart_data)
+    total_samples = len(history_data)
+    quality_counts = {
+        label: sum(1 for row in history_data if row["Prediction"] == label)
+        for label in QUALITY_LABELS
+    }
+    quality_insights = {
+        label: {
+            "count": count,
+            "percentage": (count / total_samples * 100) if total_samples else 0,
+        }
+        for label, count in quality_counts.items()
+    }
+
+    return render_template(
+        "history.html",
+        history_data=history_data,
+        chart_data=chart_data,
+        total_samples=total_samples,
+        quality_insights=quality_insights,
+    )
 
 
 
@@ -173,100 +188,37 @@ def debug_firebase():
     except Exception as e:
         project_id = f"Error reading project_id: {e}"
 
-    # API Key from environment
-    api_key = os.environ.get("FIREBASE_API_KEY", "⚠️ Not Set")
-
     return {
         "firebase_admin_project_id": project_id,
-        "firebase_api_key": api_key
+        "firebase_api_key_configured": bool(FIREBASE_API_KEY)
     }
 ############################################################################
-# QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
+# QUALITY_MAP comes from the approved model contract.
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'user' not in session:
         return redirect(url_for('login_page'))
 
-    # 1) Collect batch info
-    batch_info = {
-    'Collection Center': request.form.get('collection_center'),
-    'Contact': request.form.get('contact'),
-    'District': request.form.get('district'),
-    'Location': request.form.get('location'),
-    'Driver Name': request.form.get('driver_name'),
-    'Transport Details': request.form.get('transport_details'),
-    'Batch Number': f"BATCH-{uuid.uuid4().hex[:8].upper()}",
-    'Time of Collection': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    'Tested By': request.form.get('tested_by'),
-    'Number of Liters Collected': safe_float(request.form.get('liters_collected', 0), 'Number of Liters Collected'),
-    }
-
     try:
-        raw = {
-            'pH':                 safe_float(request.form['ph'], 'pH Level'),
-            'Temperature':        safe_float(request.form['temperature'], 'Temperature'),
-            'Fat_Content':        safe_float(request.form['fat'], 'Fat Content'),
-            'SNF':                safe_float(request.form['snf'], 'SNF'),
-            'Titratable_Acidity': safe_float(request.form['acidity'], 'Titratable Acidity'),
-            'Protein_Content':    safe_float(request.form['protein'], 'Protein Content'),
-            'Lactose_Content':    safe_float(request.form['lactose'], 'Lactose Content'),
-            'TPC':                safe_float(request.form['tpc'], 'Total Plate Count'),
-            'SCC':                safe_float(request.form['scc'], 'Somatic Cell Count'),
-        }
+        batch_info = build_batch_info(
+            request.form,
+            batch_number=f"BATCH-{uuid.uuid4().hex[:8].upper()}",
+            collected_at=datetime.now(),
+        )
+        prediction_result = predict_milk_quality(request.form, model, model_metadata, STANDARDS)
     except ValueError as e:
         logging.error(f"❌ User input error: {e}")
 
         # Re-render form with previous user input and error message
         return render_template(
             "index.html",
-            error=f"⚠️ {e} Please enter only numeric values in all testing fields.",
+            error=f"⚠️ {e}",
             previous_inputs=request.form,      # pass all old values
             show_predictor=True                # signal to reopen the testing section
         )
 
-
-    # 3) Run ML prediction
-    df = pd.DataFrame([list(raw.values())], columns=list(raw.keys()))
-    prediction = model.predict(df)[0]   # "Low", "Moderate", "High"
-
-    # 4) Build colors + suggestions dynamically from STANDARDS
-    colors = []
-    suggestions = []
-
-    for feat, val in raw.items():
-        rule = STANDARDS.get(feat)
-        if not rule:   # parameter not in standards.json
-            colors.append('#bdc3c7')  # neutral gray
-            continue
-
-        low, high = rule.get("Min"), rule.get("Max")
-        in_range = True
-
-        if low is not None and val < low:
-            in_range = False
-            suggestions.append(f"⚠ {feat}: below normal ({val}) – {rule['Remarks']}")
-
-        if high is not None and val > high:
-            in_range = False
-            suggestions.append(f"⚠ {feat}: above normal ({val}) – {rule['Remarks']}")
-
-        colors.append('#2ecc71' if in_range else '#e67e22')
-
-    # 5) Default suggestions if all parameters normal
-    if not suggestions:
-        suggestions.append("✅ Milk meets quality standards.")
-        suggestions.append("✅ Maintain current handling procedures.")
-
-    # 6) Save to Firestore
-    batch_doc = {
-        **batch_info,
-        **raw,
-        "prediction": prediction,
-        "colors": colors,
-        "suggestions": suggestions,
-        "created_at": firestore.SERVER_TIMESTAMP
-    }
+    batch_doc = build_prediction_record(batch_info, prediction_result, firestore.SERVER_TIMESTAMP)
 
     # Firestore write with automatic retry and error logging
     max_retries = 3
@@ -327,34 +279,26 @@ def show_result(batch_id):
         d = batch.to_dict()
         if "Time of Collection" not in d:
             continue
-        chart_data.append({
-            "date": d["Time of Collection"],
-            "prediction": QUALITY_MAP.get(d.get("prediction"), 0),
-            "Collection Center": d.get("Collection Center"),
-            "prediction_label": d.get("prediction")
-        })
+        chart_point = chart_point_from_record(d, QUALITY_MAP)
+        if chart_point:
+            chart_data.append(chart_point)
     # Only show parameters entered by user
-    visible_fields = [
-        'pH',
-        'Temperature',
-        'Fat_Content',
-        'SNF',
-        'Titratable_Acidity',
-        'Protein_Content',
-        'Lactose_Content',
-        'TPC',
-        'SCC'
-    ]
+    visible_fields = APPROVED_MODEL_FEATURES
 
     # Render template
     return render_template(
         "result.html",
-        prediction=data.get("prediction"),
+        prediction=normalize_quality_label(data.get("prediction")),
         feature_names=visible_fields,
         raw_values=[data.get(k) for k in visible_fields],
         colors=data.get("colors", []),
         raw={k: data.get(k) for k in visible_fields},
-        suggestions=data.get("suggestions", []),
+        suggestions=data.get("standards_observations", data.get("suggestions", [])),
+        confidence=data.get("confidence"),
+        probabilities=data.get("probabilities") or {},
+        ml_prediction=data.get("ml_prediction"),
+        standards_quality_gate=data.get("standards_quality_gate") or {},
+        model_metadata=data.get("model_metadata") or {},
         batch_info = {
         "Collection Center": data.get("Collection Center"),
         "Contact": data.get("Contact"),
