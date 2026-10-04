@@ -25,10 +25,12 @@ use Illuminate\Support\Carbon;
     'company_id',
     'user_id',
     'batch_number',
+    'collection_center_id',
     'collection_center',
     'district',
     'tested_by',
     'driver_name',
+    'vehicle_id',
     'vehicle_number',
     'collected_at',
     'liters_collected',
@@ -105,6 +107,22 @@ class MilkBatch extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<CollectionCenter, $this>
+     */
+    public function collectionCenter(): BelongsTo
+    {
+        return $this->belongsTo(CollectionCenter::class);
+    }
+
+    /**
+     * @return BelongsTo<Vehicle, $this>
+     */
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 
     /**

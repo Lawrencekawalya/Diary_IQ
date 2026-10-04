@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\CollectionCenter;
+use App\Models\Vehicle;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -20,6 +22,50 @@ class StoreMilkBatchPredictionRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $companyId = (int) $this->user()?->company_id;
+
+        if ($companyId) {
+            if ($this->has('collection_center_id') && $this->input('collection_center_id')) {
+                $center = CollectionCenter::query()
+                    ->where('company_id', $companyId)
+                    ->find($this->input('collection_center_id'));
+                if ($center) {
+                    $this->merge([
+                        'collection_center' => $center->name,
+                        'district' => $this->input('district') ?: $center->district,
+                    ]);
+                }
+            } elseif (! $this->has('collection_center_id') && $this->filled('collection_center')) {
+                $center = CollectionCenter::query()
+                    ->where('company_id', $companyId)
+                    ->where('name', trim((string) $this->input('collection_center')))
+                    ->first();
+                if ($center) {
+                    $this->merge(['collection_center_id' => $center->id]);
+                }
+            }
+
+            if ($this->has('vehicle_id') && $this->input('vehicle_id')) {
+                $vehicle = Vehicle::query()
+                    ->where('company_id', $companyId)
+                    ->find($this->input('vehicle_id'));
+                if ($vehicle) {
+                    $this->merge([
+                        'vehicle_number' => $vehicle->plate_number,
+                        'driver_name' => $this->input('driver_name') ?: $vehicle->driver_name,
+                    ]);
+                }
+            } elseif (! $this->has('vehicle_id') && $this->filled('vehicle_number')) {
+                $vehicle = Vehicle::query()
+                    ->where('company_id', $companyId)
+                    ->where('plate_number', strtoupper(trim((string) $this->input('vehicle_number'))))
+                    ->first();
+                if ($vehicle) {
+                    $this->merge(['vehicle_id' => $vehicle->id]);
+                }
+            }
+        }
+
         if ($this->has('district')) {
             $this->merge([
                 'district' => $this->normalizeDistrict($this->input('district')),
@@ -41,13 +87,27 @@ class StoreMilkBatchPredictionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $companyId = (int) $this->user()?->company_id;
+
         return [
             'batch_number' => ['required', 'string', 'max:100'],
-            'collection_center' => ['required', 'string', 'max:255'],
+            'collection_center_id' => [
+                'required',
+                Rule::exists('collection_centers', 'id')
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true),
+            ],
+            'vehicle_id' => [
+                'required',
+                Rule::exists('vehicles', 'id')
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true),
+            ],
+            'collection_center' => ['nullable', 'string', 'max:255'],
             'district' => ['required', 'string', 'max:255', Rule::in(config('dairyiq.uganda_districts', []))],
             'tested_by' => ['required', 'string', 'max:255'],
             'driver_name' => ['required', 'string', 'max:255'],
-            'vehicle_number' => ['required', 'string', 'max:100'],
+            'vehicle_number' => ['nullable', 'string', 'max:100'],
             'collected_at' => ['nullable', 'date'],
             'liters_collected' => ['required', 'numeric', 'min:0'],
             'pH' => ['required', 'numeric', 'between:0,14'],
@@ -61,6 +121,19 @@ class StoreMilkBatchPredictionRequest extends FormRequest
             'TPC' => ['required', 'integer', 'min:0'],
             'SCC' => ['required', 'integer', 'min:0'],
             'Color' => ['required', 'string', Rule::in(['normal', 'creamy-white', 'white', 'abnormal'])],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'collection_center_id.required' => 'Please select a collection center registered to your company.',
+            'collection_center_id.exists' => 'The selected collection center is invalid or does not belong to your company.',
+            'vehicle_id.required' => 'Please select a vehicle registered to your company.',
+            'vehicle_id.exists' => 'The selected vehicle is invalid or does not belong to your company.',
         ];
     }
 

@@ -51,4 +51,20 @@ class Company extends Model
     {
         return $this->hasMany(MilkBatch::class);
     }
+
+    /**
+     * @return HasMany<CollectionCenter, $this>
+     */
+    public function collectionCenters(): HasMany
+    {
+        return $this->hasMany(CollectionCenter::class);
+    }
+
+    /**
+     * @return HasMany<Vehicle, $this>
+     */
+    public function vehicles(): HasMany
+    {
+        return $this->hasMany(Vehicle::class);
+    }
 }

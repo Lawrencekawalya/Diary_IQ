@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMilkBatchPredictionRequest;
+use App\Models\CollectionCenter;
 use App\Models\MilkBatch;
+use App\Models\Vehicle;
 use App\Services\MilkQualityPredictionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -54,9 +56,32 @@ class MilkBatchPredictionController extends Controller
 
     public function create(): Response
     {
+        $user = request()->user();
+        $companyId = (int) $user?->company_id;
+
         return Inertia::render('milk-batches/Create', [
             'batchNumber' => $this->generateBatchNumber(),
             'districts' => config('dairyiq.uganda_districts', []),
+            'vehicles' => Vehicle::query()
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->orderBy('plate_number')
+                ->get()
+                ->map(fn (Vehicle $v) => [
+                    'id' => $v->id,
+                    'plate_number' => $v->plate_number,
+                    'driver_name' => $v->driver_name,
+                ]),
+            'collectionCenters' => CollectionCenter::query()
+                ->where('company_id', $companyId)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get()
+                ->map(fn (CollectionCenter $c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'district' => $c->district,
+                ]),
         ]);
     }
 
@@ -91,15 +116,25 @@ class MilkBatchPredictionController extends Controller
         $user = $request->user();
         $data = $request->validated();
 
+        $vehicle = ! empty($data['vehicle_id'])
+            ? Vehicle::query()->where('company_id', $user->company_id)->find($data['vehicle_id'])
+            : null;
+
+        $collectionCenter = ! empty($data['collection_center_id'])
+            ? CollectionCenter::query()->where('company_id', $user->company_id)->find($data['collection_center_id'])
+            : null;
+
         $batch = MilkBatch::create([
             'company_id' => $user->company_id,
             'user_id' => $user->id,
             'batch_number' => $data['batch_number'] ?? $this->generateBatchNumber(),
-            'collection_center' => $data['collection_center'] ?? null,
-            'district' => $data['district'] ?? null,
+            'collection_center_id' => $collectionCenter?->id,
+            'collection_center' => $collectionCenter?->name ?? ($data['collection_center'] ?? null),
+            'district' => $data['district'] ?? $collectionCenter?->district,
             'tested_by' => $data['tested_by'] ?? $user->name,
-            'driver_name' => $data['driver_name'],
-            'vehicle_number' => $data['vehicle_number'],
+            'driver_name' => $data['driver_name'] ?? $vehicle?->driver_name,
+            'vehicle_id' => $vehicle?->id,
+            'vehicle_number' => $vehicle?->plate_number ?? ($data['vehicle_number'] ?? null),
             'collected_at' => $data['collected_at'] ?? now(),
             'liters_collected' => $data['liters_collected'] ?? null,
             'ph' => $data['pH'],

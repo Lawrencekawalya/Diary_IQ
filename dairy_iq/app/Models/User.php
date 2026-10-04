@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -97,25 +96,5 @@ class User extends Authenticatable implements PasskeyUser
         return $this->isCompanyAdmin()
             && $this->company_id !== null
             && ($companyId === null || $this->company_id === $companyId);
-    }
-
-    public function ensureCompany(): Company
-    {
-        if ($this->company) {
-            return $this->company;
-        }
-
-        $companyName = "{$this->name} Dairy Company";
-
-        $company = Company::create([
-            'name' => $companyName,
-            'slug' => Str::slug($companyName).'-'.Str::lower(Str::random(6)),
-            'contact_email' => $this->email,
-        ]);
-
-        $this->forceFill(['company_id' => $company->id])->save();
-        $this->setRelation('company', $company);
-
-        return $company;
     }
 }

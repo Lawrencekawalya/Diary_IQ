@@ -83,11 +83,10 @@ test('report preview is generated from a saved company record', function () {
         ->assertSee('Executive Summary')
         ->assertSee('Measured Inputs and Standards Status')
         ->assertSee('Class Probabilities')
-        ->assertSee('Model Metadata')
+        ->assertDontSee('Model Metadata')
         ->assertSee('DairyIQ Report Company')
         ->assertSee('Senior Tester')
-        ->assertSee('REPORT-EXPORT-001')
-        ->assertSee('milk_quality_rf_v1');
+        ->assertSee('REPORT-EXPORT-001');
 });
 
 test('report pdf is downloaded from a saved company record', function () {

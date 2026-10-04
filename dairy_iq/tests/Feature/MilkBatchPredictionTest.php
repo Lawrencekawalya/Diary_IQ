@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\CollectionCenter;
 use App\Models\Company;
 use App\Models\MilkBatch;
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -16,15 +18,31 @@ beforeEach(function () {
     Http::preventStrayRequests();
 });
 
-function predictionPayload(): array
+function createCompanyAssets(Company $company): array
+{
+    $center = CollectionCenter::factory()->for($company)->create([
+        'name' => 'Main Collection Center',
+        'district' => 'Kazo',
+        'is_active' => true,
+    ]);
+    $vehicle = Vehicle::factory()->for($company)->create([
+        'plate_number' => 'UBA 123A',
+        'driver_name' => 'John Driver',
+        'is_active' => true,
+    ]);
+
+    return [$center, $vehicle];
+}
+
+function predictionPayload(?CollectionCenter $center = null, ?Vehicle $vehicle = null, array $overrides = []): array
 {
     return [
         'batch_number' => 'BATCH-HIGH-001',
-        'collection_center' => 'Main Collection Center',
+        'collection_center_id' => $center?->id,
+        'vehicle_id' => $vehicle?->id,
         'district' => ' kAzO ',
         'tested_by' => 'Quality Officer',
-        'driver_name' => 'John Driver',
-        'vehicle_number' => 'UBA 123A',
+        'driver_name' => $vehicle?->driver_name ?? 'John Driver',
         'liters_collected' => 120.50,
         'pH' => 6.70,
         'Temperature' => 4.0,
@@ -37,6 +55,7 @@ function predictionPayload(): array
         'TPC' => 50000,
         'SCC' => 200000,
         'Color' => 'normal',
+        ...$overrides,
     ];
 }
 
@@ -128,6 +147,7 @@ function mlPredictionResponse(array $overrides = []): array
 test('authenticated company user can request prediction and store milk batch record', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
+    [$center, $vehicle] = createCompanyAssets($company);
 
     Http::fake([
         'http://ml.test/api/predict' => Http::response(mlPredictionResponse()),
@@ -135,7 +155,7 @@ test('authenticated company user can request prediction and store milk batch rec
 
     $response = $this->actingAs($user)->postJson(
         route('milk-batches.predictions.store'),
-        predictionPayload()
+        predictionPayload($center, $vehicle)
     );
 
     $response
@@ -150,10 +170,13 @@ test('authenticated company user can request prediction and store milk batch rec
     $batch = MilkBatch::firstOrFail();
 
     expect($batch->company_id)->toBe($company->id)
+        ->and($batch->collection_center_id)->toBe($center->id)
+        ->and($batch->vehicle_id)->toBe($vehicle->id)
+        ->and($batch->collection_center)->toBe('Main Collection Center')
+        ->and($batch->vehicle_number)->toBe('UBA 123A')
         ->and($batch->user_id)->toBe($user->id)
         ->and($batch->district)->toBe('Kazo')
         ->and($batch->driver_name)->toBe('John Driver')
-        ->and($batch->vehicle_number)->toBe('UBA 123A')
         ->and($batch->prediction)->toBe('High')
         ->and($batch->ml_prediction)->toBe('High')
         ->and($batch->taste)->toBe(1)
@@ -193,9 +216,13 @@ test('authenticated company user can request prediction and store milk batch rec
     });
 });
 
-test('prediction form page is displayed to authenticated company users', function () {
+test('prediction form page is displayed to authenticated company users with only company assets', function () {
     $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
     $user = User::factory()->for($company)->create();
+
+    [$center, $vehicle] = createCompanyAssets($company);
+    [$otherCenter, $otherVehicle] = createCompanyAssets($otherCompany);
 
     $this->actingAs($user)
         ->get(route('milk-batches.create'))
@@ -205,19 +232,24 @@ test('prediction form page is displayed to authenticated company users', functio
             ->where('batchNumber', fn (string $batchNumber) => str_starts_with($batchNumber, 'BATCH-'))
             ->where('districts.0', 'Abim')
             ->where('districts.65', 'Kazo')
+            ->has('collectionCenters', 1)
+            ->where('collectionCenters.0.id', $center->id)
+            ->has('vehicles', 1)
+            ->where('vehicles.0.id', $vehicle->id)
         );
 });
 
 test('browser prediction submit redirects to saved result page', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
+    [$center, $vehicle] = createCompanyAssets($company);
 
     Http::fake([
         'http://ml.test/api/predict' => Http::response(mlPredictionResponse()),
     ]);
 
     $response = $this->actingAs($user)
-        ->post(route('milk-batches.predictions.store'), predictionPayload());
+        ->post(route('milk-batches.predictions.store'), predictionPayload($center, $vehicle));
 
     $batch = MilkBatch::firstOrFail();
 
@@ -264,7 +296,8 @@ test('result page rejects another company record', function () {
 test('laravel validation rejects invalid input before calling ml service', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
-    $payload = predictionPayload();
+    [$center, $vehicle] = createCompanyAssets($company);
+    $payload = predictionPayload($center, $vehicle);
     unset($payload['pH']);
 
     Http::fake();
@@ -280,9 +313,10 @@ test('laravel validation rejects invalid input before calling ml service', funct
 test('laravel validation requires every visible form field before calling ml service', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
-    $payload = predictionPayload();
+    [$center, $vehicle] = createCompanyAssets($company);
+    $payload = predictionPayload($center, $vehicle);
 
-    foreach (['batch_number', 'collection_center', 'district', 'tested_by', 'driver_name', 'vehicle_number', 'liters_collected'] as $field) {
+    foreach (['batch_number', 'collection_center_id', 'district', 'tested_by', 'driver_name', 'vehicle_id', 'liters_collected'] as $field) {
         unset($payload[$field]);
     }
 
@@ -293,11 +327,11 @@ test('laravel validation requires every visible form field before calling ml ser
         ->assertUnprocessable()
         ->assertJsonValidationErrors([
             'batch_number',
-            'collection_center',
+            'collection_center_id',
             'district',
             'tested_by',
             'driver_name',
-            'vehicle_number',
+            'vehicle_id',
             'liters_collected',
         ]);
 
@@ -307,8 +341,9 @@ test('laravel validation requires every visible form field before calling ml ser
 test('laravel validation rejects districts outside the configured uganda list', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
+    [$center, $vehicle] = createCompanyAssets($company);
     $payload = [
-        ...predictionPayload(),
+        ...predictionPayload($center, $vehicle),
         'district' => 'Not A Uganda District',
     ];
 
@@ -318,6 +353,40 @@ test('laravel validation rejects districts outside the configured uganda list', 
         ->postJson(route('milk-batches.predictions.store'), $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['district']);
+
+    Http::assertNothingSent();
+});
+
+test('tester cannot submit vehicle or collection center belonging to another company', function () {
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+
+    [$otherCenter, $otherVehicle] = createCompanyAssets($otherCompany);
+
+    Http::fake();
+
+    $this->actingAs($user)
+        ->postJson(route('milk-batches.predictions.store'), predictionPayload($otherCenter, $otherVehicle))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['collection_center_id', 'vehicle_id']);
+
+    Http::assertNothingSent();
+});
+
+test('tester cannot submit inactive vehicle or collection center', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+
+    $center = CollectionCenter::factory()->for($company)->create(['is_active' => false]);
+    $vehicle = Vehicle::factory()->for($company)->create(['is_active' => false]);
+
+    Http::fake();
+
+    $this->actingAs($user)
+        ->postJson(route('milk-batches.predictions.store'), predictionPayload($center, $vehicle))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['collection_center_id', 'vehicle_id']);
 
     Http::assertNothingSent();
 });
@@ -338,6 +407,7 @@ test('users without a company cannot create prediction records', function () {
 test('ml service errors are returned safely and do not create records', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
+    [$center, $vehicle] = createCompanyAssets($company);
 
     Http::fake([
         'http://ml.test/api/predict' => Http::response([
@@ -346,7 +416,7 @@ test('ml service errors are returned safely and do not create records', function
     ]);
 
     $this->actingAs($user)
-        ->postJson(route('milk-batches.predictions.store'), predictionPayload())
+        ->postJson(route('milk-batches.predictions.store'), predictionPayload($center, $vehicle))
         ->assertStatus(502)
         ->assertJson([
             'message' => 'Prediction could not be completed.',

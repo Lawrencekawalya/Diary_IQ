@@ -3,9 +3,23 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { FlaskConical } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+type VehicleItem = {
+    id: number;
+    plate_number: string;
+    driver_name: string | null;
+};
+
+type CollectionCenterItem = {
+    id: number;
+    name: string;
+    district: string | null;
+};
+
 const props = defineProps<{
     batchNumber: string;
     districts: string[];
+    vehicles: VehicleItem[];
+    collectionCenters: CollectionCenterItem[];
 }>();
 
 defineOptions({
@@ -18,10 +32,12 @@ defineOptions({
 
 type PredictionForm = {
     batch_number: string;
+    collection_center_id: number | '';
     collection_center: string;
     district: string;
     tested_by: string;
     driver_name: string;
+    vehicle_id: number | '';
     vehicle_number: string;
     liters_collected: string;
     pH: string;
@@ -50,10 +66,12 @@ const numericFields = [
 
 const form = useForm<PredictionForm>({
     batch_number: props.batchNumber,
+    collection_center_id: '',
     collection_center: '',
     district: '',
     tested_by: '',
     driver_name: '',
+    vehicle_id: '',
     vehicle_number: '',
     liters_collected: '',
     pH: '6.70',
@@ -68,6 +86,34 @@ const form = useForm<PredictionForm>({
     SCC: '200000',
     Color: 'normal',
 });
+
+const onCenterSelect = () => {
+    const selected = props.collectionCenters.find((c) => c.id === Number(form.collection_center_id));
+
+    if (selected) {
+        form.collection_center = selected.name;
+
+        if (selected.district) {
+            form.district = selected.district;
+        }
+    } else {
+        form.collection_center = '';
+    }
+};
+
+const onVehicleSelect = () => {
+    const selected = props.vehicles.find((v) => v.id === Number(form.vehicle_id));
+
+    if (selected) {
+        form.vehicle_number = selected.plate_number;
+
+        if (selected.driver_name) {
+            form.driver_name = selected.driver_name;
+        }
+    } else {
+        form.vehicle_number = '';
+    }
+};
 
 const predictionError = computed(() => (form.errors as Record<string, string>).prediction);
 const districtSearchOpen = ref(false);
@@ -150,10 +196,29 @@ const submit = () => {
                         <span v-if="form.errors.batch_number" class="text-xs text-red-600">{{ form.errors.batch_number }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
-                        Collection Center
-                        <input v-model="form.collection_center" required class="rounded-md border bg-background px-3 py-2" placeholder="Example: ADC Dairy" :aria-invalid="Boolean(form.errors.collection_center)">
-                        <span class="text-xs text-muted-foreground">Tell us where the milk was collected.</span>
-                        <span v-if="form.errors.collection_center" class="text-xs text-red-600">{{ form.errors.collection_center }}</span>
+                        Collection Center *
+                        <select
+                            v-if="props.collectionCenters.length > 0"
+                            v-model="form.collection_center_id"
+                            required
+                            class="rounded-md border bg-background px-3 py-2"
+                            :aria-invalid="Boolean(form.errors.collection_center_id)"
+                            @change="onCenterSelect"
+                        >
+                            <option value="" disabled>Select company collection center...</option>
+                            <option
+                                v-for="center in props.collectionCenters"
+                                :key="center.id"
+                                :value="center.id"
+                            >
+                                {{ center.name }}{{ center.district ? ` (${center.district})` : '' }}
+                            </option>
+                        </select>
+                        <div v-else class="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                            No collection centers registered yet. Please ask your company administrator to register collection centers under Fleet & Centers.
+                        </div>
+                        <span class="text-xs text-muted-foreground">Authorized collection center for your company.</span>
+                        <span v-if="form.errors.collection_center_id" class="text-xs text-red-600">{{ form.errors.collection_center_id }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         District
@@ -190,7 +255,7 @@ const submit = () => {
                         <datalist id="uganda-districts">
                             <option v-for="district in props.districts" :key="district" :value="district" />
                         </datalist>
-                        <span class="text-xs text-muted-foreground">Select a Uganda district or city from the search list. Casing is normalized before saving.</span>
+                        <span class="text-xs text-muted-foreground">Auto-filled from collection center or select from list.</span>
                         <span v-if="form.errors.district" class="text-xs text-red-600">{{ form.errors.district }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
@@ -199,14 +264,35 @@ const submit = () => {
                         <span v-if="form.errors.tested_by" class="text-xs text-red-600">{{ form.errors.tested_by }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
-                        Driver Name
-                        <input v-model="form.driver_name" required class="rounded-md border bg-background px-3 py-2" placeholder="Example: John Mukasa" :aria-invalid="Boolean(form.errors.driver_name)">
-                        <span v-if="form.errors.driver_name" class="text-xs text-red-600">{{ form.errors.driver_name }}</span>
+                        Vehicle Number Plate *
+                        <select
+                            v-if="props.vehicles.length > 0"
+                            v-model="form.vehicle_id"
+                            required
+                            class="rounded-md border bg-background px-3 py-2 font-mono uppercase"
+                            :aria-invalid="Boolean(form.errors.vehicle_id)"
+                            @change="onVehicleSelect"
+                        >
+                            <option value="" disabled>Select company vehicle plate...</option>
+                            <option
+                                v-for="vehicle in props.vehicles"
+                                :key="vehicle.id"
+                                :value="vehicle.id"
+                            >
+                                {{ vehicle.plate_number }}{{ vehicle.driver_name ? ` — Driver: ${vehicle.driver_name}` : '' }}
+                            </option>
+                        </select>
+                        <div v-else class="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                            No vehicles registered yet. Please ask your company administrator to register fleet vehicles under Fleet & Centers.
+                        </div>
+                        <span class="text-xs text-muted-foreground">Authorized vehicle owned by your company.</span>
+                        <span v-if="form.errors.vehicle_id" class="text-xs text-red-600">{{ form.errors.vehicle_id }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
-                        Vehicle Number
-                        <input v-model="form.vehicle_number" required class="rounded-md border bg-background px-3 py-2 uppercase" placeholder="Example: UBA 123A" :aria-invalid="Boolean(form.errors.vehicle_number)">
-                        <span v-if="form.errors.vehicle_number" class="text-xs text-red-600">{{ form.errors.vehicle_number }}</span>
+                        Driver Name
+                        <input v-model="form.driver_name" required class="rounded-md border bg-background px-3 py-2" placeholder="Example: John Mukasa" :aria-invalid="Boolean(form.errors.driver_name)">
+                        <span class="text-xs text-muted-foreground">Auto-filled from vehicle if assigned, or enter relief driver.</span>
+                        <span v-if="form.errors.driver_name" class="text-xs text-red-600">{{ form.errors.driver_name }}</span>
                     </label>
                     <label class="grid gap-2 text-sm">
                         Liters Collected

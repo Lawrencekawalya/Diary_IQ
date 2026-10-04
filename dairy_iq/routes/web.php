@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCompanyController;
+use App\Http\Controllers\CompanyAssetController;
 use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\CompanyUserController;
 use App\Http\Controllers\ForcedPasswordChangeController;
@@ -191,6 +192,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('company.users.index');
     Route::post('company/users', [CompanyUserController::class, 'store'])
         ->name('company.users.store');
+    Route::get('company/assets', [CompanyAssetController::class, 'index'])
+        ->name('company.assets.index');
+    Route::post('company/vehicles', [CompanyAssetController::class, 'storeVehicle'])
+        ->name('company.vehicles.store');
+    Route::put('company/vehicles/{vehicle}', [CompanyAssetController::class, 'updateVehicle'])
+        ->name('company.vehicles.update');
+    Route::delete('company/vehicles/{vehicle}', [CompanyAssetController::class, 'destroyVehicle'])
+        ->name('company.vehicles.destroy');
+    Route::post('company/collection-centers', [CompanyAssetController::class, 'storeCollectionCenter'])
+        ->name('company.collection-centers.store');
+    Route::put('company/collection-centers/{collectionCenter}', [CompanyAssetController::class, 'updateCollectionCenter'])
+        ->name('company.collection-centers.update');
+    Route::delete('company/collection-centers/{collectionCenter}', [CompanyAssetController::class, 'destroyCollectionCenter'])
+        ->name('company.collection-centers.destroy');
     Route::get('admin/companies', [AdminCompanyController::class, 'index'])
         ->name('admin.companies.index');
     Route::get('admin/companies/{company}/dashboard', function (Company $company) {
